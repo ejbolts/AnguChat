@@ -31,7 +31,7 @@ login(): void {
     sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
 
     // Check user roles and navigate accordingly
-    if (loggedInUser.role === 'SuperAdmin' || loggedInUser.role === 'GroupAdmin') {
+    if (loggedInUser.role === 'superAdmin' || loggedInUser.role === 'groupAdmin') {
       this.router.navigate(['/admin']);
     } else {
       this.router.navigate(['/chat']);

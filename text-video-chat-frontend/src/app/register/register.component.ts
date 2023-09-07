@@ -24,7 +24,7 @@ export class RegisterComponent {
   registerUser(): void {
     // Give the user an ID, roles, and a mock password
     this.user.id = Date.now().toString(); // Using timestamp as a mock ID
-    this.user.role = 'ChatUser';
+    this.user.role = 'user';
 
     // Get the current list of users from localStorage
     let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');

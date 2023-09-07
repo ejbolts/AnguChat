@@ -8,3 +8,6 @@ export interface User {
     role: string;      // 'user', 'groupAdmin', 'superAdmin'
     groups: Array<string>;     // List of group IDs the user is a part of
 }
+export interface AdminUser extends User {
+    newRole?: string;
+}

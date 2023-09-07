@@ -1,11 +1,63 @@
-<!-- Super Admin Specific UI -->
-<div *ngIf="isSuperAdmin()">
-  <select [(ngModel)]="selectedUserId">
-    <option *ngFor="let user of users" [value]="user.id">
-      {{ user.username }}
-    </option>
-  </select>
-  <!-- <button (click)="promoteToGroupAdmin()">Promote to Group Admin</button> -->
-  <!-- <button (click)="removeUser()">Remove User</button> -->
-  <!-- <button (click)="promoteToSuperAdmin()">Promote to Super Admin</button> -->
+<div class="container mt-5">
+  <h2 class="admin-title">Admin Dashboard</h2>
+  <button (click)="logout()" class="btn btn-warning">Logout</button>
+
+  <table class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Change Role</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          <select [(ngModel)]="user.newRole" class="form-control">
+            <option value="user">Chat User</option>
+            <option value="groupAdmin">Group Admin</option>
+            <option value="superAdmin">Super Admin</option>
+          </select>
+        </td>
+        <td>
+          <button (click)="promoteUser(user)" class="btn btn-primary mr-2">
+            Promote
+          </button>
+          <button (click)="removeUser(user)" class="btn btn-danger">
+            Remove
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Create Group -->
+  <input type="text" placeholder="Group Name" #groupInput />
+  <button (click)="createGroup(groupInput.value)">Create Group</button>
+
+  <!-- List Groups and Channels with options to add and remove -->
+  <div *ngFor="let group of groups">
+    <h3>{{ group.name }}</h3>
+
+    <!-- Add Channel to Group -->
+    <input type="text" placeholder="Channel Name" #channelInput />
+    <button (click)="createChannel(group.id, channelInput.value)">
+      Add Channel
+    </button>
+
+    <!-- List Channels -->
+    <div *ngFor="let channel of group.channels">
+      {{ channel.name }}
+      <button (click)="removeChannel(group.id, channel.id)">
+        Remove Channel
+      </button>
+    </div>
+
+    <button (click)="removeGroup(group.id)">Remove Group</button>
+  </div>
 </div>
