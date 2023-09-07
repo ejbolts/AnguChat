@@ -23,6 +23,22 @@ let users = [
     roles: ["SuperAdmin"],
     groups: [],
   },
+  {
+    id: 2,
+    username: "groupadmin",
+    email: "groupadmin2@example.com",
+    password: "123",
+    roles: ["GroupAdmin"],
+    groups: [],
+  },
+  {
+    id: 3,
+    username: "normaluser",
+    email: "normaluser@example.com",
+    password: "123",
+    roles: ["ChatUser"],
+    groups: [],
+  },
 ];
 
 let groups = [];

@@ -12,11 +12,13 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(private router: Router) {}
   ngOnInit(): void {
-    const sessionUser = sessionStorage.getItem('currentUser');
-    if (sessionUser) {
-      this.user = JSON.parse(sessionUser);
+    const rawData = sessionStorage.getItem('currentUser');
+    const userData = rawData ? JSON.parse(rawData) : null;
+    
+    if (userData && userData.roles && (userData.roles.includes('SuperAdmin') || userData.roles.includes('GroupAdmin'))) {
+      this.user = userData;
     } else {
-      this.router.navigate(['/login']); // Redirect to login if no user data
+      this.router.navigate(['/register']);
     }
   }
 }

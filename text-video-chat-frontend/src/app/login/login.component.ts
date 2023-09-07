@@ -13,21 +13,22 @@ export class LoginComponent {
   error!: string;
 
   constructor(private authService: AuthenticationService, private router: Router) { }
-
   login(): void {
     this.authService.login({ username: this.username, password: this.password })
       .subscribe(response => {
         if (response.valid) {
-          console.log(response);
-          if (response.valid) {
-            sessionStorage.setItem('currentUser', JSON.stringify(response.user)); 
-            this.router.navigate(['/admin-dashboard']);
+          sessionStorage.setItem('currentUser', JSON.stringify(response.user));
+          // Check roles for navigation
+          if (response.user.roles.includes('SuperAdmin') || response.user.roles.includes('GroupAdmin')) {
+            this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/register']);
           }
-          
-          this.router.navigate(['/admin']);
         } else {
           this.error = "Invalid login credentials";
         }
       });
   }
+  
+  
 }
