@@ -93,22 +93,6 @@
       </div>
     </div>
 
-    <!-- List Channels -->
-    <ul class="list-group">
-      <li
-        *ngFor="let channel of group.channels"
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        {{ channel.name }}
-        <button
-          (click)="removeChannel(group.id, channel.id)"
-          class="btn btn-danger btn-sm"
-        >
-          Remove Channel
-        </button>
-      </li>
-    </ul>
-
     <!-- List Users in Group with Remove Option -->
     <ul class="list-group">
       <li
@@ -125,5 +109,61 @@
         </button>
       </li>
     </ul>
+    <!-- List Channels -->
+    <div *ngFor="let channel of group.channels">
+      {{ channel.name }}
+
+      <!-- Add user to channel using a dropdown -->
+      <select #userDropdown>
+        <option *ngFor="let userId of group.users" [value]="userId">
+          {{ getUserById(userId)?.username || "Unknown" }}
+        </option>
+      </select>
+      <button
+        (click)="addUserToChannel(userDropdown.value, channel.id)"
+        class="btn btn-primary btn-sm"
+      >
+        Add User
+      </button>
+
+      <div *ngFor="let channel of group.channels">
+        <div *ngFor="let channel of group.channels">
+          <!-- Existing users in the channel -->
+          <div *ngFor="let userId of channel.users">
+            {{ getUserIdName(userId) }}
+            <button
+              (click)="banUserFromChannel(userId, channel.id)"
+              class="btn btn-warning btn-sm"
+            >
+              Ban
+            </button>
+            <button
+              (click)="removeUserFromChannel(userId, channel.id)"
+              class="btn btn-danger btn-sm"
+            >
+              Remove User
+            </button>
+          </div>
+
+          <!-- Banned users from the channel -->
+          <div *ngFor="let bannedUserId of channel.bannedUsers">
+            {{ getUserIdName(bannedUserId) }} (Banned)
+            <button
+              (click)="unbanUserFromChannel(bannedUserId, channel.id)"
+              class="btn btn-info btn-sm"
+            >
+              Unban
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button
+        (click)="removeChannel(group.id, channel.id)"
+        class="btn btn-danger btn-sm"
+      >
+        Remove Channel
+      </button>
+    </div>
   </div>
 </div>
