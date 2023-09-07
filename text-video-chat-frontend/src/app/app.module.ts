@@ -7,7 +7,8 @@ import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ChatComponent } from './chat/chat.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
-
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
@@ -18,7 +19,9 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
