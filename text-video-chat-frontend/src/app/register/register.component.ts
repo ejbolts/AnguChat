@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { User } from '../models/user.model';  // Replace with the correct path to your model
+import { User } from '../models/user.model'; 
 import { Router } from '@angular/router';
 
 @Component({
@@ -8,11 +8,13 @@ import { Router } from '@angular/router';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  constructor(private router: Router, ) {}
+  errorMessage: string | null = null;  // For displaying an error message
+
+  constructor(private router: Router) {}
 
   goToLogin(): void {
     this.router.navigate(['/login']);
-}
+  }
 
   user: User = {
     username: '',
@@ -22,12 +24,17 @@ export class RegisterComponent {
   };
 
   registerUser(): void {
-    // Give the user an ID, roles, and a mock password
+    let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+
+    // Check if the username is already taken
+    if (users.some(user => user.username === this.user.username)) {
+      this.errorMessage = 'Username already taken. Please choose another.';
+      return;
+    }
+
+    // If the username is not taken, continue with the registration
     this.user.id = Date.now().toString(); // Using timestamp as a mock ID
     this.user.role = 'user';
-
-    // Get the current list of users from localStorage
-    let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
 
     // Push the new user into the list
     users.push(this.user);

@@ -46,5 +46,8 @@
     >
       Login
     </button>
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
   </form>
 </div>
