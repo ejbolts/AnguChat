@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../services/authentication.service';
+import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -13,22 +14,34 @@ export class LoginComponent {
   error!: string;
 
   constructor(private authService: AuthenticationService, private router: Router) { }
-  login(): void {
-    this.authService.login({ username: this.username, password: this.password })
-      .subscribe(response => {
-        if (response.valid) {
-          sessionStorage.setItem('currentUser', JSON.stringify(response.user));
-          // Check roles for navigation
-          if (response.user.roles.includes('SuperAdmin') || response.user.roles.includes('GroupAdmin')) {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/register']);
-          }
-        } else {
-          this.error = "Invalid login credentials";
-        }
-      });
+  goToRegister(): void {
+    this.router.navigate(['/register']);
+}
+login(): void {
+  // Fetch users from localStorage
+  let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+
+  // Find the user with the given credentials
+  console.log(users);
+
+  let loggedInUser = users.find(u => u.username === this.username && u.password === this.password);
+
+  if (loggedInUser) {
+    // Store the logged-in user in the session for further use
+    sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+
+    // Check user roles and navigate accordingly
+    if (loggedInUser.role === 'SuperAdmin' || loggedInUser.role === 'GroupAdmin') {
+      this.router.navigate(['/admin']);
+    } else {
+      this.router.navigate(['/chat']);
+    }
+  } else {
+    alert('Invalid credentials!');
   }
+}
+
+  
   
   
 }

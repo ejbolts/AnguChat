@@ -23,45 +23,12 @@ let users = [
     roles: ["SuperAdmin"],
     groups: [],
   },
-  {
-    id: 2,
-    username: "groupadmin",
-    email: "groupadmin2@example.com",
-    password: "123",
-    roles: ["GroupAdmin"],
-    groups: [],
-  },
-  {
-    id: 3,
-    username: "normaluser",
-    email: "normaluser@example.com",
-    password: "123",
-    roles: ["ChatUser"],
-    groups: [],
-  },
 ];
 
-let groups = [];
-
-function authenticate(req, res, next) {
-  const { username, password } = req.body;
-  const user = users.find(
-    (u) => u.username === username && u.password === password
-  );
-  if (user) {
-    req.user = user;
-    next();
-  } else {
-    res.status(401).send({ error: "Invalid credentials" });
-  }
-}
-function isSuperAdmin(req, res, next) {
-  if (req.user.roles.includes("SuperAdmin")) {
-    next();
-  } else {
-    res.status(403).send({ error: "Access denied" });
-  }
-}
+// Fetch all users
+app.get("/users", (req, res) => {
+  res.send(users);
+});
 
 // User routes
 app.post("/register", (req, res) => {
@@ -92,22 +59,6 @@ app.post("/login", (req, res) => {
     res.status(401).send({ error: "Invalid credentials", valid: false });
   }
 });
-
-// ... More routes for groups, channels, etc.
-
-// Promote a user to Group Admin
-app.put("/users/:id/promote", authenticate, isSuperAdmin, (req, res) => {
-  const { id } = req.params;
-  const user = users.find((u) => u.id == id);
-  if (user) {
-    user.roles.push("GroupAdmin");
-    res.send(user);
-  } else {
-    res.status(404).send({ error: "User not found" });
-  }
-});
-
-// ... other routes for creating groups, channels, etc.
 
 const PORT = 3000;
 app.listen(PORT, () => {

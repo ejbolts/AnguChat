@@ -1,1 +1,11 @@
-<p>Username: {{ user.username }}</p>
+<!-- Super Admin Specific UI -->
+<div *ngIf="isSuperAdmin()">
+  <select [(ngModel)]="selectedUserId">
+    <option *ngFor="let user of users" [value]="user.id">
+      {{ user.username }}
+    </option>
+  </select>
+  <!-- <button (click)="promoteToGroupAdmin()">Promote to Group Admin</button> -->
+  <!-- <button (click)="removeUser()">Remove User</button> -->
+  <!-- <button (click)="promoteToSuperAdmin()">Promote to Super Admin</button> -->
+</div>

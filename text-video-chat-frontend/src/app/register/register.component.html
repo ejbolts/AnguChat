@@ -1,1 +1,50 @@
-<p>register works!</p>
+<div class="container register-container">
+  <form (submit)="registerUser()" class="register-form">
+    <div class="form-group">
+      <h2 class="register-title">Register</h2>
+
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        class="form-control"
+        id="username"
+        name="username"
+        [(ngModel)]="user.username"
+        placeholder="Enter Username"
+        required
+      />
+    </div>
+
+    <label for="password">Password:</label>
+    <input
+      type="password"
+      class="form-control"
+      name="password"
+      [(ngModel)]="user.password"
+      placeholder="Enter Password"
+      required
+    />
+
+    <label for="email">Email:</label>
+    <input
+      type="email"
+      class="form-control"
+      id="email"
+      name="email"
+      [(ngModel)]="user.email"
+      placeholder="Enter Email"
+      required
+    />
+
+    <button type="submit" class="btn btn-primary" style="margin-top: 10px">
+      Register
+    </button>
+    <button
+      (click)="goToLogin()"
+      class="btn btn-outline-primary"
+      style="margin-top: 10px"
+    >
+      Login
+    </button>
+  </form>
+</div>
