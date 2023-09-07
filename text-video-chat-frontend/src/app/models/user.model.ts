@@ -9,6 +9,7 @@ export interface User {
     groups: Array<string>;     // List of group IDs the user is a part of
     reported?: boolean;  // Flag to check if user has been reported
     bannedChannels?: string[]; // Channels from which the user is banned
+    pendingGroups?: string[]; // Groups they have requested to join but not approved yet
 }
 export interface AdminUser extends User {
     newRole?: string;

@@ -91,6 +91,16 @@
           </button>
         </div>
       </div>
+      <!-- Pending join requests for the group -->
+      <p>Pending join requests:</p>
+      <ul>
+        <li *ngFor="let user of getPendingUsersForGroup(group.id)">
+          {{ user.username }}
+          <button (click)="approveUserForGroup(user.id!, group.id)">
+            Approve
+          </button>
+        </li>
+      </ul>
     </div>
 
     <!-- List Users in Group with Remove Option -->
@@ -126,7 +136,8 @@
         Add User
       </button>
 
-      <div *ngFor="let channel of group.channels">
+      <div *ngFor="let group of groups">
+        <!-- Iterate through channels in the group -->
         <div *ngFor="let channel of group.channels">
           <!-- Existing users in the channel -->
           <div *ngFor="let userId of channel.users">

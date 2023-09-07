@@ -18,8 +18,13 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.users = JSON.parse(localStorage.getItem('users') || '[]');
     this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
+    this.retrieveData();
   }
-
+// Separate method to retrieve data
+retrieveData(): void {
+  this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
+  this.users = JSON.parse(localStorage.getItem('users') || '[]');
+}
   promoteUser(user: AdminUser): void {
     const index = this.users.findIndex(u => u.id === user.id);
     if (index > -1 && user.newRole) {
@@ -235,6 +240,73 @@ isUserBannedFromChannel(userId: string, channelId: string): boolean {
     }
   }
   return false;
+}
+getPendingUsersForGroup(groupId: string): User[] {
+  let pendingUsers: User[] = [];
+  this.groups.forEach(group => {
+    if (group.id === groupId && group.pendingUsers) {
+      group.pendingUsers.forEach(userId => {
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+          pendingUsers.push(user);
+        }
+      });
+    }
+  });
+  return pendingUsers;
+}
+
+approveUserForGroup(userId: string, groupId: string): void {
+  
+
+  if (!userId || !groupId) {
+    return;
+  }
+
+  // Fetch the user and the group from your storage
+  const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+  const groups: Group[] = JSON.parse(localStorage.getItem('groups') || '[]');
+  
+  const user = users.find(u => u.id === userId);
+  const group = groups.find(g => g.id === groupId);
+
+  
+  // Move user from pendingGroups to groups
+  if (user && user.pendingGroups) {
+    const userIndex = user.pendingGroups.indexOf(groupId);
+    if (userIndex > -1) {
+      user.pendingGroups.splice(userIndex, 1);
+      if (!user.groups) {
+        user.groups = [];
+      }
+      user.groups.push(groupId);
+    }
+  }
+
+  // Move userId from group's pendingUsers to users
+  if (group) {
+    if (!group.users) {
+      group.users = [];
+    }
+    const groupIndex = group.pendingUsers ? group.pendingUsers.indexOf(userId) : -1;
+    if (groupIndex > -1) {
+      group.pendingUsers?.splice(groupIndex, 1);
+      group.users.push(userId);
+    }
+  }
+
+  
+  // Update users and groups in your storage
+  localStorage.setItem('users', JSON.stringify(users));
+  localStorage.setItem('groups', JSON.stringify(groups));
+  alert(`${user?.username} approved for ${group?.name}`);
+  this.users = JSON.parse(localStorage.getItem('users') || '[]');
+this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
+
+}
+getGroupNameById(groupId: string): string {
+  const group = this.groups.find(g => g.id === groupId);
+  return group ? group.name : 'Unknown Group';
 }
 
 

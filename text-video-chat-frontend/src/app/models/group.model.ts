@@ -5,4 +5,5 @@ export interface Group {
     channels: Channel[];
     admins: string[]; // Admin IDs
     users?: string[]; // User IDs. Marked as optional initially.
+    pendingUsers?: string[]; // Users awaiting approval to join
 }
