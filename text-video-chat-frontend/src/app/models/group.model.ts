@@ -3,5 +3,6 @@ export interface Group {
     id: string;
     name: string;
     channels: Channel[];
-    admins: string[];  // Array of User IDs who are admins of this group
+    admins: string[]; // Admin IDs
+    users?: string[]; // User IDs. Marked as optional initially.
 }

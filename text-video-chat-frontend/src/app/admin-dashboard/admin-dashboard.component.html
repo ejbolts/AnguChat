@@ -35,29 +35,95 @@
       </tr>
     </tbody>
   </table>
-
   <!-- Create Group -->
-  <input type="text" placeholder="Group Name" #groupInput />
-  <button (click)="createGroup(groupInput.value)">Create Group</button>
-
-  <!-- List Groups and Channels with options to add and remove -->
-  <div *ngFor="let group of groups">
-    <h3>{{ group.name }}</h3>
-
-    <!-- Add Channel to Group -->
-    <input type="text" placeholder="Channel Name" #channelInput />
-    <button (click)="createChannel(group.id, channelInput.value)">
-      Add Channel
-    </button>
-
-    <!-- List Channels -->
-    <div *ngFor="let channel of group.channels">
-      {{ channel.name }}
-      <button (click)="removeChannel(group.id, channel.id)">
-        Remove Channel
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Group Name"
+      #groupInput
+    />
+    <div class="input-group-append">
+      <button (click)="createGroup(groupInput)" class="btn btn-primary">
+        Create Group
       </button>
     </div>
+  </div>
 
-    <button (click)="removeGroup(group.id)">Remove Group</button>
+  <!-- List Groups and Channels -->
+  <div *ngFor="let group of groups" class="mb-4">
+    <div class="bg-light p-3 rounded">
+      <h3 class="d-inline-block mr-3">{{ group.name }}</h3>
+      <button (click)="removeGroup(group.id)" class="btn btn-danger btn-sm">
+        Remove Group
+      </button>
+      <!-- Add Channel to Group -->
+      <div class="input-group mt-3 mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Channel Name"
+          #channelInput
+        />
+        <div class="input-group-append">
+          <button
+            (click)="createChannel(group.id, channelInput)"
+            class="btn btn-secondary"
+          >
+            Add Channel
+          </button>
+        </div>
+      </div>
+
+      <!-- Add User to Group -->
+      <div class="input-group mt-3 mb-3">
+        <select class="form-control" #userDropdown>
+          <option *ngFor="let user of users" [value]="user.id">
+            {{ user.username }}
+          </option>
+        </select>
+        <div class="input-group-append">
+          <button
+            (click)="addUserToGroup(userDropdown.value, group.id)"
+            class="btn btn-secondary"
+          >
+            Add User
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- List Channels -->
+    <ul class="list-group">
+      <li
+        *ngFor="let channel of group.channels"
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        {{ channel.name }}
+        <button
+          (click)="removeChannel(group.id, channel.id)"
+          class="btn btn-danger btn-sm"
+        >
+          Remove Channel
+        </button>
+      </li>
+    </ul>
+
+    <!-- List Users in Group with Remove Option -->
+    <ul class="list-group">
+      <li
+        *ngFor="let userId of group.users"
+        class="list-group-item d-flex justify-content-between align-items-center"
+      >
+        {{ getUsernameById(userId) }}
+
+        <button
+          (click)="removeUserFromGroup(userId, group.id)"
+          class="btn btn-danger btn-sm"
+        >
+          Remove
+        </button>
+      </li>
+    </ul>
   </div>
 </div>

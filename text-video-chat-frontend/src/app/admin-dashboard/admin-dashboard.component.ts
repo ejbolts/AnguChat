@@ -43,7 +43,8 @@ export class AdminDashboardComponent implements OnInit {
 
 
 
-  createGroup(groupName: string): void {
+  createGroup(groupInput: HTMLInputElement): void {
+    const groupName = groupInput.value;
     const currentUser = sessionStorage.getItem('currentUser');
     const parsedUser = currentUser ? JSON.parse(currentUser) : null;
 
@@ -59,9 +60,11 @@ export class AdminDashboardComponent implements OnInit {
     };
     this.groups.push(newGroup);
     localStorage.setItem('groups', JSON.stringify(this.groups));
+    groupInput.value = '';
 }
 
-  createChannel(groupId: string, channelName: string): void {
+createChannel(groupId: string, channelInput: HTMLInputElement): void {
+  const channelName = channelInput.value;
     const groupIndex = this.groups.findIndex(group => group.id === groupId);
     if (groupIndex !== -1) {
       const newChannel: Channel = {
@@ -70,7 +73,8 @@ export class AdminDashboardComponent implements OnInit {
       };
       this.groups[groupIndex].channels.push(newChannel);
       localStorage.setItem('groups', JSON.stringify(this.groups));
-    }
+    } // Clear input field
+    channelInput.value = '';
   }
 
   removeGroup(groupId: string): void {
@@ -91,4 +95,33 @@ export class AdminDashboardComponent implements OnInit {
       }
     }
   }
+
+  addUserToGroup(userId: string, groupId: string): void {
+    const group = this.groups.find(g => g.id === groupId);
+    if (group) {
+        if (!group.users) {
+            group.users = [];
+        }
+        if (!group.users.includes(userId)) {
+            group.users.push(userId);
+            localStorage.setItem('groups', JSON.stringify(this.groups));
+        }
+    }
+}
+
+removeUserFromGroup(userId: string, groupId: string): void {
+    const group = this.groups.find(g => g.id === groupId);
+    if (group && group.users) {
+        const index = group.users.indexOf(userId);
+        if (index > -1) {
+            group.users.splice(index, 1);
+            localStorage.setItem('groups', JSON.stringify(this.groups));
+        }
+    }
+}getUsernameById(userId: string): string {
+  const user = this.users.find(u => u.id === userId);
+  return user ? user.username : 'Unknown User';
+}
+
+
 }
