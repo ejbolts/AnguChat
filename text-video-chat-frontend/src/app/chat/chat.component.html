@@ -1,14 +1,37 @@
-<!-- chat.component.html -->
+<div class="container mt-5">
+  <!-- Place this code at the top or where you want the logout button to be -->
+  <button (click)="logout()" class="btn btn-warning mb-4">Logout</button>
 
-<div *ngFor="let group of allGroups">
-  {{ group.name }}
+  <div class="list-group">
+    <div
+      *ngFor="let group of allGroups"
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      {{ group.name }}
 
-  <!-- Check if user has already requested to join this group -->
-  <ng-container *ngIf="!isPending(group.id); else pendingTemplate">
-    <button (click)="requestToJoinGroup(group.id)">Join</button>
-  </ng-container>
+      <!-- If the user is a member of the group, show the "Leave" button -->
+      <ng-container *ngIf="isMemberOfGroup(group.id); else notMemberTemplate">
+        <button (click)="leaveGroup(group.id)" class="btn btn-danger">
+          Leave
+        </button>
+      </ng-container>
 
-  <ng-template #pendingTemplate>
-    <span>Pending</span>
-  </ng-template>
+      <ng-template #notMemberTemplate>
+        <!-- If the user has sent a join request, show "Pending" status -->
+        <ng-container *ngIf="isPending(group.id); else joinButtonTemplate">
+          <span class="badge badge-warning badge-pill text-dark">Pending</span>
+        </ng-container>
+
+        <!-- Else, show the "Join" button -->
+        <ng-template #joinButtonTemplate>
+          <button
+            class="btn btn-primary"
+            (click)="requestToJoinGroup(group.id)"
+          >
+            Join
+          </button>
+        </ng-template>
+      </ng-template>
+    </div>
+  </div>
 </div>

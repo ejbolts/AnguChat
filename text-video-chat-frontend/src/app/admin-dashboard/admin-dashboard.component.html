@@ -92,15 +92,23 @@
         </div>
       </div>
       <!-- Pending join requests for the group -->
-      <p>Pending join requests:</p>
-      <ul>
-        <li *ngFor="let user of getPendingUsersForGroup(group.id)">
-          {{ user.username }}
-          <button (click)="approveUserForGroup(user.id!, group.id)">
-            Approve
-          </button>
-        </li>
-      </ul>
+      <div class="container mt-4">
+        <h5 class="mb-3">Pending join requests:</h5>
+        <ul class="list-group">
+          <li
+            *ngFor="let user of getPendingUsersForGroup(group.id)"
+            class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            {{ user.username }}
+            <button
+              (click)="approveUserForGroup(user.id!, group.id)"
+              class="btn btn-success btn-sm"
+            >
+              Approve
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <!-- List Users in Group with Remove Option -->
