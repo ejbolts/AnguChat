@@ -1,10 +1,21 @@
 <div class="container mt-5">
-  <!-- Logout and Delete Account buttons -->
+  <!-- Place this code at the top or where you want the logout button to be -->
   <div class="d-flex justify-content-between mb-4">
-    <button (click)="logout()" class="btn btn-warning">Logout</button>
-    <button (click)="deleteAccount()" class="btn btn-danger">
-      Delete Account
-    </button>
+    <span class="align-self-center">Hello, {{ currentUser?.username }}</span>
+    <!-- Display the current user's name. We use the safe navigation operator (?) to avoid null reference errors -->
+    <div>
+      <button (click)="logout()" class="btn btn-warning">Logout</button>
+      <button (click)="deleteAccount()" class="btn btn-danger">
+        Delete Account
+      </button>
+      <button
+        *ngIf="isAdmin"
+        (click)="navigateToDashboard()"
+        class="btn btn-info"
+      >
+        Dashboard
+      </button>
+    </div>
   </div>
 
   <div class="list-group">

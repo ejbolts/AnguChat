@@ -173,10 +173,18 @@ isChannelMember(channelId: string, groupId: string): boolean {
   const channel: Channel | undefined = group?.channels.find(ch => ch.id === channelId);
   return channel?.users?.includes(this.currentUser?.id || '') || false;
 }
+// chat.component.ts
+get isAdmin(): boolean {
+  const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+  return currentUser.role === 'admin' || currentUser.role === 'superAdmin';
+}
+
 
 updateGroupsStorage(): void {
   // Update the groups in your storage (localStorage or elsewhere)
   localStorage.setItem('groups', JSON.stringify(this.allGroups));
+} navigateToDashboard(): void {
+  this.router.navigate(['/admin']);
 }
 
 

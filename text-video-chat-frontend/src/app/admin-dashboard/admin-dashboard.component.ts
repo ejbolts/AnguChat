@@ -18,13 +18,12 @@ export class AdminDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.users = JSON.parse(localStorage.getItem('users') || '[]');
     this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
-    this.retrieveData();
+  
   }
-// Separate method to retrieve data
-retrieveData(): void {
-  this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
-  this.users = JSON.parse(localStorage.getItem('users') || '[]');
-}
+  navigateToChat(): void {
+    this.router.navigate(['/chat']);
+  }
+
   promoteUser(user: AdminUser): void {
     const index = this.users.findIndex(u => u.id === user.id);
     if (index > -1 && user.newRole) {
@@ -309,5 +308,12 @@ getGroupNameById(groupId: string): string {
   return group ? group.name : 'Unknown Group';
 }
 
+isSuperAdmin(): boolean {
+  const currentUserJSON = sessionStorage.getItem('currentUser');
+  if (!currentUserJSON) return false;
+  
+  const currentUser = JSON.parse(currentUserJSON);
+  return currentUser && currentUser.role === 'superAdmin';
+}
 
 }

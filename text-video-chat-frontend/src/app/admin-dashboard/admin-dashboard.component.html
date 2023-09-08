@@ -1,6 +1,7 @@
 <div class="container mt-5">
   <h2 class="admin-title">Admin Dashboard</h2>
   <button (click)="logout()" class="btn btn-warning">Logout</button>
+  <button (click)="navigateToChat()" class="btn btn-info">Chat</button>
 
   <table class="table table-striped mt-3">
     <thead>
@@ -18,7 +19,11 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
-          <select [(ngModel)]="user.newRole" class="form-control">
+          <select
+            [(ngModel)]="user.newRole"
+            class="form-control"
+            *ngIf="isSuperAdmin()"
+          >
             <option value="user">Chat User</option>
             <option value="groupAdmin">Group Admin</option>
             <option value="superAdmin">Super Admin</option>
@@ -109,80 +114,87 @@
           </li>
         </ul>
       </div>
-    </div>
 
-    <!-- List Users in Group with Remove Option -->
-    <ul class="list-group">
-      <li
-        *ngFor="let userId of group.users"
-        class="list-group-item d-flex justify-content-between align-items-center"
-      >
-        {{ getUsernameById(userId) }}
-
-        <button
-          (click)="removeUserFromGroup(userId, group.id)"
-          class="btn btn-danger btn-sm"
+      <!-- List Users in Group with Remove Option -->
+      <ul class="list-group">
+        <li
+          *ngFor="let userId of group.users"
+          class="list-group-item d-flex justify-content-between align-items-center"
         >
-          Remove
-        </button>
-      </li>
-    </ul>
-    <!-- List Channels -->
-    <div *ngFor="let channel of group.channels">
-      {{ channel.name }}
+          {{ getUsernameById(userId) }}
 
-      <!-- Add user to channel using a dropdown -->
-      <select #userDropdown>
-        <option *ngFor="let userId of group.users" [value]="userId">
-          {{ getUserById(userId)?.username || "Unknown" }}
-        </option>
-      </select>
-      <button
-        (click)="addUserToChannel(userDropdown.value, channel.id)"
-        class="btn btn-primary btn-sm"
-      >
-        Add User
-      </button>
+          <button
+            (click)="removeUserFromGroup(userId, group.id)"
+            class="btn btn-danger btn-sm"
+          >
+            Remove
+          </button>
+        </li>
+      </ul>
 
-      <div *ngFor="let group of groups">
-        <!-- Iterate through channels in the group -->
-        <div *ngFor="let channel of group.channels">
-          <!-- Existing users in the channel -->
-          <div *ngFor="let userId of channel.users">
-            {{ getUserIdName(userId) }}
-            <button
-              (click)="banUserFromChannel(userId, channel.id)"
-              class="btn btn-warning btn-sm"
-            >
-              Ban
-            </button>
-            <button
-              (click)="removeUserFromChannel(userId, channel.id)"
-              class="btn btn-danger btn-sm"
-            >
-              Remove User
-            </button>
-          </div>
+      <!-- List Channels -->
+      <div *ngFor="let channel of group.channels">
+        <h4>{{ channel.name }}</h4>
 
-          <!-- Banned users from the channel -->
-          <div *ngFor="let bannedUserId of channel.bannedUsers">
-            {{ getUserIdName(bannedUserId) }} (Banned)
+        <!-- Input group layout to align dropdown and button side by side -->
+        <div class="input-group mt-3 mb-3">
+          <!-- Add user to channel using a dropdown -->
+          <select class="form-control" #userDropdown>
+            <option *ngFor="let userId of group.users" [value]="userId">
+              {{ getUserById(userId)?.username || "Unknown" }}
+            </option>
+          </select>
+
+          <div class="input-group-append">
             <button
-              (click)="unbanUserFromChannel(bannedUserId, channel.id)"
-              class="btn btn-info btn-sm"
+              (click)="addUserToChannel(userDropdown.value, channel.id)"
+              class="btn btn-primary"
             >
-              Unban
+              Add User
             </button>
           </div>
         </div>
-      </div>
 
-      <button
-        (click)="removeChannel(group.id, channel.id)"
-        class="btn btn-danger btn-sm"
-      >
-        Remove Channel
-      </button>
+        <div *ngFor="let group of groups">
+          <!-- Iterate through channels in the group -->
+          <div *ngFor="let channel of group.channels">
+            <!-- Existing users in the channel -->
+            <div *ngFor="let userId of channel.users">
+              {{ getUserIdName(userId) }}
+              <button
+                (click)="banUserFromChannel(userId, channel.id)"
+                class="btn btn-warning btn-sm"
+              >
+                Ban
+              </button>
+              <button
+                (click)="removeUserFromChannel(userId, channel.id)"
+                class="btn btn-danger btn-sm"
+              >
+                Remove User
+              </button>
+            </div>
+
+            <!-- Banned users from the channel -->
+            <div *ngFor="let bannedUserId of channel.bannedUsers">
+              {{ getUserIdName(bannedUserId) }} (Banned)
+              <button
+                (click)="unbanUserFromChannel(bannedUserId, channel.id)"
+                class="btn btn-info btn-sm"
+              >
+                Unban
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          (click)="removeChannel(group.id, channel.id)"
+          class="btn btn-danger btn-sm"
+        >
+          Remove Channel
+        </button>
+      </div>
     </div>
   </div>
 </div>

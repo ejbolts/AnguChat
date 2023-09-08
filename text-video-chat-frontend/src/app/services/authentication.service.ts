@@ -15,5 +15,4 @@ export class AuthenticationService {
     return this.http.post(`${this.apiUrl}/login`, credentials);
   }
 
-  // ... more methods
 }
