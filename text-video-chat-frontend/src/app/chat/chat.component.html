@@ -7,7 +7,7 @@
     <!-- Display the current user's name. We use the safe navigation operator (?) to avoid null reference errors -->
     <div>
       <button (click)="logout()" class="btn btn-warning">Logout</button>
-      <button (click)="deleteAccount()" class="btn btn-danger">
+      <button (click)="deleteAccount()" class="btn btn-danger mx-2">
         Delete Account
       </button>
       <button
@@ -65,6 +65,15 @@
             >
               Join Channel
             </button>
+          </ng-container>
+
+          <!-- Display input field if the user is a member of the channel -->
+          <ng-container *ngIf="isChannelMember(channel.id, group.id)">
+            <input
+              type="text"
+              placeholder="Type your message here..."
+              class="form-control mx-2"
+            />
           </ng-container>
         </div>
       </div>

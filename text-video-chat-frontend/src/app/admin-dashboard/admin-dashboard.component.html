@@ -4,7 +4,7 @@
     Logged in as: <strong>{{ getCurrentUsername() }}</strong>
   </div>
   <button (click)="logout()" class="btn btn-warning">Logout</button>
-  <button (click)="navigateToChat()" class="btn btn-info">Chat</button>
+  <button (click)="navigateToChat()" class="btn btn-info mx-2">Chat</button>
 
   <table class="table table-striped mt-3">
     <thead>
@@ -33,7 +33,7 @@
           </select>
         </td>
         <td>
-          <button (click)="promoteUser(user)" class="btn btn-primary mr-2">
+          <button (click)="promoteUser(user)" class="btn btn-primary mx-2">
             Promote
           </button>
           <button (click)="removeUser(user)" class="btn btn-danger">
@@ -62,7 +62,10 @@
   <div *ngFor="let group of groups" class="mb-4">
     <div class="bg-light p-3 rounded">
       <h3 class="d-inline-block mr-3">{{ group.name }}</h3>
-      <button (click)="removeGroup(group.id)" class="btn btn-danger btn-sm">
+      <button
+        (click)="removeGroup(group.id)"
+        class="btn btn-danger btn-sm mx-2"
+      >
         Remove Group
       </button>
       <!-- Add Channel to Group -->
@@ -166,7 +169,7 @@
               {{ getUserIdName(userId) }}
               <button
                 (click)="banUserFromChannel(userId, channel.id)"
-                class="btn btn-warning btn-sm"
+                class="btn btn-warning btn-sm m-2"
               >
                 Ban
               </button>

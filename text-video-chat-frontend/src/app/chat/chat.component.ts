@@ -147,6 +147,9 @@ joinChannel(channelId: string, groupId: string): void {
     return;
   }
   const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
+  console.log('group', group);
+  console.log('channelId', channelId);
+  console.log('groupId', groupId);
   if (!group) {
     console.error('No matching group found!');
     return;
@@ -176,7 +179,7 @@ isChannelMember(channelId: string, groupId: string): boolean {
 // chat.component.ts
 get isAdmin(): boolean {
   const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-  return currentUser.role === 'admin' || currentUser.role === 'superAdmin';
+  return currentUser.role === 'groupAdmin' || currentUser.role === 'superAdmin';
 }
 
 

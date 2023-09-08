@@ -117,6 +117,7 @@ removeUserFromGroup(userId: string, groupId: string): void {
     const group = this.groups.find(g => g.id === groupId);
     if (group && group.users) {
         const index = group.users.indexOf(userId);
+        // If the user is found in the group, remove them.
         if (index > -1) {
             group.users.splice(index, 1);
             localStorage.setItem('groups', JSON.stringify(this.groups));
@@ -294,18 +295,13 @@ approveUserForGroup(userId: string, groupId: string): void {
     }
   }
 
-  
   // Update users and groups in your storage
   localStorage.setItem('users', JSON.stringify(users));
   localStorage.setItem('groups', JSON.stringify(groups));
   alert(`${user?.username} approved for ${group?.name}`);
+  // are setting the users and groups in the component recall them again to update the UI
   this.users = JSON.parse(localStorage.getItem('users') || '[]');
 this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
-
-}
-getGroupNameById(groupId: string): string {
-  const group = this.groups.find(g => g.id === groupId);
-  return group ? group.name : 'Unknown Group';
 }
 
 isSuperAdmin(): boolean {
