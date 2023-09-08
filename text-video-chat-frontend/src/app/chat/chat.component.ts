@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Group } from '../models/group.model';
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
+import { Channel } from '../models/channel.model';
 
 @Component({
   selector: 'app-chat',
@@ -119,5 +120,64 @@ leaveGroup(groupId: string): void {
 
   alert('You have left the group.');
 }
+
+deleteAccount(): void {
+  if (!this.currentUser) {
+    console.error('No current user found!');
+    return;
+  }
+  
+  // Confirmation before deleting
+  const confirmDelete = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+  if (!confirmDelete) return;
+
+  // Filter out the user from the users array in localStorage
+  const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+  const updatedUsers = users.filter(user => user.id !== this.currentUser!.id);
+  localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+  // Log the user out and redirect (if needed)
+  this.logout();
+}
+
+joinChannel(channelId: string, groupId: string): void {
+
+  if (!this.currentUser) {
+    console.error('No current user found!');
+    return;
+  }
+  const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
+  if (!group) {
+    console.error('No matching group found!');
+    return;
+  }
+  const channel: Channel | undefined = group.channels.find(ch => ch.id === channelId);
+  if (!channel) {
+    console.error('No matching channel found!');
+    return;
+  }
+  // Ensure users array exists
+  if (!channel.users) {
+    channel.users = [];
+  }
+  // Add the user to the channel's users if not already there
+  if (!channel.users.includes(this.currentUser.id || '')) {
+    channel.users.push(this.currentUser.id || '');
+    // Update groups in your storage
+    this.updateGroupsStorage();
+  }
+}
+
+isChannelMember(channelId: string, groupId: string): boolean {
+  const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
+  const channel: Channel | undefined = group?.channels.find(ch => ch.id === channelId);
+  return channel?.users?.includes(this.currentUser?.id || '') || false;
+}
+
+updateGroupsStorage(): void {
+  // Update the groups in your storage (localStorage or elsewhere)
+  localStorage.setItem('groups', JSON.stringify(this.allGroups));
+}
+
 
 }
