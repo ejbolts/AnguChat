@@ -1,7 +1,9 @@
 <div class="container mt-5">
   <!-- Place this code at the top or where you want the logout button to be -->
   <div class="d-flex justify-content-between mb-4">
-    <span class="align-self-center">Hello, {{ currentUser?.username }}</span>
+    <span class="align-self-center"
+      >Hello, <strong>{{ currentUser?.username }}</strong></span
+    >
     <!-- Display the current user's name. We use the safe navigation operator (?) to avoid null reference errors -->
     <div>
       <button (click)="logout()" class="btn btn-warning">Logout</button>

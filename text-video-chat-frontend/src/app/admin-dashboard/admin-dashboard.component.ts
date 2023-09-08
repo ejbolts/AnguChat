@@ -315,5 +315,13 @@ isSuperAdmin(): boolean {
   const currentUser = JSON.parse(currentUserJSON);
   return currentUser && currentUser.role === 'superAdmin';
 }
+getCurrentUsername(): string | null {
+  const currentUser = sessionStorage.getItem('currentUser');
+  if (currentUser) {
+    return JSON.parse(currentUser).username;
+  }
+  return null;
+}
+
 
 }
