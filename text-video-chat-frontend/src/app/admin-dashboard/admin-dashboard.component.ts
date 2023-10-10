@@ -30,12 +30,25 @@ export class AdminDashboardComponent implements OnInit {
       }
     );
   }
+
+  removeUser(user: User): void {
+    this.userService.deleteUser(user._id!).subscribe(
+      response => {
+        console.log("User removed successfully:", response);
+        this.fetchUsers();  // Refresh the list of users after deletion
+      },
+      error => {
+        console.error('Error removing user:', error);
+      }
+    );
+  }
+
   navigateToChat(): void {
     this.router.navigate(['/chat']);
   }
 
   promoteUser(user: AdminUser): void {
-    const index = this.users.findIndex(u => u.id === user.id);
+    const index = this.users.findIndex(u => u._id === user._id);
     if (index > -1 && user.newRole) {
       this.users[index].role = user.newRole;
       localStorage.setItem('users', JSON.stringify(this.users));
@@ -43,13 +56,6 @@ export class AdminDashboardComponent implements OnInit {
   }
   
 
-  removeUser(user: AdminUser): void {
-    const index = this.users.findIndex(u => u.id === user.id);
-    if (index > -1) {
-      this.users.splice(index, 1);
-      localStorage.setItem('users', JSON.stringify(this.users));
-    }
-  }
   logout(): void {
     sessionStorage.removeItem('currentUser');  // Remove the logged-in user from the session storage
     this.router.navigate(['/login']);   // Redirect to the login page
@@ -134,7 +140,7 @@ removeUserFromGroup(userId: string, groupId: string): void {
         }
     }
 }getUsernameById(userId: string): string {
-  const user = this.users.find(u => u.id === userId);
+  const user = this.users.find(u => u._id === userId);
   return user ? user.username : 'Unknown User';
 }
 
@@ -155,7 +161,7 @@ joinChannel(userId: string, channelId: string): void {
 }
 
 reportUser(userId: string): void {
-  const user = this.users.find(u => u.id === userId);
+  const user = this.users.find(u => u._id === userId);
   if (user) {
       user.reported = true;
       localStorage.setItem('users', JSON.stringify(this.users));
@@ -233,12 +239,12 @@ unbanUserFromChannel(userId: string, channelId: string): void {
 
 // Utility function to fetch user name by ID
 getUserIdName(userId: string): string {
-  const user = this.users.find(u => u.id === userId);
+  const user = this.users.find(u => u._id === userId);
   return user?.username || 'Unknown User';
 }
 
 getUserById(userId: string): AdminUser | undefined {
-  return this.users.find(user => user.id === userId);
+  return this.users.find(user => user._id === userId);
 }
 
 isUserBannedFromChannel(userId: string, channelId: string): boolean {
@@ -256,7 +262,7 @@ getPendingUsersForGroup(groupId: string): User[] {
   this.groups.forEach(group => {
     if (group.id === groupId && group.pendingUsers) {
       group.pendingUsers.forEach(userId => {
-        const user = this.users.find(u => u.id === userId);
+        const user = this.users.find(u => u._id === userId);
         if (user) {
           pendingUsers.push(user);
         }
@@ -277,7 +283,7 @@ approveUserForGroup(userId: string, groupId: string): void {
   const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
   const groups: Group[] = JSON.parse(localStorage.getItem('groups') || '[]');
   
-  const user = users.find(u => u.id === userId);
+  const user = users.find(u => u._id === userId);
   const group = groups.find(g => g.id === groupId);
 
   

@@ -21,6 +21,11 @@ export class UserService {
     return this.http.post(`${this.apiUrl}/login`, credentials);
   }
 
+  deleteUser(userId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/remove/${userId}`);
+  }
+
+
   // Method to fetch all users
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/login`);

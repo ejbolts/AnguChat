@@ -5,7 +5,7 @@ const cors = require("cors");
 const registerRoute = require("./routes/register");
 const loginRoute = require("./routes/login");
 // const updateRoute = require("./routes/update");
-// const removeRoute = require("./routes/remove");
+const removeRoute = require("./routes/remove");
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use("/register", registerRoute);
 app.use("/login", loginRoute);
 // app.use("/update", updateRoute);
-// app.use("/remove", removeRoute);
+app.use("/remove", removeRoute);
 
 const PORT = 3000;
 

@@ -61,7 +61,7 @@
           <ng-container *ngIf="!isChannelMember(channel.id, group.id)">
             <button
               class="btn btn-sm btn-primary"
-              (click)="joinChannel(currentUser?.id || '', channel.id)"
+              (click)="joinChannel(currentUser?._id || '', channel.id)"
             >
               Join Channel
             </button>

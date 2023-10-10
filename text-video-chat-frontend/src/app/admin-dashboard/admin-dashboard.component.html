@@ -89,7 +89,7 @@
       <!-- Add User to Group -->
       <div class="input-group mt-3 mb-3">
         <select class="form-control" #userDropdown>
-          <option *ngFor="let user of users" [value]="user.id">
+          <option *ngFor="let user of users" [value]="user._id">
             {{ user.username }}
           </option>
         </select>
@@ -112,7 +112,7 @@
           >
             {{ user.username }}
             <button
-              (click)="approveUserForGroup(user.id!, group.id)"
+              (click)="approveUserForGroup(user._id!, group.id)"
               class="btn btn-success btn-sm"
             >
               Approve

@@ -46,8 +46,8 @@ if (group) {
   if (!group.pendingUsers) {
     group.pendingUsers = [];
   }
-  if (!group.pendingUsers.includes(user.id || '')) {
-    group.pendingUsers.push(user.id || '');
+  if (!group.pendingUsers.includes(user._id || '')) {
+    group.pendingUsers.push(user._id || '');
   }
 }
 
@@ -74,7 +74,7 @@ isMemberOfGroup(groupId: string): boolean {
   const group = this.allGroups.find(g => g.id === groupId);
 
   // If the group exists and the current user's ID is part of its users, return true
-  const isMember = group?.users?.includes(this.currentUser?.id || '') || false;
+  const isMember = group?.users?.includes(this.currentUser?._id || '') || false;
   console.log(`Is user member of group ${groupId}? ${isMember}`);
   return isMember;
 }
@@ -92,7 +92,7 @@ leaveGroup(groupId: string): void {
       }
 
       // Update the user in local storage
-      const userIndex = users.findIndex(u => u.id === this.currentUser?.id);
+      const userIndex = users.findIndex(u => u._id === this.currentUser?._id);
       if (userIndex > -1) {
           users[userIndex] = this.currentUser;
       }
@@ -101,7 +101,7 @@ leaveGroup(groupId: string): void {
   // Remove userId from the group's users
   const group = groups.find(g => g.id === groupId);
   if (group?.users) {
-      const index = group.users.indexOf(this.currentUser?.id || '');
+      const index = group.users.indexOf(this.currentUser?._id || '');
       if (index > -1) {
           group.users.splice(index, 1);
       }
@@ -133,7 +133,7 @@ deleteAccount(): void {
 
   // Filter out the user from the users array in localStorage
   const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-  const updatedUsers = users.filter(user => user.id !== this.currentUser!.id);
+  const updatedUsers = users.filter(user => user._id !== this.currentUser!._id);
   localStorage.setItem('users', JSON.stringify(updatedUsers));
 
   // Log the user out and redirect (if needed)
@@ -164,8 +164,8 @@ joinChannel(channelId: string, groupId: string): void {
     channel.users = [];
   }
   // Add the user to the channel's users if not already there
-  if (!channel.users.includes(this.currentUser.id || '')) {
-    channel.users.push(this.currentUser.id || '');
+  if (!channel.users.includes(this.currentUser._id || '')) {
+    channel.users.push(this.currentUser._id || '');
     // Update groups in your storage
     this.updateGroupsStorage();
   }
@@ -174,7 +174,7 @@ joinChannel(channelId: string, groupId: string): void {
 isChannelMember(channelId: string, groupId: string): boolean {
   const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
   const channel: Channel | undefined = group?.channels.find(ch => ch.id === channelId);
-  return channel?.users?.includes(this.currentUser?.id || '') || false;
+  return channel?.users?.includes(this.currentUser?._id || '') || false;
 }
 // chat.component.ts
 get isAdmin(): boolean {
