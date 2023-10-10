@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Group  } from '../models/group.model';
 import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -14,6 +15,13 @@ export class AdminDashboardComponent implements OnInit {
   groups: Group[] = [];
   users: User[] = [];
   currentUser?: User; 
+  
+group: Group = {
+  name: '',
+  id: '',
+  channels: [],
+  admins: []
+};
   constructor(private router: Router, private userService: UserService) { } // Inject UserService
 
   ngOnInit(): void {
@@ -73,27 +81,16 @@ export class AdminDashboardComponent implements OnInit {
     this.router.navigate(['/login']);   // Redirect to the login page
   }
 
-
-
-  createGroup(groupInput: HTMLInputElement): void {
-    const groupName = groupInput.value;
-    const currentUser = sessionStorage.getItem('currentUser');
-    const parsedUser = currentUser ? JSON.parse(currentUser) : null;
-
-    if (!parsedUser || !parsedUser.id) {
-      console.error('Failed to get current user id');
-      return; // Exit the function if the user or its ID doesn't exist
-    }
-    const newGroup: Group = {
-      id: Date.now().toString(),
-      name: groupName,
-      channels: [],
-      admins: [parsedUser.id] // Assign the current user as an admin
-    };
-    this.groups.push(newGroup);
-    localStorage.setItem('groups', JSON.stringify(this.groups));
-    groupInput.value = '';
-}
+  createGroup(): void {
+    const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?.id ?? '';
+    this.userService.createGroup(this.group.name, currentUserId)
+      .subscribe((response: any) => {
+        console.log('Group created:', response);
+        // Maybe redirect to the group or show a success message.
+      },  (error: HttpErrorResponse) => {
+        console.error('Error creating group:', error);
+      });
+  }
 
 createChannel(groupId: string, channelInput: HTMLInputElement): void {
   const channelName = channelInput.value;

@@ -30,8 +30,6 @@ export class UserService {
     return this.http.put(`${this.apiUrl}/update/${userId}/role`, { role: role });
   }
   
-
-
   // Method to fetch all users
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/login`);
@@ -41,4 +39,10 @@ export class UserService {
   getUserById(id: string): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/login/${id}`);
   }
+
+
+createGroup(name: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/group/create`, { name: name, userId: userId });
+}
+
 }

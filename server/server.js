@@ -6,6 +6,7 @@ const registerRoute = require("./routes/register");
 const loginRoute = require("./routes/login");
 const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
+const groupRoute = require("./routes/group");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/register", registerRoute);
 app.use("/login", loginRoute);
 app.use("/update", updateRoute);
 app.use("/remove", removeRoute);
+app.use("/group", groupRoute);
 
 const PORT = 3000;
 
