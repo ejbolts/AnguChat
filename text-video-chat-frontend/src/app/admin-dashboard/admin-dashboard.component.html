@@ -22,7 +22,7 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
-          <select
+          <!-- <select
             [(ngModel)]="user.newRole"
             class="form-control"
             *ngIf="isSuperAdmin()"
@@ -30,7 +30,7 @@
             <option value="user">Chat User</option>
             <option value="groupAdmin">Group Admin</option>
             <option value="superAdmin">Super Admin</option>
-          </select>
+          </select> -->
         </td>
         <td>
           <button (click)="promoteUser(user)" class="btn btn-primary mx-2">

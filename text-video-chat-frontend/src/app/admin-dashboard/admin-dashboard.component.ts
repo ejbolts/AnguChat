@@ -3,6 +3,7 @@ import { User,AdminUser } from '../models/user.model';
 import { Router } from '@angular/router';
 import { Group  } from '../models/group.model';
 import { Channel } from '../models/channel.model';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -10,15 +11,24 @@ import { Channel } from '../models/channel.model';
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
-  users: AdminUser[] = [];
   groups: Group[] = [];
-
-  constructor(private router: Router) { } 
+  users: User[] = [];
+  constructor(private router: Router, private userService: UserService) { } // Inject UserService
 
   ngOnInit(): void {
-    this.users = JSON.parse(localStorage.getItem('users') || '[]');
-    this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
-  
+    this.fetchUsers();
+    // ... Other initializations ...
+  }
+
+  fetchUsers(): void {
+    this.userService.getAllUsers().subscribe(
+      (data: User[]) => {
+        this.users = data;
+      },
+      (error) => {
+        console.error('Error fetching users:', error);
+      }
+    );
   }
   navigateToChat(): void {
     this.router.navigate(['/chat']);
