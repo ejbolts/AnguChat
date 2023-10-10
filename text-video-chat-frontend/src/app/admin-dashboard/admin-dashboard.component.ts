@@ -13,10 +13,15 @@ import { UserService } from '../services/user.service';
 export class AdminDashboardComponent implements OnInit {
   groups: Group[] = [];
   users: User[] = [];
+  currentUser?: User; 
   constructor(private router: Router, private userService: UserService) { } // Inject UserService
 
   ngOnInit(): void {
     this.fetchUsers();
+    const storedUser = sessionStorage.getItem('currentUser');
+    if (storedUser) {
+      this.currentUser = JSON.parse(storedUser);
+    }
     // ... Other initializations ...
   }
 
@@ -30,7 +35,7 @@ export class AdminDashboardComponent implements OnInit {
       }
     );
   }
-
+  
   
 
   removeUser(user: User): void {

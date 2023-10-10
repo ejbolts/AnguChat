@@ -1,5 +1,9 @@
 <div class="container mt-5">
   <h2 class="admin-title">Admin Dashboard</h2>
+  <div class="current-user">
+    Logged in as: <strong>{{ currentUser?.username }}</strong>
+  </div>
+
   <button (click)="logout()" class="btn btn-warning">Logout</button>
   <button (click)="navigateToChat()" class="btn btn-info mx-2">Chat</button>
 

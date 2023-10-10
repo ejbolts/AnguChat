@@ -17,9 +17,10 @@ export class UserService {
   }
 
   // Method to login a user
-  loginUser(credentials: { username: string, password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+  loginUser(credentials: {username: string, password: string}): Observable<{message: string, user: User}> {
+    return this.http.post<{message: string, user: User}>(`${this.apiUrl}/login`, credentials);
   }
+  
 
   deleteUser(userId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/remove/${userId}`);
@@ -29,6 +30,7 @@ export class UserService {
     return this.http.put(`${this.apiUrl}/update/${userId}/role`, { role: role });
   }
   
+
 
   // Method to fetch all users
   getAllUsers(): Observable<User[]> {

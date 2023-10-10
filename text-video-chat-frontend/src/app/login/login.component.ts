@@ -22,20 +22,26 @@ export class LoginComponent {
   errorMessage?: string;
 
   constructor(private userService: UserService, private router: Router) {}
-login(): void {
-  if (this.user.password !== undefined) {
-    this.userService.loginUser({ username: this.user.username, password: this.user.password }).subscribe(
-      response => {
-        // Do something with the response if needed
-        // E.g., save user data or token to local storage/session storage
-        this.router.navigate(['admin']); // Navigate to another route on successful login
-      },
-      error => {
-        this.errorMessage = "Invalid credentials!";
-      }
-    );
+  login(): void {
+    if (this.user.password) {
+      this.userService.loginUser({ username: this.user.username, password: this.user.password }).subscribe(
+        response => {
+          if (response.user) {  // checking the user property of the response
+            sessionStorage.setItem('currentUser', JSON.stringify(response.user));
+            this.router.navigate(['admin']);
+          } else {
+            this.errorMessage = "Unexpected error occurred!";
+          }
+        },
+        error => {
+          this.errorMessage = "Invalid credentials!";
+        }
+      );
+    }
   }
-}
+  
+  
+  
 
 
   // If you have a method to navigate to the register page:

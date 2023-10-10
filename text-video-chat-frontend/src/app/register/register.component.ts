@@ -31,6 +31,7 @@ export class RegisterComponent implements OnInit {
   register(): void {
     this.userService.registerUser(this.user)
       .subscribe(() => {
+
         this.router.navigate(['login']); // Redirect to login after successful registration
       }, error => {
         // Handle error
