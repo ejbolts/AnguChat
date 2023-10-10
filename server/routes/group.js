@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const { connect, db, close } = require("./app");
+const ObjectId = require("mongodb").ObjectId;
 
 router.post("/create", async (req, res) => {
   await connect();
-
+  console.log(req.body);
   const group = {
     name: req.body.name,
     channels: [],
-    admins: [req.body.userId], // The user who creates the group becomes the admin.
-    users: [req.body.userId], // Also add this user to the group members.
+    admins: [req.body.userId],
+    users: [req.body.userId],
   };
 
   try {
@@ -26,4 +27,39 @@ router.post("/create", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  await connect();
+
+  try {
+    const groups = await db().collection("groups").find({}).toArray();
+    res.json(groups);
+  } catch (err) {
+    console.error("Error fetching groups:", err);
+    res.status(500).json({ message: "Internal server error" });
+  } finally {
+    close();
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  await connect();
+  const groupId = new ObjectId(req.params.id);
+
+  try {
+    const deleteResult = await db()
+      .collection("groups")
+      .deleteOne({ _id: groupId });
+
+    if (deleteResult.deletedCount === 1) {
+      res.json({ message: "Group deleted successfully!" });
+    } else {
+      res.status(404).json({ message: "Group not found!" });
+    }
+  } catch (err) {
+    console.error("Error deleting group:", err);
+    res.status(500).json({ message: "Internal server error" });
+  } finally {
+    close();
+  }
+});
 module.exports = router;

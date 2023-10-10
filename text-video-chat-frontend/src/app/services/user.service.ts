@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { User } from '../models/user.model';
 import { Observable } from 'rxjs';
+import { Group } from '../models/group.model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,8 +42,16 @@ export class UserService {
   }
 
 
-createGroup(name: string, userId: string): Observable<any> {
-  return this.http.post(`${this.apiUrl}/group/create`, { name: name, userId: userId });
-}
+  createGroup(name: string, userId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/group/create`, { name: name, userId: userId });
+  }
+
+  fetchAllGroups(): Observable<Group[]> {
+    return this.http.get<Group[]>(`${this.apiUrl}/group`);
+  }
+
+  deleteGroup(groupId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/group/${groupId}`);
+  }
 
 }

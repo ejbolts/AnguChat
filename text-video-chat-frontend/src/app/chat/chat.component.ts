@@ -41,7 +41,7 @@ export class ChatComponent implements OnInit {
     }
   
     // Add userId to the group's pendingUsers
-    const group = groups.find(g => g.id === groupId);
+    const group = groups.find(g => g._id === groupId);
 if (group) {
   if (!group.pendingUsers) {
     group.pendingUsers = [];
@@ -71,7 +71,7 @@ this.currentUser = user; // Important to update the component's state.
 }
 isMemberOfGroup(groupId: string): boolean {
   // Find the group with the given groupId
-  const group = this.allGroups.find(g => g.id === groupId);
+  const group = this.allGroups.find(g => g._id === groupId);
 
   // If the group exists and the current user's ID is part of its users, return true
   const isMember = group?.users?.includes(this.currentUser?._id || '') || false;
@@ -99,7 +99,7 @@ leaveGroup(groupId: string): void {
   }
 
   // Remove userId from the group's users
-  const group = groups.find(g => g.id === groupId);
+  const group = groups.find(g => g._id === groupId);
   if (group?.users) {
       const index = group.users.indexOf(this.currentUser?._id || '');
       if (index > -1) {
@@ -146,7 +146,7 @@ joinChannel(channelId: string, groupId: string): void {
     console.error('No current user found!');
     return;
   }
-  const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
+  const group: Group | undefined = this.allGroups.find(g => g._id === groupId);
   console.log('group', group);
   console.log('channelId', channelId);
   console.log('groupId', groupId);
@@ -154,7 +154,7 @@ joinChannel(channelId: string, groupId: string): void {
     console.error('No matching group found!');
     return;
   }
-  const channel: Channel | undefined = group.channels.find(ch => ch.id === channelId);
+  const channel: Channel | undefined = group.channels.find(ch => ch._id === channelId);
   if (!channel) {
     console.error('No matching channel found!');
     return;
@@ -172,8 +172,8 @@ joinChannel(channelId: string, groupId: string): void {
 }
 
 isChannelMember(channelId: string, groupId: string): boolean {
-  const group: Group | undefined = this.allGroups.find(g => g.id === groupId);
-  const channel: Channel | undefined = group?.channels.find(ch => ch.id === channelId);
+  const group: Group | undefined = this.allGroups.find(g => g._id === groupId);
+  const channel: Channel | undefined = group?.channels.find(ch => ch._id === channelId);
   return channel?.users?.includes(this.currentUser?._id || '') || false;
 }
 // chat.component.ts

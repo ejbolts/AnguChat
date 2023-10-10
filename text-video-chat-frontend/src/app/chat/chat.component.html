@@ -26,14 +26,16 @@
         {{ group.name }}
 
         <!-- Group Membership Control -->
-        <ng-container *ngIf="isMemberOfGroup(group.id); else notMemberTemplate">
-          <button (click)="leaveGroup(group.id)" class="btn btn-danger">
+        <ng-container
+          *ngIf="isMemberOfGroup(group._id); else notMemberTemplate"
+        >
+          <button (click)="leaveGroup(group._id)" class="btn btn-danger">
             Leave
           </button>
         </ng-container>
 
         <ng-template #notMemberTemplate>
-          <ng-container *ngIf="isPending(group.id); else joinButtonTemplate">
+          <ng-container *ngIf="isPending(group._id); else joinButtonTemplate">
             <span class="badge badge-warning badge-pill text-dark"
               >Pending</span
             >
@@ -41,7 +43,7 @@
           <ng-template #joinButtonTemplate>
             <button
               class="btn btn-primary"
-              (click)="requestToJoinGroup(group.id)"
+              (click)="requestToJoinGroup(group._id)"
             >
               Join
             </button>
@@ -50,7 +52,7 @@
       </div>
 
       <!-- Channel List -->
-      <div *ngIf="isMemberOfGroup(group.id)">
+      <div *ngIf="isMemberOfGroup(group._id)">
         <div
           *ngFor="let channel of group.channels"
           class="d-flex justify-content-between align-items-center mb-2"
@@ -58,17 +60,17 @@
           {{ channel.name }}
 
           <!-- Add user to channel using a dropdown -->
-          <ng-container *ngIf="!isChannelMember(channel.id, group.id)">
+          <ng-container *ngIf="!isChannelMember(channel._id, group._id)">
             <button
               class="btn btn-sm btn-primary"
-              (click)="joinChannel(currentUser?._id || '', channel.id)"
+              (click)="joinChannel(currentUser?._id || '', channel._id)"
             >
               Join Channel
             </button>
           </ng-container>
 
           <!-- Display input field if the user is a member of the channel -->
-          <ng-container *ngIf="isChannelMember(channel.id, group.id)">
+          <ng-container *ngIf="isChannelMember(channel._id, group._id)">
             <input
               type="text"
               placeholder="Type your message here..."

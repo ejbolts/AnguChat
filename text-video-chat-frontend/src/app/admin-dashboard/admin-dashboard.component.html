@@ -64,11 +64,8 @@
   <div *ngFor="let group of groups" class="mb-4">
     <div class="bg-light p-3 rounded">
       <h3 class="d-inline-block mr-3">{{ group.name }}</h3>
-      <button
-        (click)="removeGroup(group.id)"
-        class="btn btn-danger btn-sm mx-2"
-      >
-        Remove Group
+      <button (click)="deleteGroup(group._id)" class="btn btn-danger">
+        Delete Group
       </button>
       <!-- Add Channel to Group -->
       <div class="input-group mt-3 mb-3">
@@ -80,7 +77,7 @@
         />
         <div class="input-group-append">
           <button
-            (click)="createChannel(group.id, channelInput)"
+            (click)="createChannel(group._id, channelInput)"
             class="btn btn-secondary"
           >
             Add Channel
@@ -97,7 +94,7 @@
         </select>
         <div class="input-group-append">
           <button
-            (click)="addUserToGroup(userDropdown.value, group.id)"
+            (click)="addUserToGroup(userDropdown.value, group._id)"
             class="btn btn-secondary"
           >
             Add User
@@ -109,12 +106,12 @@
         <h5 class="mb-3">Pending join requests:</h5>
         <ul class="list-group">
           <li
-            *ngFor="let user of getPendingUsersForGroup(group.id)"
+            *ngFor="let user of getPendingUsersForGroup(group._id)"
             class="list-group-item d-flex justify-content-between align-items-center"
           >
             {{ user.username }}
             <button
-              (click)="approveUserForGroup(user._id!, group.id)"
+              (click)="approveUserForGroup(user._id!, group._id)"
               class="btn btn-success btn-sm"
             >
               Approve
@@ -132,7 +129,7 @@
           {{ getUsernameById(userId) }}
 
           <button
-            (click)="removeUserFromGroup(userId, group.id)"
+            (click)="removeUserFromGroup(userId, group._id)"
             class="btn btn-danger btn-sm"
           >
             Remove
@@ -155,7 +152,7 @@
 
           <div class="input-group-append">
             <button
-              (click)="addUserToChannel(userDropdown.value, channel.id)"
+              (click)="addUserToChannel(userDropdown.value, channel._id)"
               class="btn btn-primary"
             >
               Add User
@@ -170,13 +167,13 @@
             <div *ngFor="let userId of channel.users">
               {{ getUserIdName(userId) }}
               <button
-                (click)="banUserFromChannel(userId, channel.id)"
+                (click)="banUserFromChannel(userId, channel._id)"
                 class="btn btn-warning btn-sm m-2"
               >
                 Ban
               </button>
               <button
-                (click)="removeUserFromChannel(userId, channel.id)"
+                (click)="removeUserFromChannel(userId, channel._id)"
                 class="btn btn-danger btn-sm"
               >
                 Remove User
@@ -187,7 +184,7 @@
             <div *ngFor="let bannedUserId of channel.bannedUsers">
               {{ getUserIdName(bannedUserId) }} (Banned)
               <button
-                (click)="unbanUserFromChannel(bannedUserId, channel.id)"
+                (click)="unbanUserFromChannel(bannedUserId, channel._id)"
                 class="btn btn-info btn-sm"
               >
                 Unban
@@ -197,7 +194,7 @@
         </div>
 
         <button
-          (click)="removeChannel(group.id, channel.id)"
+          (click)="removeChannel(group._id, channel._id)"
           class="btn btn-danger btn-sm"
         >
           Remove Channel

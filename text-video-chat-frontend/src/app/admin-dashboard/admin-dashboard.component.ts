@@ -5,7 +5,6 @@ import { Group  } from '../models/group.model';
 import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
 import { HttpErrorResponse } from '@angular/common/http';
-
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
@@ -18,7 +17,7 @@ export class AdminDashboardComponent implements OnInit {
   
 group: Group = {
   name: '',
-  id: '',
+  _id: '',
   channels: [],
   admins: []
 };
@@ -26,6 +25,7 @@ group: Group = {
 
   ngOnInit(): void {
     this.fetchUsers();
+    this.fetchGroups();
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       this.currentUser = JSON.parse(storedUser);
@@ -43,7 +43,16 @@ group: Group = {
       }
     );
   }
-  
+  fetchGroups(): void {
+    this.userService.fetchAllGroups().subscribe(
+      (data: Group[]) => {
+        this.groups = data;
+      },
+      (error: any) => {
+        console.error("Error fetching groups:", error);
+      }
+    );
+  }
   
 
   removeUser(user: User): void {
@@ -82,11 +91,11 @@ group: Group = {
   }
 
   createGroup(): void {
-    const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?.id ?? '';
+    const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
     this.userService.createGroup(this.group.name, currentUserId)
       .subscribe((response: any) => {
         console.log('Group created:', response);
-        // Maybe redirect to the group or show a success message.
+        this.fetchGroups();
       },  (error: HttpErrorResponse) => {
         console.error('Error creating group:', error);
       });
@@ -94,30 +103,37 @@ group: Group = {
 
 createChannel(groupId: string, channelInput: HTMLInputElement): void {
   const channelName = channelInput.value;
-    const groupIndex = this.groups.findIndex(group => group.id === groupId);
+    const groupIndex = this.groups.findIndex(group => group._id === groupId);
     if (groupIndex !== -1) {
       const newChannel: Channel = {
-        id: Date.now().toString(),
+        _id: Date.now().toString(),
         name: channelName
       };
       this.groups[groupIndex].channels.push(newChannel);
-      localStorage.setItem('groups', JSON.stringify(this.groups));
+
     } // Clear input field
     channelInput.value = '';
   }
 
-  removeGroup(groupId: string): void {
-    const index = this.groups.findIndex(group => group.id === groupId);
-    if (index > -1) {
-      this.groups.splice(index, 1);
-      localStorage.setItem('groups', JSON.stringify(this.groups));
-    }
+  deleteGroup(groupId: string): void {
+    
+
+    this.userService.deleteGroup(groupId).subscribe(
+      () => {
+        console.log("Group deleted successfully");
+        // Reload the groups or remove the deleted group from your local data
+        this.fetchGroups();
+      },
+      (error: any) => {
+        console.error("Error deleting group:", error);
+      }
+    );
   }
 
   removeChannel(groupId: string, channelId: string): void {
-    const groupIndex = this.groups.findIndex(group => group.id === groupId);
+    const groupIndex = this.groups.findIndex(group => group._id === groupId);
     if (groupIndex !== -1) {
-      const channelIndex = this.groups[groupIndex].channels.findIndex(channel => channel.id === channelId);
+      const channelIndex = this.groups[groupIndex].channels.findIndex(channel => channel._id === channelId);
       if (channelIndex !== -1) {
         this.groups[groupIndex].channels.splice(channelIndex, 1);
         localStorage.setItem('groups', JSON.stringify(this.groups));
@@ -126,7 +142,7 @@ createChannel(groupId: string, channelInput: HTMLInputElement): void {
   }
 
   addUserToGroup(userId: string, groupId: string): void {
-    const group = this.groups.find(g => g.id === groupId);
+    const group = this.groups.find(g => g._id === groupId);
     if (group) {
         if (!group.users) {
             group.users = [];
@@ -139,7 +155,7 @@ createChannel(groupId: string, channelInput: HTMLInputElement): void {
 }
 
 removeUserFromGroup(userId: string, groupId: string): void {
-    const group = this.groups.find(g => g.id === groupId);
+    const group = this.groups.find(g => g._id === groupId);
     if (group && group.users) {
         const index = group.users.indexOf(userId);
         // If the user is found in the group, remove them.
@@ -158,7 +174,7 @@ removeUserFromGroup(userId: string, groupId: string): void {
 joinChannel(userId: string, channelId: string): void {
   let channel: Channel | undefined;
   this.groups.forEach(group => {
-    const foundChannel = group.channels.find(ch => ch.id === channelId);
+    const foundChannel = group.channels.find(ch => ch._id === channelId);
     if (foundChannel) channel = foundChannel;
   });
 
@@ -215,16 +231,16 @@ removeUserFromChannel(userId: string, channelId: string): void {
 findChannelById(channelId: string): Channel | undefined {
   let foundChannel: Channel | undefined;
   this.groups.forEach(group => {
-      const channel = group.channels.find(ch => ch.id === channelId);
+      const channel = group.channels.find(ch => ch._id === channelId);
       if (channel) foundChannel = channel;
   });
   return foundChannel;
 }
 
 unbanUserFromChannel(userId: string, channelId: string): void {
-  const group = this.groups.find(g => g.channels.some(c => c.id === channelId));
+  const group = this.groups.find(g => g.channels.some(c => c._id === channelId));
   if (group) {
-    const channel = group.channels.find(c => c.id === channelId);
+    const channel = group.channels.find(c => c._id === channelId);
     if (channel) {
       // Remove the user from the list of banned users
       if (channel.bannedUsers) {
@@ -257,9 +273,9 @@ getUserById(userId: string): AdminUser | undefined {
 }
 
 isUserBannedFromChannel(userId: string, channelId: string): boolean {
-  const group = this.groups.find(g => g.channels.some(c => c.id === channelId));
+  const group = this.groups.find(g => g.channels.some(c => c._id === channelId));
   if (group) {
-    const channel = group.channels.find(c => c.id === channelId);
+    const channel = group.channels.find(c => c._id === channelId);
     if (channel && channel.bannedUsers) {
       return channel.bannedUsers.includes(userId);
     }
@@ -269,7 +285,7 @@ isUserBannedFromChannel(userId: string, channelId: string): boolean {
 getPendingUsersForGroup(groupId: string): User[] {
   let pendingUsers: User[] = [];
   this.groups.forEach(group => {
-    if (group.id === groupId && group.pendingUsers) {
+    if (group._id === groupId && group.pendingUsers) {
       group.pendingUsers.forEach(userId => {
         const user = this.users.find(u => u._id === userId);
         if (user) {
@@ -293,7 +309,7 @@ approveUserForGroup(userId: string, groupId: string): void {
   const groups: Group[] = JSON.parse(localStorage.getItem('groups') || '[]');
   
   const user = users.find(u => u._id === userId);
-  const group = groups.find(g => g.id === groupId);
+  const group = groups.find(g => g._id === groupId);
 
   
   // Move user from pendingGroups to groups
