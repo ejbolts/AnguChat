@@ -1,8 +1,5 @@
 <div class="container mt-5">
   <h2 class="admin-title">Admin Dashboard</h2>
-  <div class="current-user">
-    Logged in as: <strong>{{ getCurrentUsername() }}</strong>
-  </div>
   <button (click)="logout()" class="btn btn-warning">Logout</button>
   <button (click)="navigateToChat()" class="btn btn-info mx-2">Chat</button>
 
@@ -22,15 +19,11 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
-          <!-- <select
-            [(ngModel)]="user.newRole"
-            class="form-control"
-            *ngIf="isSuperAdmin()"
-          >
+          <select [(ngModel)]="user.role" class="form-control">
             <option value="user">Chat User</option>
             <option value="groupAdmin">Group Admin</option>
             <option value="superAdmin">Super Admin</option>
-          </select> -->
+          </select>
         </td>
         <td>
           <button (click)="promoteUser(user)" class="btn btn-primary mx-2">

@@ -25,6 +25,10 @@ export class UserService {
     return this.http.delete(`${this.apiUrl}/remove/${userId}`);
   }
 
+  updateUserRole(userId: string, role: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update/${userId}/role`, { role: role });
+  }
+  
 
   // Method to fetch all users
   getAllUsers(): Observable<User[]> {

@@ -3,16 +3,26 @@ const router = express.Router();
 const { connect, db, close } = require("./app");
 const ObjectId = require("mongodb").ObjectId;
 
-router.put("/:id", async (req, res) => {
+router.put("/:id/role", async (req, res) => {
   await connect();
-  const productId = new ObjectId(req.params.id);
-  const updatedProduct = req.body;
+  const userId = new ObjectId(req.params.id);
+  const { role } = req.body;
 
-  await db()
-    .collection("products")
-    .updateOne({ _id: productId }, { $set: updatedProduct });
-  res.json({ message: "Product updated!" });
-  close();
+  if (!role) {
+    return res.status(400).json({ message: "Role is required." });
+  }
+
+  try {
+    await db()
+      .collection("users")
+      .updateOne({ _id: userId }, { $set: { role: role } });
+    res.json({ message: "User role updated!" });
+  } catch (err) {
+    console.error("Error updating user role:", err);
+    res.status(500).json({ message: "Error updating user role." });
+  } finally {
+    close();
+  }
 });
 
 module.exports = router;

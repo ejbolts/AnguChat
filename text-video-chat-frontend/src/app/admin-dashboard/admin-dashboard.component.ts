@@ -31,6 +31,8 @@ export class AdminDashboardComponent implements OnInit {
     );
   }
 
+  
+
   removeUser(user: User): void {
     this.userService.deleteUser(user._id!).subscribe(
       response => {
@@ -48,12 +50,17 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   promoteUser(user: AdminUser): void {
-    const index = this.users.findIndex(u => u._id === user._id);
-    if (index > -1 && user.newRole) {
-      this.users[index].role = user.newRole;
-      localStorage.setItem('users', JSON.stringify(this.users));
+    if (user.role) {
+      this.userService.updateUserRole(user._id!, user.role)
+        .subscribe(() => {
+          console.log('User role updated successfully');
+          this.fetchUsers(); // Refresh the list of users after the update
+        }, error => {
+          console.error('Error updating user role:', error);
+        });
     }
   }
+  
   
 
   logout(): void {
