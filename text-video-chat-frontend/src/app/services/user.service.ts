@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { User } from '../models/user.model';
 import { Observable } from 'rxjs';
 import { Group } from '../models/group.model';
+import { Channel } from '../models/channel.model';
 
 @Injectable({
   providedIn: 'root'
@@ -49,9 +50,24 @@ export class UserService {
   fetchAllGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.apiUrl}/group`);
   }
+  
 
   deleteGroup(groupId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/group/${groupId}`);
   }
+
+  createChannel(groupId: string, channelName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/channel`, { groupId: groupId, name: channelName });
+  }
+  
+deleteChannel(channelId: string): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/channel/${channelId}`);
+}
+getChannelsByGroupId(groupId: string): Observable<Channel[]> {
+  return this.http.get<Channel[]>(`${this.apiUrl}/group/${groupId}/channels`);
+}
+
+
+
 
 }

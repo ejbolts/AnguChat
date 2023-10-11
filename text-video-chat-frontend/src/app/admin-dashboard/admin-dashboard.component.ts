@@ -13,8 +13,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class AdminDashboardComponent implements OnInit {
   groups: Group[] = [];
   users: User[] = [];
+  groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
   currentUser?: User; 
-  
 group: Group = {
   name: '',
   _id: '',
@@ -30,9 +30,12 @@ group: Group = {
     if (storedUser) {
       this.currentUser = JSON.parse(storedUser);
     }
-    // ... Other initializations ...
+    
   }
-
+  debugLog(item: any): void {
+    console.log(item);
+  }
+  
   fetchUsers(): void {
     this.userService.getAllUsers().subscribe(
       (data: User[]) => {
@@ -47,12 +50,33 @@ group: Group = {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
         this.groups = data;
+  
+        // For each group fetched, fetch its channels
+        this.groups.forEach(group => {
+          this.fetchChannelsPerGroup(group._id);
+        });
+  
       },
       (error: any) => {
         console.error("Error fetching groups:", error);
       }
     );
   }
+  
+
+  fetchChannelsPerGroup(groupId: string): void {
+    console.log(`Fetching channels for group ${groupId}`); //Fetching channels for group 6525c1e721a00f6bd9e5d901
+
+    this.userService.getChannelsByGroupId(groupId).subscribe(
+      (channels: Channel[]) => {
+        this.groupChannels[groupId] = channels;
+      },
+      error => {
+        console.error("Error fetching channels:", error); // up still getting this error
+      }
+    );
+  }
+  
   
 
   removeUser(user: User): void {
@@ -101,19 +125,7 @@ group: Group = {
       });
   }
 
-createChannel(groupId: string, channelInput: HTMLInputElement): void {
-  const channelName = channelInput.value;
-    const groupIndex = this.groups.findIndex(group => group._id === groupId);
-    if (groupIndex !== -1) {
-      const newChannel: Channel = {
-        _id: Date.now().toString(),
-        name: channelName
-      };
-      this.groups[groupIndex].channels.push(newChannel);
 
-    } // Clear input field
-    channelInput.value = '';
-  }
 
   deleteGroup(groupId: string): void {
     
@@ -129,17 +141,37 @@ createChannel(groupId: string, channelInput: HTMLInputElement): void {
       }
     );
   }
+  createNewChannel(groupId: string, channelName: string): void {
+    console.log(`Creating channel ${channelName} in group ${groupId}`);
+    // e.g. Creating channel ph in group 6525bdcd24fbf2fe0ad539b1
+    this.userService.createChannel(groupId, channelName).subscribe(
+        response => {
+            console.log("Channel created:", response);
+            // Reload the groups or add the new channel to your local data
+            this.fetchGroups();
+        },
+        (error: any) => {
+            console.error("Error creating channel:", error);
+        }
+    );
+}
 
-  removeChannel(groupId: string, channelId: string): void {
-    const groupIndex = this.groups.findIndex(group => group._id === groupId);
-    if (groupIndex !== -1) {
-      const channelIndex = this.groups[groupIndex].channels.findIndex(channel => channel._id === channelId);
-      if (channelIndex !== -1) {
-        this.groups[groupIndex].channels.splice(channelIndex, 1);
-        localStorage.setItem('groups', JSON.stringify(this.groups));
+
+removeChannel(channelId: string): void {
+  console.log(`Deleting channel ${channelId}`);
+  this.userService.deleteChannel(channelId).subscribe(
+      () => {
+          console.log("Channel deleted successfully");
+          // Reload the groups or remove the deleted channel from your local data
+          this.fetchGroups();
+      },
+      (error: any) => {
+          console.error("Error deleting channel:", error);
       }
-    }
-  }
+  );
+}
+
+
 
   addUserToGroup(userId: string, groupId: string): void {
     const group = this.groups.find(g => g._id === groupId);
