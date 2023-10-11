@@ -147,6 +147,18 @@
       >
         <h4>{{ channel.name }}</h4>
 
+        <h5>list of users in channel</h5>
+        <!-- Display list of users in the channel (need delete btn)-->
+        <div *ngFor="let userId of channel.users">
+          {{ getUsernameFromId(userId) }}
+          <button
+            class="btn btn-danger btn-sm ml-2"
+            (click)="removeUserFromChannel(channel._id, userId, group._id)"
+          >
+            Remove
+          </button>
+        </div>
+
         <button
           (click)="removeChannel(channel._id)"
           class="btn btn-danger btn-sm"

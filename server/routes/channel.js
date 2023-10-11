@@ -65,6 +65,20 @@ router.post("/:channelId/addUser", async (req, res) => {
   close();
 });
 
+router.delete("/:channelId/removeUser", async (req, res) => {
+  await connect();
+  const channelId = new ObjectId(req.params.channelId);
+  const { userId } = req.body;
+
+  // Remove the user from the channel's users array
+  await db()
+    .collection("channels")
+    .updateOne({ _id: channelId }, { $pull: { users: userId } });
+
+  res.json({ message: "User removed from channel!" });
+  close();
+});
+
 router.get("/", async (req, res) => {
   await connect();
 

@@ -54,6 +54,7 @@ group: Group = {
         // For each group fetched, fetch its channels
         this.groups.forEach(group => {
           this.fetchChannelsPerGroup(group._id);
+          
         });
   
       },
@@ -124,7 +125,11 @@ group: Group = {
         console.error('Error creating group:', error);
       });
   }
-
+  getUsernameFromId(userId: string): string {
+    const user = this.users.find(user => user._id === userId);
+    return user ? user.username : 'Unknown User';
+  }
+  
 
 
   deleteGroup(groupId: string): void {
@@ -183,13 +188,27 @@ addUserToChannel(channelId: string, groupId: string, userId: string): void {
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
       console.log('User added to channel successfully');
-      // Update local data or fetch fresh data, if needed
+      this.fetchChannelsPerGroup(groupId);
     },
     (error: any) => {
       console.error('Error adding user to channel:', error);
     }
   );
 }
+
+removeUserFromChannel(channelId: string, userId: string, groupId: string): void {
+  this.userService.removeUserFromChannel(channelId, userId).subscribe(
+    () => {
+      console.log("User removed from channel successfully");
+      // Refetch channels for the group to reflect the change
+      this.fetchChannelsPerGroup(groupId);
+    },
+    error => {
+      console.error("Error removing user from channel:", error);
+    }
+  );
+}
+
 
 
 
@@ -241,23 +260,13 @@ banUserFromChannel(userId: string, channelId: string): void {
     if (!channel.bannedUsers) channel.bannedUsers = [];
     if (!channel.bannedUsers.includes(userId)) {
       channel.bannedUsers.push(userId);
-      this.removeUserFromChannel(userId, channelId); // Ban and remove from the channel's users list
+     // this.removeUserFromChannel(userId, channelId); // Ban and remove from the channel's users list
       localStorage.setItem('groups', JSON.stringify(this.groups));
     }
   }
 }
 
 
-removeUserFromChannel(userId: string, channelId: string): void {
-  const channel = this.findChannelById(channelId);
-  if (channel && channel.users) {
-      const index = channel.users.indexOf(userId);
-      if (index > -1) {
-          channel.users.splice(index, 1);
-          localStorage.setItem('groups', JSON.stringify(this.groups));
-      }
-  }
-}
 
 // Utility function to fetch channel by ID
 findChannelById(channelId: string): Channel | undefined {
