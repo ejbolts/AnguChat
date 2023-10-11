@@ -3,6 +3,7 @@ import { Group } from '../models/group.model';
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
 import { Channel } from '../models/channel.model';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-chat',
@@ -15,8 +16,8 @@ export class ChatComponent implements OnInit {
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
-  constructor(private router: Router) { } // Inject the Router
-  // Update your ngOnInit method:
+  constructor(private router: Router, private userService: UserService) { } // Inject UserService
+
   
   ngOnInit(): void {
     this.allGroups = JSON.parse(localStorage.getItem('groups') || '[]');
@@ -28,37 +29,20 @@ export class ChatComponent implements OnInit {
   }
 
  
-  requestToJoinGroup(groupId: string): void {
-    const user: User = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-    const groups: Group[] = JSON.parse(localStorage.getItem('groups') || '[]');
-    
-    // Add groupId to the user's pendingGroups
-    if (!user.pendingGroups) {
-      user.pendingGroups = [];
-    }
-    if (!user.pendingGroups.includes(groupId)) {
-      user.pendingGroups.push(groupId);
-    }
+  joinGroup(group: Group): void {
+    const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
   
-    // Add userId to the group's pendingUsers
-    const group = groups.find(g => g._id === groupId);
-if (group) {
-  if (!group.pendingUsers) {
-    group.pendingUsers = [];
+    this.userService.joinGroup(group._id, currentUserId).subscribe(
+      response => {
+        console.log('Join request sent:', response);
+        // Optionally, update your UI or provide feedback to the user here
+      },
+      error => {
+        console.error('Error joining group:', error);
+      }
+    );
   }
-  if (!group.pendingUsers.includes(user._id || '')) {
-    group.pendingUsers.push(user._id || '');
-  }
-}
-
-    
-    // Update the user and groups in your storage
-    sessionStorage.setItem('currentUser', JSON.stringify(user));
-this.currentUser = user; // Important to update the component's state.
-
-    localStorage.setItem('groups', JSON.stringify(groups));
-    alert('Join request sent! Waiting for admin approval.');
-  }
+  
   
   isPending(groupId: string): boolean {
     const pending = this.currentUser?.pendingGroups?.includes(groupId) || false;
@@ -121,23 +105,20 @@ leaveGroup(groupId: string): void {
   alert('You have left the group.');
 }
 
-deleteAccount(): void {
-  if (!this.currentUser) {
-    console.error('No current user found!');
-    return;
-  }
-  
-  // Confirmation before deleting
-  const confirmDelete = confirm('Are you sure you want to delete your account? This action cannot be undone.');
-  if (!confirmDelete) return;
-
-  // Filter out the user from the users array in localStorage
-  const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-  const updatedUsers = users.filter(user => user._id !== this.currentUser!._id);
-  localStorage.setItem('users', JSON.stringify(updatedUsers));
-
-  // Log the user out and redirect (if needed)
+deleteAccount(user: User): void {
+    // Confirmation before deleting
+    const confirmDelete = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+    if (!confirmDelete) return;
+  this.userService.deleteUser(user._id!).subscribe(
+    response => {
+      console.log("User removed successfully:", response);
+    },
+    error => {
+      console.error('Error removing user:', error);
+    }
+  );
   this.logout();
+
 }
 
 joinChannel(channelId: string, groupId: string): void {

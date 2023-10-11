@@ -28,7 +28,7 @@ export class LoginComponent {
         response => {
           if (response.user) {  // checking the user property of the response
             sessionStorage.setItem('currentUser', JSON.stringify(response.user));
-            this.router.navigate(['admin']);
+            this.router.navigate(['chat']);
           } else {
             this.errorMessage = "Unexpected error occurred!";
           }

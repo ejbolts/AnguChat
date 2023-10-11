@@ -32,9 +32,7 @@ group: Group = {
     }
     
   }
-  debugLog(item: any): void {
-    console.log(item);
-  }
+ 
   
   fetchUsers(): void {
     this.userService.getAllUsers().subscribe(
@@ -339,51 +337,16 @@ getPendingUsersForGroup(groupId: string): User[] {
 }
 
 approveUserForGroup(userId: string, groupId: string): void {
-  
-
-  if (!userId || !groupId) {
-    return;
-  }
-
-  // Fetch the user and the group from your storage
-  const users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-  const groups: Group[] = JSON.parse(localStorage.getItem('groups') || '[]');
-  
-  const user = users.find(u => u._id === userId);
-  const group = groups.find(g => g._id === groupId);
-
-  
-  // Move user from pendingGroups to groups
-  if (user && user.pendingGroups) {
-    const userIndex = user.pendingGroups.indexOf(groupId);
-    if (userIndex > -1) {
-      user.pendingGroups.splice(userIndex, 1);
-      if (!user.groups) {
-        user.groups = [];
-      }
-      user.groups.push(groupId);
+  this.userService.approveUserForGroup(groupId, userId).subscribe(
+    response => {
+      console.log('User approved:', response);
+      // Refetch group data to update the UI
+      this.fetchGroups();
+    },
+    error => {
+      console.error('Error approving user:', error);
     }
-  }
-
-  // Move userId from group's pendingUsers to users
-  if (group) {
-    if (!group.users) {
-      group.users = [];
-    }
-    const groupIndex = group.pendingUsers ? group.pendingUsers.indexOf(userId) : -1;
-    if (groupIndex > -1) {
-      group.pendingUsers?.splice(groupIndex, 1);
-      group.users.push(userId);
-    }
-  }
-
-  // Update users and groups in your storage
-  localStorage.setItem('users', JSON.stringify(users));
-  localStorage.setItem('groups', JSON.stringify(groups));
-  alert(`${user?.username} approved for ${group?.name}`);
-  // are setting the users and groups in the component recall them again to update the UI
-  this.users = JSON.parse(localStorage.getItem('users') || '[]');
-this.groups = JSON.parse(localStorage.getItem('groups') || '[]');
+  );
 }
 
 isSuperAdmin(): boolean {

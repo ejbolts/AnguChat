@@ -160,4 +160,80 @@ router.get("/:groupId/channels", async (req, res) => {
   close();
 });
 
+router.post("/:groupId/join", async (req, res) => {
+  await connect();
+
+  const groupId = new ObjectId(req.params.groupId);
+  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
+
+  try {
+    const group = await db().collection("groups").findOne({ _id: groupId });
+
+    if (!group) {
+      return res.status(404).json({ message: "Group not found." });
+    }
+
+    // Check if user is already a member or has already requested to join
+    if (group.users?.includes(userId) || group.pendingUsers?.includes(userId)) {
+      return res.status(400).json({
+        message: "User is already a member or has already requested to join.",
+      });
+    }
+
+    // Add the user to the pendingUsers array
+    await db()
+      .collection("groups")
+      .updateOne(
+        { _id: groupId },
+        { $addToSet: { pendingUsers: userId } } // $addToSet ensures no duplicates
+      );
+
+    res.json({ message: "Join request sent!" });
+  } catch (err) {
+    console.error("Error processing join request:", err);
+    return res.status(500).json({ message: "Internal server error." });
+  } finally {
+    close();
+  }
+});
+
+router.post("/:groupId/approveUser", async (req, res) => {
+  await connect();
+
+  const groupId = new ObjectId(req.params.groupId);
+  const userId = req.body.userId;
+
+  try {
+    const group = await db().collection("groups").findOne({ _id: groupId });
+
+    if (!group) {
+      return res.status(404).json({ message: "Group not found." });
+    }
+
+    if (!group.pendingUsers?.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "User has not requested to join this group." });
+    }
+
+    // Move the user from pendingUsers to users
+    await db()
+      .collection("groups")
+      .updateOne(
+        { _id: groupId },
+        {
+          $addToSet: { users: userId }, // Add user to users array
+          $pull: { pendingUsers: userId }, // Remove user from pendingUsers array
+        }
+      );
+
+    res.json({ message: "User approved and added to group!" });
+  } catch (err) {
+    console.error("Error processing approval:", err);
+    return res.status(500).json({ message: "Internal server error." });
+  } finally {
+    close();
+  }
+});
+
 module.exports = router;

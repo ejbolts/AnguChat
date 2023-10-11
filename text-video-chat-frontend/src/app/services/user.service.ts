@@ -82,6 +82,14 @@ removeUserFromChannel(channelId: string, userId: string): Observable<any> {
   return this.http.delete(`${this.apiUrl}/channel/${channelId}/removeUser`, { body: { userId: userId } });
 }
 
+joinGroup(groupId: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/group/${groupId}/join`, { userId: userId });
+}
+
+approveUserForGroup(groupId: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/group/${groupId}/approveUser`, { userId: userId });
+}
+
 
 
 }
