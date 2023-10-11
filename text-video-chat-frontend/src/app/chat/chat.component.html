@@ -66,13 +66,24 @@
             </button>
           </ng-container>
 
-          <!-- Display input field if the user is a member of the channel -->
+          <!-- Display chat area if the user is a member of the channel -->
           <ng-container *ngIf="isChannelMember(channel._id, group._id)">
-            <input
-              type="text"
-              placeholder="Type your message here..."
-              class="form-control mx-2"
-            />
+            <div class="container">
+              <div class="chat-messages">
+                <ul>
+                  <li *ngFor="let msg of messages">{{ msg }}</li>
+                </ul>
+              </div>
+
+              <div class="chat-input">
+                <input
+                  [(ngModel)]="message"
+                  type="text"
+                  placeholder="Type your message..."
+                />
+                <button (click)="sendMessage()">Send</button>
+              </div>
+            </div>
           </ng-container>
         </div>
       </div>

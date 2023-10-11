@@ -4,19 +4,21 @@ import { User } from '../models/user.model';
 import { Router } from '@angular/router';
 import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
+import { ChatService } from '../services/chat.service' ; 
 
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-// chat.component.ts
 
 export class ChatComponent implements OnInit {
+  public messages: string[] = [];
+  public message: string = '';
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
-  constructor(private router: Router, private userService: UserService) { } // Inject UserService
+  constructor(private router: Router, private userService: UserService, private chatService: ChatService) { } // Inject UserService
 
   
   ngOnInit(): void {
@@ -26,8 +28,14 @@ export class ChatComponent implements OnInit {
         this.currentUser = JSON.parse(storedUser);
     }
     this.users = JSON.parse(localStorage.getItem('users') || '[]'); // Get all users from localStorage
+    this.chatService.getMessages().subscribe((msg: string) => {
+      this.messages.push(msg);
+    });
   }
-
+  sendMessage() {
+    this.chatService.sendMessage(this.message);
+    this.message = ''; // Clear the input after sending
+  }
  
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
