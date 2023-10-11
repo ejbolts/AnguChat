@@ -125,6 +125,7 @@
 
       <!-- List Users in Group with Remove Option -->
       <ul class="list-group">
+        <h5 class="mb-3">Users in group:</h5>
         <li
           *ngFor="let userId of group.users"
           class="list-group-item d-flex justify-content-between align-items-center"
@@ -140,7 +141,10 @@
         </li>
       </ul>
 
-      <div *ngFor="let channel of groupChannels[group._id]">
+      <div
+        *ngFor="let channel of groupChannels[group._id]"
+        style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
+      >
         <h4>{{ channel.name }}</h4>
 
         <button
@@ -149,6 +153,29 @@
         >
           Remove Channel
         </button>
+        <!-- Add User to channel only if in group already -->
+
+        <div class="input-group mt-3 mb-3">
+          <select #userSelect class="form-control">
+            <!-- Filter the list of users based on group's users array -->
+            <ng-container *ngFor="let user of users">
+              <option
+                *ngIf="
+                  group && group.users && group.users.includes(user._id || '')
+                "
+                [value]="user._id || undefined"
+              >
+                {{ user.username }}
+              </option>
+            </ng-container>
+          </select>
+          <button
+            (click)="addUserToChannel(channel._id, group._id, userSelect.value)"
+            class="btn btn-primary"
+          >
+            Add User to Channel
+          </button>
+        </div>
       </div>
     </div>
   </div>

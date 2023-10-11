@@ -179,6 +179,19 @@ addUserToGroup(groupId: string, userId: string): void {
   );
 }
 
+addUserToChannel(channelId: string, groupId: string, userId: string): void {
+  this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
+    () => {
+      console.log('User added to channel successfully');
+      // Update local data or fetch fresh data, if needed
+    },
+    (error: any) => {
+      console.error('Error adding user to channel:', error);
+    }
+  );
+}
+
+
 
 removeUserFromGroup(groupId: string, userId: string): void {
   this.userService.removeUserFromGroup(groupId, userId).subscribe(
@@ -221,15 +234,6 @@ reportUser(userId: string): void {
   }
 }
 
-
-addUserToChannel(userId: string, channelId: string): void {
-  const channel = this.findChannelById(channelId);
-  if (channel) {
-      if (!channel.users) channel.users = [];
-      if (!channel.users.includes(userId)) channel.users.push(userId);
-      localStorage.setItem('groups', JSON.stringify(this.groups));
-  }
-}
 
 banUserFromChannel(userId: string, channelId: string): void {
   const channel = this.findChannelById(channelId);

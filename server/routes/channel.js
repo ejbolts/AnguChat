@@ -5,7 +5,7 @@ const ObjectId = require("mongodb").ObjectId;
 
 router.post("/", async (req, res) => {
   await connect();
-  const { groupId, name } = req.body; // Get the group's ID and channel's name from the request
+  const { groupId, name, userId } = req.body;
 
   const newChannel = {
     _id: new ObjectId(),
@@ -19,11 +19,49 @@ router.post("/", async (req, res) => {
   await db()
     .collection("groups")
     .updateOne(
-      { _id: new ObjectId(groupId) }, // Use ObjectId here
+      { _id: new ObjectId(groupId) },
       { $push: { channels: newChannel._id.toString() } }
     );
 
   res.json({ message: "Channel created!" });
+  close();
+});
+
+router.post("/:channelId/addUser", async (req, res) => {
+  await connect();
+  const channelId = new ObjectId(req.params.channelId);
+  const { groupId, userId } = req.body;
+
+  const group = await db()
+    .collection("groups")
+    .findOne({ _id: new ObjectId(groupId) });
+
+  if (!group) {
+    return res.status(404).json({
+      message: "Group not found.",
+    });
+  }
+
+  if (!group.channels.includes(channelId.toString())) {
+    return res.status(400).json({
+      message: "Channel not part of the specified group.",
+    });
+  }
+
+  if (!group.users.includes(userId)) {
+    return res.status(400).json({
+      message: "User is not part of the specified group.",
+    });
+  }
+
+  await db()
+    .collection("channels")
+    .updateOne(
+      { _id: channelId },
+      { $addToSet: { users: userId } } // $addToSet to ensure no duplicates
+    );
+
+  res.json({ message: "User added to channel!" });
   close();
 });
 

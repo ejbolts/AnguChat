@@ -74,9 +74,9 @@ removeUserFromGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/removeUser`, { userId });
 }
 
-
-
-
+addUserToChannel(channelId: string, groupId: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/channel/${channelId}/addUser`, { groupId, userId });
+}
 
 
 }
