@@ -5,7 +5,6 @@ const ObjectId = require("mongodb").ObjectId;
 
 router.post("/create", async (req, res) => {
   await connect();
-  console.log(req.body);
   const group = {
     name: req.body.name,
     channels: [],
@@ -27,6 +26,46 @@ router.post("/create", async (req, res) => {
   }
 });
 
+// Add user to group
+router.post("/:groupId/addUser", async (req, res) => {
+  await connect();
+
+  const groupId = new ObjectId(req.params.groupId);
+  const { userId } = req.body;
+
+  try {
+    await db()
+      .collection("groups")
+      .updateOne({ _id: groupId }, { $addToSet: { users: userId } });
+    res.json({ message: "User added to group!" });
+  } catch (err) {
+    console.error("Error adding user to group:", err);
+    res.status(500).json({ message: "Error adding user to group." });
+  } finally {
+    close();
+  }
+});
+
+// Remove user from group
+router.post("/:groupId/removeUser", async (req, res) => {
+  await connect();
+
+  const groupId = new ObjectId(req.params.groupId);
+  const { userId } = req.body;
+
+  try {
+    await db()
+      .collection("groups")
+      .updateOne({ _id: groupId }, { $pull: { users: userId } });
+    res.json({ message: "User removed from group!" });
+  } catch (err) {
+    console.error("Error removing user from group:", err);
+    res.status(500).json({ message: "Error removing user from group." });
+  } finally {
+    close();
+  }
+});
+
 router.get("/", async (req, res) => {
   await connect();
 
@@ -41,22 +80,30 @@ router.get("/", async (req, res) => {
   }
 });
 
-// In your route handler for deleting a channel
-
 router.delete("/:id", async (req, res) => {
   await connect();
 
-  const channelId = new ObjectId(req.params.id);
+  const groupId = new ObjectId(req.params.id);
 
-  // Remove from channels collection
-  await db().collection("channels").deleteOne({ _id: channelId });
+  // Fetch the group to get its channels
+  const group = await db().collection("groups").findOne({ _id: groupId });
 
-  // Remove from all group's channels array
+  if (!group) {
+    return res.status(404).json({ message: "Group not found" });
+  }
+
+  // Remove the group from groups collection
+  await db().collection("groups").deleteOne({ _id: groupId });
+
+  // Convert the channels' IDs from strings to ObjectId for the deleteMany query
+  const channelObjectIds = group.channels.map((id) => new ObjectId(id));
+
+  // Remove all channels associated with the group from channels collection
   await db()
-    .collection("groups")
-    .updateMany({}, { $pull: { channels: { _id: channelId } } });
+    .collection("channels")
+    .deleteMany({ _id: { $in: channelObjectIds } });
 
-  res.json({ message: "Channel deleted successfully!" });
+  res.json({ message: "Group and its channels deleted successfully!" });
   close();
 });
 

@@ -128,8 +128,6 @@ group: Group = {
 
 
   deleteGroup(groupId: string): void {
-    
-
     this.userService.deleteGroup(groupId).subscribe(
       () => {
         console.log("Group deleted successfully");
@@ -142,12 +140,9 @@ group: Group = {
     );
   }
   createNewChannel(groupId: string, channelName: string): void {
-    console.log(`Creating channel ${channelName} in group ${groupId}`);
-    // e.g. Creating channel ph in group 6525bdcd24fbf2fe0ad539b1
     this.userService.createChannel(groupId, channelName).subscribe(
         response => {
             console.log("Channel created:", response);
-            // Reload the groups or add the new channel to your local data
             this.fetchGroups();
         },
         (error: any) => {
@@ -162,7 +157,6 @@ removeChannel(channelId: string): void {
   this.userService.deleteChannel(channelId).subscribe(
       () => {
           console.log("Channel deleted successfully");
-          // Reload the groups or remove the deleted channel from your local data
           this.fetchGroups();
       },
       (error: any) => {
@@ -173,30 +167,32 @@ removeChannel(channelId: string): void {
 
 
 
-  addUserToGroup(userId: string, groupId: string): void {
-    const group = this.groups.find(g => g._id === groupId);
-    if (group) {
-        if (!group.users) {
-            group.users = [];
-        }
-        if (!group.users.includes(userId)) {
-            group.users.push(userId);
-            localStorage.setItem('groups', JSON.stringify(this.groups));
-        }
+addUserToGroup(groupId: string, userId: string): void {
+  this.userService.addUserToGroup(groupId, userId).subscribe(
+    () => {
+      console.log('User added to group successfully');
+      this.fetchGroups();  // to reflect changes
+    },
+    (error: any) => {
+      console.error('Error adding user to group:', error);
     }
+  );
 }
 
-removeUserFromGroup(userId: string, groupId: string): void {
-    const group = this.groups.find(g => g._id === groupId);
-    if (group && group.users) {
-        const index = group.users.indexOf(userId);
-        // If the user is found in the group, remove them.
-        if (index > -1) {
-            group.users.splice(index, 1);
-            localStorage.setItem('groups', JSON.stringify(this.groups));
-        }
+
+removeUserFromGroup(groupId: string, userId: string): void {
+  this.userService.removeUserFromGroup(groupId, userId).subscribe(
+    () => {
+      console.log('User removed from group successfully');
+      this.fetchGroups();  // to refresh the group data and reflect changes
+    },
+    (error: any) => {
+      console.error('Error removing user from group:', error);
     }
-}getUsernameById(userId: string): string {
+  );
+}
+
+getUsernameById(userId: string): string {
   const user = this.users.find(u => u._id === userId);
   return user ? user.username : 'Unknown User';
 }

@@ -85,31 +85,22 @@
         </div>
 
         <!-- Display channels for the current group -->
-        <div *ngFor="let channel of groupChannels[group._id]">
-          <h4>{{ channel.name }}</h4>
-
-          <button
-            (click)="removeChannel(channel._id)"
-            class="btn btn-danger btn-sm"
-          >
-            Remove Channel
-          </button>
-        </div>
       </div>
 
       <!-- Add User to Group -->
+
       <div class="input-group mt-3 mb-3">
-        <select class="form-control" #userDropdown>
+        <select #selectedUser class="form-control">
           <option *ngFor="let user of users" [value]="user._id">
             {{ user.username }}
           </option>
         </select>
         <div class="input-group-append">
           <button
-            (click)="addUserToGroup(userDropdown.value, group._id)"
-            class="btn btn-secondary"
+            (click)="addUserToGroup(group._id, selectedUser.value)"
+            class="btn btn-primary"
           >
-            Add User
+            Add User to Group
           </button>
         </div>
       </div>
@@ -141,13 +132,24 @@
           {{ getUsernameById(userId) }}
 
           <button
-            (click)="removeUserFromGroup(userId, group._id)"
+            (click)="removeUserFromGroup(group._id, userId)"
             class="btn btn-danger btn-sm"
           >
-            Remove
+            Remove User
           </button>
         </li>
       </ul>
+
+      <div *ngFor="let channel of groupChannels[group._id]">
+        <h4>{{ channel.name }}</h4>
+
+        <button
+          (click)="removeChannel(channel._id)"
+          class="btn btn-danger btn-sm"
+        >
+          Remove Channel
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -66,6 +66,15 @@ deleteChannel(channelId: string): Observable<any> {
 getChannelsByGroupId(groupId: string): Observable<Channel[]> {
   return this.http.get<Channel[]>(`${this.apiUrl}/group/${groupId}/channels`);
 }
+addUserToGroup(groupId: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/group/${groupId}/addUser`, { userId });
+}
+
+removeUserFromGroup(groupId: string, userId: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/group/${groupId}/removeUser`, { userId });
+}
+
+
 
 
 
