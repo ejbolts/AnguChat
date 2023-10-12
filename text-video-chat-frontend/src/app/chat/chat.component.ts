@@ -6,7 +6,7 @@ import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
 import { ChatService } from '../services/chat.service' ; 
 import { ChatMessage } from '../models/chatmessage.model';  
-
+import Peer from 'peerjs';
 
 @Component({
   selector: 'app-chat',
@@ -18,16 +18,20 @@ import { ChatMessage } from '../models/chatmessage.model';
 
 export class ChatComponent implements OnInit {
   public messages: ChatMessage[] = [];
-
+  private peer!: Peer;
+  private localStream?: MediaStream;
   public message: string = '';
   groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
   selectedImage: string | null = null; // Base64 encoded image string
+  incomingCall: any = null;  // This will hold the incoming call object
+
 
 
   constructor(private router: Router, private userService: UserService, private chatService: ChatService) { } // Inject UserService
+
 
   
   ngOnInit(): void {
@@ -42,7 +46,16 @@ export class ChatComponent implements OnInit {
     this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
       this.messages.push(msg);
     });
+    this.peer = new Peer({
+      host: 'localhost',
+      port: 3000,
+      path: '/peerjs/myapp'
+    }); 
+    this.peer.on('call', (incomingCall) => {
+      this.incomingCall = incomingCall;
+    });
 
+    
     
   }
   fetchGroups(): void {
@@ -102,6 +115,75 @@ sendMessage(): void {
       this.selectedImage = null;
   }
 }
+
+startCall(): void {
+  if (this.chatService.socketId) {
+    const peerIdToCall = prompt("Enter the Peer ID of the user you want to call:") ;
+
+    // Access user's webcam and microphone
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        this.localStream = stream || undefined;
+        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        localVideo.srcObject = stream;
+        if (peerIdToCall !== null) {
+        const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
+        outgoingCall.on('stream', (remoteStream) => {
+          const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+          remoteVideo.srcObject = remoteStream;
+        })}else {
+          console.error("Peer ID not provided");
+      }
+      })
+      .catch(error => {
+        console.error("Error accessing media devices.", error);
+      });
+  } else {
+    console.error("Socket ID not available yet!");
+  }
+}
+
+
+stopCall(): void {
+  if (this.localStream) {
+    this.localStream.getTracks().forEach(track => track.stop());
+    this.localStream = undefined;
+  }
+  // Assuming the peer connection is still active, destroy it
+  this.peer.destroy();
+}
+
+ngOnDestroy(): void {
+  this.stopCall();
+}
+
+acceptCall(): void {
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+      this.localStream = stream;
+      const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+      localVideo.srcObject = stream;
+
+      this.incomingCall.answer(this.localStream); // Answer the call with the local stream
+
+      this.incomingCall.on('stream', (remoteStream: MediaProvider | null) => {
+        const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+        remoteVideo.srcObject = remoteStream; // Show the remote video stream
+      });
+
+      this.incomingCall = null;  // Reset the incoming call to hide the UI
+    })
+    .catch(error => {
+      console.error("Error accessing media devices.", error);
+    });
+}
+
+declineCall(): void {
+  this.incomingCall.close();  // Close the incoming call
+  this.incomingCall = null;  // Reset the incoming call to hide the UI
+}
+
+
 
 
 

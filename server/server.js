@@ -10,20 +10,26 @@ const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
+const { PeerServer } = require("peer");
+
+const expressPeerServer = require("peer").ExpressPeerServer;
 
 const app = express();
-const listen = (server) => {
-  server.listen(3000, () => {
-    console.log("Server listening on port 3000");
-  });
+const server = http.createServer(app);
+const options = {
+  debug: true,
+  path: "/myapp",
 };
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-const server = http.createServer(app);
+
+// Peer Server setup
+app.use("/peerjs", expressPeerServer(server, options)); // Integrate PeerServer with express
+
 // Socket.io setup
 socketModule.setupSockets(server);
-listen(server);
 
 // Routes
 app.use("/register", registerRoute);
@@ -32,5 +38,11 @@ app.use("/update", updateRoute);
 app.use("/remove", removeRoute);
 app.use("/group", groupRoute);
 app.use("/channel", channelRoute);
+
+// Start the server
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
 
 module.exports = app;

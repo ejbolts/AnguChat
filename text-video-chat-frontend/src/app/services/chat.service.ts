@@ -8,9 +8,12 @@ import { ChatMessage } from '../models/chatmessage.model';
 })
 export class ChatService {
   private socket: any;
-
+  public socketId: string | null = null;
   constructor() {
     this.socket = io('http://localhost:3000');
+    this.socket.on('assign-id', (id: string) => {
+      this.socketId = id;
+  });
   }
 
   public sendMessage(message: ChatMessage): void {

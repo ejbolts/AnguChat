@@ -10,10 +10,11 @@ const setupSockets = (server) => {
 
   io.on("connection", (socket) => {
     console.log("New user connected:", socket.id);
-
+    socket.emit("assign-id", socket.id); // This will send the socket ID to the client
     // Send a connection message
     io.emit("system-message", {
       content: "A user has joined the chat",
+
       timestamp: new Date(),
       isSystemMessage: true,
     });

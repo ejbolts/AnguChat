@@ -52,11 +52,11 @@
 
             <ng-container *ngIf="isChannelMember(channel._id, group._id)">
               <div class="container">
-                <div class="chat-messages">
-                  <ul>
+                <div class="chat-messages mb-3">
+                  <ul class="list-unstyled">
                     <li *ngFor="let msg of messages">
                       <span *ngIf="msg.isSystemMessage; else userMessage">
-                        <em
+                        <em class="text-muted"
                           >{{ msg.content }} -
                           {{ msg.timestamp | date : "shortTime" }}</em
                         >
@@ -69,23 +69,78 @@
                           [src]="msg.image"
                           alt="Sent image"
                           width="100"
+                          class="img-thumbnail"
                         />
-                        <small>{{ msg.timestamp | date : "shortTime" }}</small>
+                        <small class="text-muted ml-2">{{
+                          msg.timestamp | date : "shortTime"
+                        }}</small>
                       </ng-template>
                     </li>
                   </ul>
                 </div>
 
-                <div class="chat-input">
-                  <input
-                    [(ngModel)]="message"
-                    type="text"
-                    placeholder="Type your message..."
-                  />
-                  <input type="file" (change)="onImageSelected($event)" />
-                  <button (click)="sendMessage()" class="btn btn-info">
-                    Send
-                  </button>
+                <div class="chat-input mb-3">
+                  <div class="input-group">
+                    <input
+                      [(ngModel)]="message"
+                      type="text"
+                      class="form-control"
+                      placeholder="Type your message..."
+                    />
+                    <input
+                      type="file"
+                      (change)="onImageSelected($event)"
+                      class="d-none"
+                      id="fileInput"
+                    />
+                    <label class="btn btn-secondary" for="fileInput"
+                      >Attach Image</label
+                    >
+                    <button (click)="sendMessage()" class="btn btn-info">
+                      Send
+                    </button>
+                  </div>
+                </div>
+
+                <div class="video-chat-container">
+                  <!-- Local video preview -->
+                  <h5>Local Video</h5>
+                  <video
+                    id="localVideo"
+                    autoplay
+                    muted
+                    class="border rounded mb-2"
+                    style="width: 100%"
+                  ></video>
+
+                  <!-- Remote video display -->
+                  <h5>Remote Video</h5>
+                  <video
+                    id="remoteVideo"
+                    autoplay
+                    class="border rounded mb-2"
+                    style="width: 100%"
+                  ></video>
+
+                  <!-- Control buttons -->
+                  <div class="controls">
+                    <button (click)="startCall()" class="btn btn-success">
+                      Start Call
+                    </button>
+                    <button (click)="stopCall()" class="btn btn-danger">
+                      Stop Call
+                    </button>
+                  </div>
+
+                  <div *ngIf="incomingCall">
+                    <h5>Incoming Call</h5>
+                    <button (click)="acceptCall()" class="btn btn-success">
+                      Accept
+                    </button>
+                    <button (click)="declineCall()" class="btn btn-danger">
+                      Decline
+                    </button>
+                  </div>
                 </div>
               </div>
             </ng-container>
