@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
 import { ChatService } from '../services/chat.service' ; 
-import { Observable, map } from 'rxjs';
+import { ChatMessage } from '../models/chatmessage.model';  
+
 
 @Component({
   selector: 'app-chat',
@@ -13,13 +14,18 @@ import { Observable, map } from 'rxjs';
   styleUrls: ['./chat.component.css']
 })
 
+
+
 export class ChatComponent implements OnInit {
-  public messages: string[] = [];
+  public messages: ChatMessage[] = [];
+
   public message: string = '';
   groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
+  currentChannelId: string | null = null;
+
   constructor(private router: Router, private userService: UserService, private chatService: ChatService) { } // Inject UserService
 
   
@@ -29,10 +35,14 @@ export class ChatComponent implements OnInit {
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
     }
-    this.users = JSON.parse(localStorage.getItem('users') || '[]'); // Get all users from localStorage
-    this.chatService.getMessages().subscribe((msg: string) => {
+    this.chatService.getMessages().subscribe((msg: ChatMessage) => {
       this.messages.push(msg);
     });
+    this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+      this.messages.push(msg);
+    });
+
+    
   }
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
@@ -63,10 +73,21 @@ export class ChatComponent implements OnInit {
       }
     );
   }
-  sendMessage() {
-    this.chatService.sendMessage(this.message);
-    this.message = ''; // Clear the input after sending
-  }
+  sendMessage(): void {
+    if (this.message.trim() && this.currentUser) {
+        const chatMessage: ChatMessage = {
+            username: this.currentUser.username,
+            content: this.message.trim(),
+            timestamp: new Date()
+        };
+
+        this.chatService.sendMessage(chatMessage);
+        this.message = '';  // clear the message input
+    }
+}
+
+
+  
  
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
@@ -110,6 +131,7 @@ removeUserFromGroup(groupId: string): void {
   this.userService.removeUserFromGroup(groupId, currentUserId).subscribe(
     () => {
       console.log('User removed from group successfully');
+      
       this.fetchGroups();  // to refresh the group data and reflect changes
 
     },
@@ -122,10 +144,24 @@ addUserToChannel(channelId: string, groupId: string, userId: string): void {
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
       console.log('User added to channel successfully');
+
       this.fetchChannelsPerGroup(groupId);
     },
     (error: any) => {
       console.error('Error adding user to channel:', error);
+    }
+  );
+}
+removeUserFromChannel(channelId: string, userId: string, groupId: string): void {
+  this.userService.removeUserFromChannel(channelId, userId).subscribe(
+    () => {
+      console.log("User removed from channel successfully");
+      // Refetch channels for the group to reflect the change
+
+      this.fetchChannelsPerGroup(groupId);
+    },
+    error => {
+      console.error("Error removing user from channel:", error);
     }
   );
 }

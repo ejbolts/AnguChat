@@ -33,20 +33,40 @@
             (click)="removeUserFromGroup(group._id)"
             class="btn btn-danger"
           >
-            Leave Group</button
-          ><br />
+            Leave Group
+          </button>
 
           <div
             *ngFor="let channel of groupChannels[group._id]"
             style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
           >
             <h4>{{ channel.name }}</h4>
+            <button
+              (click)="
+                addUserToChannel(channel._id, group._id, currentUser?._id!)
+              "
+              class="btn btn-primary"
+            >
+              Join Channel
+            </button>
 
             <ng-container *ngIf="isChannelMember(channel._id, group._id)">
               <div class="container">
                 <div class="chat-messages">
                   <ul>
-                    <li *ngFor="let msg of messages">{{ msg }}</li>
+                    <li *ngFor="let msg of messages">
+                      <span *ngIf="msg.isSystemMessage; else userMessage">
+                        <em
+                          >{{ msg.content }} -
+                          {{ msg.timestamp | date : "shortTime" }}</em
+                        >
+                      </span>
+                      <ng-template #userMessage>
+                        <strong>{{ msg.username }}</strong
+                        >: {{ msg.content }}
+                        <small>{{ msg.timestamp | date : "shortTime" }}</small>
+                      </ng-template>
+                    </li>
                   </ul>
                 </div>
 
@@ -56,7 +76,9 @@
                     type="text"
                     placeholder="Type your message..."
                   />
-                  <button (click)="sendMessage()">Send</button>
+                  <button (click)="sendMessage()" class="btn btn-info">
+                    Send
+                  </button>
                 </div>
               </div>
             </ng-container>
