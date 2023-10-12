@@ -64,6 +64,12 @@
                       <ng-template #userMessage>
                         <strong>{{ msg.username }}</strong
                         >: {{ msg.content }}
+                        <img
+                          *ngIf="msg.image"
+                          [src]="msg.image"
+                          alt="Sent image"
+                          width="100"
+                        />
                         <small>{{ msg.timestamp | date : "shortTime" }}</small>
                       </ng-template>
                     </li>
@@ -76,6 +82,7 @@
                     type="text"
                     placeholder="Type your message..."
                   />
+                  <input type="file" (change)="onImageSelected($event)" />
                   <button (click)="sendMessage()" class="btn btn-info">
                     Send
                   </button>

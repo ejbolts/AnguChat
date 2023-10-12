@@ -24,7 +24,8 @@ export class ChatComponent implements OnInit {
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
-  currentChannelId: string | null = null;
+  selectedImage: string | null = null; // Base64 encoded image string
+
 
   constructor(private router: Router, private userService: UserService, private chatService: ChatService) { } // Inject UserService
 
@@ -73,18 +74,35 @@ export class ChatComponent implements OnInit {
       }
     );
   }
-  sendMessage(): void {
-    if (this.message.trim() && this.currentUser) {
-        const chatMessage: ChatMessage = {
-            username: this.currentUser.username,
-            content: this.message.trim(),
-            timestamp: new Date()
-        };
 
-        this.chatService.sendMessage(chatMessage);
-        this.message = '';  // clear the message input
-    }
+
+onImageSelected(event: any): void {
+  const file: File = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onloadend = () => {
+      const base64String = reader.result as string;
+      // Do something with the Base64 string, like attach it to your message object
+      this.selectedImage = base64String;
+  };
+  
+  reader.readAsDataURL(file);
 }
+sendMessage(): void {
+  if (this.message.trim() && this.currentUser) {
+      const chatMessage: ChatMessage = {
+          username: this.currentUser.username,
+          content: this.message.trim(),
+          timestamp: new Date(),
+          image: this.selectedImage
+      };
+      
+      this.chatService.sendMessage(chatMessage);
+      this.message = '';  
+      this.selectedImage = null;
+  }
+}
+
 
 
   
@@ -215,6 +233,7 @@ updateGroupsStorage(): void {
 } navigateToDashboard(): void {
   this.router.navigate(['/admin']);
 }
+
 
 
 }
