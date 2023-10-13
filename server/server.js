@@ -10,7 +10,6 @@ const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
-const { PeerServer } = require("peer");
 
 const expressPeerServer = require("peer").ExpressPeerServer;
 

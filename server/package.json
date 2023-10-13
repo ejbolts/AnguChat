@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/*.test.js"
   },
   "author": "Ethan Bolton",
   "license": "ISC",
@@ -16,5 +16,10 @@
     "peer": "^1.0.1",
     "peerjs": "^1.5.0",
     "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "chai": "^4.3.10",
+    "chai-http": "^4.4.0",
+    "mocha": "^10.2.0"
   }
 }
