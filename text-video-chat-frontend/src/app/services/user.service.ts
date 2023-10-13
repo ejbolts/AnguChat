@@ -9,7 +9,7 @@ import { Channel } from '../models/channel.model';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:3000'; // Your backend server URL
+  public apiUrl = 'http://localhost:3000'; // Your backend server URL
 
   constructor(private http: HttpClient) {}
 

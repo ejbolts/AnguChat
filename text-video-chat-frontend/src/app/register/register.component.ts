@@ -17,8 +17,7 @@ export class RegisterComponent implements OnInit {
     email: '',
     password: '',
     role: 'user',
-    groups: [], // assuming groups is an array
-    // ... initialize other fields as needed
+    groups: [], 
   };
   
   goToLogin(): void {
