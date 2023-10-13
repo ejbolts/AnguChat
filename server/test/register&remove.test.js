@@ -6,11 +6,10 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe("Remove Route Tests", () => {
+describe("Remove & Register Route Tests", () => {
   let testUserId;
 
-  before((done) => {
-    // Create a test user here
+  it("should register a new user", function (done) {
     const testUser = {
       username: "testuser123",
       email: "test123@email.com",
@@ -26,11 +25,30 @@ describe("Remove Route Tests", () => {
       .request(app)
       .post("/register")
       .send(testUser)
-      .end((err, res) => {
-        expect(err).to.be.null;
+      .end(function (err, res) {
         expect(res).to.have.status(200);
+        expect(res.body).to.have.property("message").equal("User registered!");
         expect(res.body).to.have.property("_id");
         testUserId = res.body._id; // Store the user ID for future tests
+        done();
+      });
+  });
+
+  it("should not register a user with existing username", function (done) {
+    chai
+      .request(app)
+      .post("/register")
+      .send({
+        username: "testuser123",
+        email: "test123@email.com",
+        password: "testpassword123",
+        role: "groupAdmin",
+      })
+      .end(function (err, res) {
+        expect(res).to.have.status(400);
+        expect(res.body)
+          .to.have.property("message")
+          .equal("Username already exists.");
         done();
       });
   });
