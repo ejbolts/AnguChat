@@ -1,5 +1,6 @@
 <div class="container register-container">
-  <form (submit)="registerUser()" class="register-form">
+  <form (submit)="register()" class="register-form">
+    <!-- Changed method name to register() -->
     <div class="form-group">
       <h2 class="register-title">Register</h2>
 
@@ -15,38 +16,48 @@
       />
     </div>
 
-    <label for="password">Password:</label>
-    <input
-      type="password"
-      class="form-control"
-      name="password"
-      [(ngModel)]="user.password"
-      placeholder="Enter Password"
-      required
-    />
+    <div class="form-group">
+      <!-- Added div wrapper for better styling and consistent layout -->
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        class="form-control"
+        id="password"
+        name="password"
+        [(ngModel)]="user.password"
+        placeholder="Enter Password"
+        required
+      />
+    </div>
 
-    <label for="email">Email:</label>
-    <input
-      type="email"
-      class="form-control"
-      id="email"
-      name="email"
-      [(ngModel)]="user.email"
-      placeholder="Enter Email"
-      required
-    />
+    <div class="form-group">
+      <!-- Added div wrapper for better styling and consistent layout -->
+      <label for="email">Email:</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        [(ngModel)]="user.email"
+        placeholder="Enter Email"
+        required
+      />
+    </div>
 
-    <button type="submit" class="btn btn-primary" style="margin-top: 10px">
+    <button type="submit" class="btn btn-primary mt-2">
+      <!-- Added margin-top using bootstrap class -->
       Register
     </button>
+
     <button
       (click)="goToLogin()"
-      class="btn btn-outline-primary"
-      style="margin-top: 10px"
+      class="btn btn-outline-primary mt-2"
+      type="button"
     >
       Login
     </button>
-    <div *ngIf="errorMessage" class="alert alert-danger">
+
+    <div *ngIf="errorMessage" class="alert alert-danger mt-2">
       {{ errorMessage }}
     </div>
   </form>

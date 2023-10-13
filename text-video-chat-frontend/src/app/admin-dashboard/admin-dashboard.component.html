@@ -1,10 +1,11 @@
 <div class="container mt-5">
   <h2 class="admin-title">Admin Dashboard</h2>
   <div class="current-user">
-    Logged in as: <strong>{{ getCurrentUsername() }}</strong>
+    Logged in as: <strong>{{ currentUser?.username }}</strong>
   </div>
+
   <button (click)="logout()" class="btn btn-warning">Logout</button>
-  <button (click)="navigateToChat()" class="btn btn-info">Chat</button>
+  <button (click)="navigateToChat()" class="btn btn-info mx-2">Chat</button>
 
   <table class="table table-striped mt-3">
     <thead>
@@ -22,18 +23,14 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
-          <select
-            [(ngModel)]="user.newRole"
-            class="form-control"
-            *ngIf="isSuperAdmin()"
-          >
+          <select [(ngModel)]="user.role" class="form-control">
             <option value="user">Chat User</option>
             <option value="groupAdmin">Group Admin</option>
             <option value="superAdmin">Super Admin</option>
           </select>
         </td>
         <td>
-          <button (click)="promoteUser(user)" class="btn btn-primary mr-2">
+          <button (click)="promoteUser(user)" class="btn btn-primary mx-2">
             Promote
           </button>
           <button (click)="removeUser(user)" class="btn btn-danger">
@@ -45,16 +42,21 @@
   </table>
   <!-- Create Group -->
   <div class="input-group mb-3">
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Group Name"
-      #groupInput
-    />
     <div class="input-group-append">
-      <button (click)="createGroup(groupInput)" class="btn btn-primary">
-        Create Group
-      </button>
+      <form (submit)="createGroup()">
+        <div class="form-group">
+          <label for="groupName">Group Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="groupName"
+            [(ngModel)]="group.name"
+            name="name"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Create Group</button>
+      </form>
     </div>
   </div>
 
@@ -62,8 +64,8 @@
   <div *ngFor="let group of groups" class="mb-4">
     <div class="bg-light p-3 rounded">
       <h3 class="d-inline-block mr-3">{{ group.name }}</h3>
-      <button (click)="removeGroup(group.id)" class="btn btn-danger btn-sm">
-        Remove Group
+      <button (click)="deleteGroup(group._id)" class="btn btn-danger">
+        Delete Group
       </button>
       <!-- Add Channel to Group -->
       <div class="input-group mt-3 mb-3">
@@ -75,27 +77,30 @@
         />
         <div class="input-group-append">
           <button
-            (click)="createChannel(group.id, channelInput)"
+            (click)="createNewChannel(group._id, channelInput.value)"
             class="btn btn-secondary"
           >
             Add Channel
           </button>
         </div>
+
+        <!-- Display channels for the current group -->
       </div>
 
       <!-- Add User to Group -->
+
       <div class="input-group mt-3 mb-3">
-        <select class="form-control" #userDropdown>
-          <option *ngFor="let user of users" [value]="user.id">
+        <select #selectedUser class="form-control">
+          <option *ngFor="let user of users" [value]="user._id">
             {{ user.username }}
           </option>
         </select>
         <div class="input-group-append">
           <button
-            (click)="addUserToGroup(userDropdown.value, group.id)"
-            class="btn btn-secondary"
+            (click)="addUserToGroup(group._id, selectedUser.value)"
+            class="btn btn-primary"
           >
-            Add User
+            Add User to Group
           </button>
         </div>
       </div>
@@ -104,12 +109,12 @@
         <h5 class="mb-3">Pending join requests:</h5>
         <ul class="list-group">
           <li
-            *ngFor="let user of getPendingUsersForGroup(group.id)"
+            *ngFor="let user of getPendingUsersForGroup(group._id)"
             class="list-group-item d-flex justify-content-between align-items-center"
           >
             {{ user.username }}
             <button
-              (click)="approveUserForGroup(user.id!, group.id)"
+              (click)="approveUserForGroup(user._id!, group._id)"
               class="btn btn-success btn-sm"
             >
               Approve
@@ -120,6 +125,7 @@
 
       <!-- List Users in Group with Remove Option -->
       <ul class="list-group">
+        <h5 class="mb-3">Users in group:</h5>
         <li
           *ngFor="let userId of group.users"
           class="list-group-item d-flex justify-content-between align-items-center"
@@ -127,76 +133,61 @@
           {{ getUsernameById(userId) }}
 
           <button
-            (click)="removeUserFromGroup(userId, group.id)"
+            (click)="removeUserFromGroup(group._id, userId)"
             class="btn btn-danger btn-sm"
           >
-            Remove
+            Remove User
           </button>
         </li>
       </ul>
 
-      <!-- List Channels -->
-      <div *ngFor="let channel of group.channels">
+      <div
+        *ngFor="let channel of groupChannels[group._id]"
+        style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
+      >
         <h4>{{ channel.name }}</h4>
 
-        <!-- Input group layout to align dropdown and button side by side -->
-        <div class="input-group mt-3 mb-3">
-          <!-- Add user to channel using a dropdown -->
-          <select class="form-control" #userDropdown>
-            <option *ngFor="let userId of group.users" [value]="userId">
-              {{ getUserById(userId)?.username || "Unknown" }}
-            </option>
-          </select>
-
-          <div class="input-group-append">
-            <button
-              (click)="addUserToChannel(userDropdown.value, channel.id)"
-              class="btn btn-primary"
-            >
-              Add User
-            </button>
-          </div>
-        </div>
-
-        <div *ngFor="let group of groups">
-          <!-- Iterate through channels in the group -->
-          <div *ngFor="let channel of group.channels">
-            <!-- Existing users in the channel -->
-            <div *ngFor="let userId of channel.users">
-              {{ getUserIdName(userId) }}
-              <button
-                (click)="banUserFromChannel(userId, channel.id)"
-                class="btn btn-warning btn-sm"
-              >
-                Ban
-              </button>
-              <button
-                (click)="removeUserFromChannel(userId, channel.id)"
-                class="btn btn-danger btn-sm"
-              >
-                Remove User
-              </button>
-            </div>
-
-            <!-- Banned users from the channel -->
-            <div *ngFor="let bannedUserId of channel.bannedUsers">
-              {{ getUserIdName(bannedUserId) }} (Banned)
-              <button
-                (click)="unbanUserFromChannel(bannedUserId, channel.id)"
-                class="btn btn-info btn-sm"
-              >
-                Unban
-              </button>
-            </div>
-          </div>
+        <h5>list of users in channel</h5>
+        <!-- Display list of users in the channel (need delete btn)-->
+        <div *ngFor="let userId of channel.users">
+          {{ getUsernameFromId(userId) }}
+          <button
+            class="btn btn-danger btn-sm ml-2"
+            (click)="removeUserFromChannel(channel._id, userId, group._id)"
+          >
+            Remove
+          </button>
         </div>
 
         <button
-          (click)="removeChannel(group.id, channel.id)"
+          (click)="removeChannel(channel._id)"
           class="btn btn-danger btn-sm"
         >
           Remove Channel
         </button>
+        <!-- Add User to channel only if in group already -->
+
+        <div class="input-group mt-3 mb-3">
+          <select #userSelect class="form-control">
+            <!-- Filter the list of users based on group's users array -->
+            <ng-container *ngFor="let user of users">
+              <option
+                *ngIf="
+                  group && group.users && group.users.includes(user._id || '')
+                "
+                [value]="user._id || undefined"
+              >
+                {{ user.username }}
+              </option>
+            </ng-container>
+          </select>
+          <button
+            (click)="addUserToChannel(channel._id, group._id, userSelect.value)"
+            class="btn btn-primary"
+          >
+            Add User to Channel
+          </button>
+        </div>
       </div>
     </div>
   </div>

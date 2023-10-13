@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
+import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
-import { AuthenticationService } from '../services/authentication.service';
 import { User } from '../models/user.model';
 
 @Component({
@@ -8,40 +8,44 @@ import { User } from '../models/user.model';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
-  username!: string;
-  password!: string;
-  error!: string;
 
-  constructor(private authService: AuthenticationService, private router: Router) { }
+export class LoginComponent {
+  
+  user: User = {
+    username: '',
+    password: '',
+    email: '',
+    role: '',
+    groups: []
+  };
+
+  errorMessage?: string;
+
+  constructor(private userService: UserService, private router: Router) {}
+  login(): void {
+    if (this.user.password) {
+      this.userService.loginUser({ username: this.user.username, password: this.user.password }).subscribe(
+        response => {
+          if (response.user) {  // checking the user property of the response
+            sessionStorage.setItem('currentUser', JSON.stringify(response.user));
+            this.router.navigate(['chat']);
+          } else {
+            this.errorMessage = "Unexpected error occurred!";
+          }
+        },
+        error => {
+          this.errorMessage = "Invalid credentials!";
+        }
+      );
+    }
+  }
+  
+  
+  
+
+
+  // If you have a method to navigate to the register page:
   goToRegister(): void {
     this.router.navigate(['/register']);
-}
-login(): void {
-  // Fetch users from localStorage
-  let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-
-  // Find the user with the given credentials
-  console.log(users);
-
-  let loggedInUser = users.find(u => u.username === this.username && u.password === this.password);
-
-  if (loggedInUser) {
-    // Store the logged-in user in the session for further use
-    sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
-
-    // Check user roles and navigate accordingly
-    if (loggedInUser.role === 'superAdmin' || loggedInUser.role === 'groupAdmin') {
-      this.router.navigate(['/admin']);
-    } else {
-      this.router.navigate(['/chat']);
-    }
-  } else {
-    alert('Invalid credentials!');
   }
-}
-
-  
-  
-  
 }

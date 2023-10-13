@@ -1,54 +1,39 @@
-import { Component } from '@angular/core';
-import { User } from '../models/user.model'; 
+// register.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
+import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   errorMessage: string | null = null;  // For displaying an error message
-
-  constructor(private router: Router) {}
-
-  goToLogin(): void {
-    this.router.navigate(['/login']);
-  }
-
   user: User = {
     username: '',
     email: '',
-    role: '',
-    groups: []
+    password: '',
+    role: 'user',
+    groups: [], 
   };
+  
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+  constructor(private userService: UserService, private router: Router) {}
 
-  registerUser(): void {
-    let users: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+  ngOnInit(): void {}
 
-    // Check if the username is already taken
-    if (users.some(user => user.username === this.user.username)) {
-      this.errorMessage = 'Username already taken. Please choose another.';
-      return;
-    }
+  register(): void {
+    this.userService.registerUser(this.user)
+      .subscribe(() => {
 
-    // If the username is not taken, continue with the registration
-    this.user.id = Date.now().toString(); // Using timestamp as a mock ID
-    this.user.role = 'user';
-
-    // Push the new user into the list
-    users.push(this.user);
-
-    // Save the updated list back to localStorage
-    localStorage.setItem('users', JSON.stringify(users));
-
-    // Clear the form and give feedback
-    this.user = {
-      username: '',
-      email: '',
-      role: '',
-      groups: []
-    };
-    alert('User registered successfully!');
+        this.router.navigate(['login']); // Redirect to login after successful registration
+      }, error => {
+        // Handle error
+      });
   }
 }
