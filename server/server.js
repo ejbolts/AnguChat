@@ -17,7 +17,6 @@ const app = express();
 const server = http.createServer(app);
 const options = {
   debug: true,
-  path: "/myapp",
 };
 
 // Middleware

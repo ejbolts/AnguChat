@@ -4,4 +4,5 @@ export interface ChatMessage {
     timestamp: Date;
     isSystemMessage?: boolean;
     image?: string | null;  // Base64 encoded image
+    channelId?: string;
   }

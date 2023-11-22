@@ -17,7 +17,7 @@ import Peer from 'peerjs';
 
 
 export class ChatComponent implements OnInit {
-  public messages: ChatMessage[] = [];
+  public channels: Channel[] = []; // shouldn't use this
   private peer!: Peer;
   private localStream?: MediaStream;
   public message: string = '';
@@ -27,6 +27,7 @@ export class ChatComponent implements OnInit {
   users: User[] = [];
   selectedImage: string | null = null; // Base64 encoded image string
   incomingCall: any = null;  // This will hold the incoming call object
+  channelId: string | undefined;
 
 
 
@@ -36,16 +37,42 @@ export class ChatComponent implements OnInit {
   
   ngOnInit(): void {
     this.fetchGroups();
+    // this.fetchChannelHistorys();
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
     }
+    console.log(this.groupChannels)
+
+
+    console.log("Group channels:", this.groupChannels); // Existing log
+
     this.chatService.getMessages().subscribe((msg: ChatMessage) => {
-      this.messages.push(msg);
+      console.log("Received message for channel", msg); // working now
     });
-    this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-      this.messages.push(msg);
+
+    this.chatService.getMessages().subscribe((msg: ChatMessage) => {
+      console.log("Received message for channel", msg);
+    
+      // Iterate through each group
+      Object.values(this.groupChannels).forEach(channels => {
+        // Find the channel within the group channels
+        console.log("Channels:", channels);
+        var channel = channels.find(c => c._id === msg.channelId); // need this const value
+        console.log("msg.channelId:", msg.channelId);
+        console.log("Channel:", channel);
+        if (channel) {
+          channel.history.push(msg);
+          console.log("Channel history:", channel.history);
+        }
+      });
     });
+    
+
+    
+    // this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+    //   this.messages.push(msg);
+    // });
     this.peer = new Peer({
       host: 'localhost',
       port: 3000,
@@ -54,10 +81,11 @@ export class ChatComponent implements OnInit {
     this.peer.on('call', (incomingCall) => {
       this.incomingCall = incomingCall;
     });
-
-    
-    
   }
+
+  
+  
+  
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
@@ -101,20 +129,9 @@ onImageSelected(event: any): void {
   
   reader.readAsDataURL(file);
 }
-sendMessage(): void {
-  if (this.message.trim() && this.currentUser) {
-      const chatMessage: ChatMessage = {
-          username: this.currentUser.username,
-          content: this.message.trim(),
-          timestamp: new Date(),
-          image: this.selectedImage
-      };
-      
-      this.chatService.sendMessage(chatMessage);
-      this.message = '';  
-      this.selectedImage = null;
-  }
-}
+
+
+
 
 startCall(): void {
   if (this.chatService.socketId) {
@@ -185,9 +202,6 @@ declineCall(): void {
 
 
 
-
-
-  
  
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
@@ -240,9 +254,32 @@ removeUserFromGroup(groupId: string): void {
     }
   );
 }
-addUserToChannel(channelId: string, groupId: string, userId: string): void {
+
+handleSendMessages(channelId: string): void {
+  if (this.message.trim() && this.currentUser) {
+    const chatMessage: ChatMessage = {
+      username: this.currentUser.username,
+      content: this.message.trim(),
+      timestamp: new Date(),
+      image: this.selectedImage,
+      channelId: channelId
+    };
+    
+    // Call the service method with the channel ID and the chat message
+    console.log('Sending message:', chatMessage);
+    this.chatService.sendMessage(channelId, chatMessage);
+    this.message = '';  
+    this.selectedImage = null;
+  }
+}
+
+
+
+handleJoinChannel(channelId: string, groupId: string, userId: string): void {
+  console.log('Handling join channel:', channelId, groupId, userId);
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
+      this.chatService.joinChannel(channelId, groupId, userId);
       console.log('User added to channel successfully');
 
       this.fetchChannelsPerGroup(groupId);
@@ -252,9 +289,10 @@ addUserToChannel(channelId: string, groupId: string, userId: string): void {
     }
   );
 }
-removeUserFromChannel(channelId: string, userId: string, groupId: string): void {
+handleLeaveChannel(channelId: string, userId: string, groupId: string): void {
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
+      this.chatService.leaveChannel(channelId, groupId, userId);
       console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
 

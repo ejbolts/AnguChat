@@ -41,20 +41,25 @@
             style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
           >
             <h4>{{ channel.name }}</h4>
-            <button
-              (click)="
-                addUserToChannel(channel._id, group._id, currentUser?._id!)
-              "
-              class="btn btn-primary"
-            >
-              Join Channel
-            </button>
 
-            <ng-container *ngIf="isChannelMember(channel._id, group._id)">
+            <ng-container
+              *ngIf="
+                isChannelMember(channel._id, group._id);
+                else joinChannelTemplate
+              "
+            >
+              <button
+                (click)="
+                  handleLeaveChannel(channel._id, currentUser?._id!, group._id)
+                "
+                class="btn btn-primary"
+              >
+                Leave Channel
+              </button>
               <div class="container">
                 <div class="chat-messages mb-3">
                   <ul class="list-unstyled">
-                    <li *ngFor="let msg of messages">
+                    <li *ngFor="let msg of channel.history">
                       <span *ngIf="msg.isSystemMessage; else userMessage">
                         <em class="text-muted"
                           >{{ msg.content }} -
@@ -68,8 +73,6 @@
                           *ngIf="msg.image"
                           [src]="msg.image"
                           alt="Sent image"
-                          width="100"
-                          class="img-thumbnail"
                         />
                         <small class="text-muted ml-2">{{
                           msg.timestamp | date : "shortTime"
@@ -96,7 +99,10 @@
                     <label class="btn btn-secondary" for="fileInput"
                       >Attach Image</label
                     >
-                    <button (click)="sendMessage()" class="btn btn-info">
+                    <button
+                      (click)="handleSendMessages(channel._id)"
+                      class="btn btn-info"
+                    >
                       Send
                     </button>
                   </div>
@@ -144,6 +150,16 @@
                 </div>
               </div>
             </ng-container>
+            <ng-template #joinChannelTemplate>
+              <button
+                (click)="
+                  handleJoinChannel(channel._id, group._id, currentUser?._id!)
+                "
+                class="btn btn-primary"
+              >
+                Join Channel
+              </button>
+            </ng-template>
           </div>
         </ng-container>
 

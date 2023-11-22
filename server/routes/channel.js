@@ -10,6 +10,7 @@ router.post("/", async (req, res) => {
   const newChannel = {
     _id: new ObjectId(),
     name: name,
+    history: [],
   };
 
   // Insert the new channel into the 'channels' collection

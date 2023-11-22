@@ -11,13 +11,29 @@ export class ChatService {
   public socketId: string | null = null;
   constructor() {
     this.socket = io('http://localhost:3000');
+
+    this.socket.on('connect', () => {
+      console.log("Socket successfully connected");
+    });
+  
+    this.socket.on('connect_error', (error: any) => {
+      console.error("Socket connection error:", error);
+    });
     this.socket.on('assign-id', (id: string) => {
       this.socketId = id;
   });
   }
 
-  public sendMessage(message: ChatMessage): void {
-    this.socket.emit('broadcast', message);
+  joinChannel(channelId: string, groupId: string,userId: string) {
+    this.socket.emit('joinChannel', { channelId, groupId, userId });
+  }
+
+  leaveChannel(channelId: string, groupId: string,userId: string) {
+    this.socket.emit('leaveChannel', { channelId, groupId, userId });
+  }
+
+  sendMessage(channelId: string, message: ChatMessage) {
+    this.socket.emit('sendMessage', { channelId, message });
   }
 
   
@@ -29,13 +45,21 @@ export class ChatService {
       });
     });
 }
+public getMessages(): Observable<ChatMessage> {
+  return new Observable<ChatMessage>(observer => {
 
-
-  public getMessages(): Observable<ChatMessage> {
-    return new Observable<ChatMessage>(observer => {
-      this.socket.on('broadcast', (message: ChatMessage) => {
-        observer.next(message);
-      });
+    this.socket.on('channel-message', (msg: ChatMessage) => {
+        console.log("Message received in service:", msg);
+        observer.next(msg);
     });
-  }
+  });
+}
+
+
+
+
+
+
+
+
 }
