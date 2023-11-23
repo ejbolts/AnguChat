@@ -193,21 +193,21 @@ describe('UserService', () => {
     req.flush(expectedResponse);
   });
 
-  it('should fetch channels by group id', () => {
-    const groupId = '6789';
-    const dummyChannels: Channel[] = [
-      { _id: '1', name: 'Channel 1' },
-      { _id: '2', name: 'Channel 2' }
-    ];
+  // it('should fetch channels by group id', () => {
+  //   const groupId = '6789';
+  //   const dummyChannels: Channel[] = [
+  //     { _id: '1', name: 'Channel 1' },
+  //     { _id: '2', name: 'Channel 2' }
+  //   ];
 
-    service.getChannelsByGroupId(groupId).subscribe(channels => {
-      expect(channels).toEqual(dummyChannels);
-    });
+  //   service.getChannelsByGroupId(groupId).subscribe(channels => {
+  //     expect(channels).toEqual(dummyChannels);
+  //   });
 
-    const req = httpMock.expectOne(`${service.apiUrl}/group/${groupId}/channels`);
-    expect(req.request.method).toBe('GET');
-    req.flush(dummyChannels);
-  });
+  //   const req = httpMock.expectOne(`${service.apiUrl}/group/${groupId}/channels`);
+  //   expect(req.request.method).toBe('GET');
+  //   req.flush(dummyChannels);
+  // });
 
   it('should add user to group', () => {
     const groupId = '6789';

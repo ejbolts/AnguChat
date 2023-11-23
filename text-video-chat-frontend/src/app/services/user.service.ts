@@ -4,12 +4,13 @@ import { User } from '../models/user.model';
 import { Observable } from 'rxjs';
 import { Group } from '../models/group.model';
 import { Channel } from '../models/channel.model';
+import { ChatMessage } from '../models/chatmessage.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  public apiUrl = 'http://localhost:3000'; // Your backend server URL
+  public apiUrl = 'http://localhost:3000'; 
 
   constructor(private http: HttpClient) {}
 
@@ -77,6 +78,7 @@ removeUserFromGroup(groupId: string, userId: string): Observable<any> {
 addUserToChannel(channelId: string, groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/channel/${channelId}/addUser`, { groupId, userId });
 }
+
 
 removeUserFromChannel(channelId: string,  userId: string): Observable<any> {
   return this.http.delete(`${this.apiUrl}/channel/${channelId}/removeUser`, { body: { userId: userId } });

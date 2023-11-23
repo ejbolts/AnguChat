@@ -36,20 +36,14 @@ export class ChatComponent implements OnInit {
 
   
   ngOnInit(): void {
-    this.fetchGroups();
-    // this.fetchChannelHistorys();
+    this.fetchGroups()
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
     }
-    console.log(this.groupChannels)
+    
 
-
-    console.log("Group channels:", this.groupChannels); // Existing log
-
-    this.chatService.getMessages().subscribe((msg: ChatMessage) => {
-      console.log("Received message for channel", msg); // working now
-    });
+   
 
     this.chatService.getMessages().subscribe((msg: ChatMessage) => {
       console.log("Received message for channel", msg);
@@ -57,10 +51,9 @@ export class ChatComponent implements OnInit {
       // Iterate through each group
       Object.values(this.groupChannels).forEach(channels => {
         // Find the channel within the group channels
-        console.log("Channels:", channels);
-        var channel = channels.find(c => c._id === msg.channelId); // need this const value
-        console.log("msg.channelId:", msg.channelId);
+        let channel = channels.find(c => c._id === msg.channelId); 
         console.log("Channel:", channel);
+        console.log("Channel history:", channel?.history);
         if (channel) {
           channel.history.push(msg);
           console.log("Channel history:", channel.history);
@@ -105,15 +98,18 @@ export class ChatComponent implements OnInit {
   }
   fetchChannelsPerGroup(groupId: string): void {
     console.log(`Fetching channels for group ${groupId}`); 
-
     this.userService.getChannelsByGroupId(groupId).subscribe(
+      
       (channels: Channel[]) => {
         this.groupChannels[groupId] = channels;
+        console.log("channels:", channels); 
       },
       error => {
         console.error("Error fetching channels:", error);
       }
     );
+   
+    
   }
 
 
@@ -266,8 +262,14 @@ handleSendMessages(channelId: string): void {
     };
     
     // Call the service method with the channel ID and the chat message
-    console.log('Sending message:', chatMessage);
-    this.chatService.sendMessage(channelId, chatMessage);
+    this.chatService.addMessageToChannel(channelId, chatMessage)
+    .subscribe(response => {
+        console.log('Message added', response);
+    }, error => {
+        console.error('Error adding message', error);
+    });
+    this.chatService.sendMessage(channelId, chatMessage)
+ 
     this.message = '';  
     this.selectedImage = null;
   }

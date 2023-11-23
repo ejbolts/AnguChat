@@ -2,14 +2,17 @@ import { Injectable } from '@angular/core';
 import {io} from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { ChatMessage } from '../models/chatmessage.model';  
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
   private socket: any;
+  public apiUrl = 'http://localhost:3000'; 
   public socketId: string | null = null;
-  constructor() {
+  constructor(private http: HttpClient) {
+
     this.socket = io('http://localhost:3000');
 
     this.socket.on('connect', () => {
@@ -38,6 +41,13 @@ export class ChatService {
 
   
 
+  addMessageToChannel(channelId: string,  message: ChatMessage ) {
+    console.log("Message sent to server with channelID:", message, channelId);
+    console.log("this.apiUrl",this.apiUrl)
+    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message });
+  }
+  
+
   public getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
       this.socket.on('system-message', (message: ChatMessage) => {
@@ -49,14 +59,10 @@ public getMessages(): Observable<ChatMessage> {
   return new Observable<ChatMessage>(observer => {
 
     this.socket.on('channel-message', (msg: ChatMessage) => {
-        console.log("Message received in service:", msg);
         observer.next(msg);
     });
   });
 }
-
-
-
 
 
 

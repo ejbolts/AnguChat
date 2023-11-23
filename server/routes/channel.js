@@ -112,4 +112,20 @@ router.delete("/:channelId", async (req, res) => {
   res.json({ message: "Channel deleted!" });
   close();
 });
+
+router.post("/:channelId/addMessage", async (req, res) => {
+  await connect();
+  const channelId = new ObjectId(req.body.channelId);
+
+  const { message } = req.body;
+  console.log("channelID and message.content:", channelId, message);
+
+  await db()
+    .collection("channels")
+    .updateOne({ _id: channelId }, { $addToSet: { history: message } });
+
+  res.json({ message: "message added to channel!" });
+  close();
+});
+
 module.exports = router;

@@ -25,9 +25,7 @@ const setupSockets = (server) => {
 
       io.in(channelId)
         .allSockets()
-        .then((sockets) => {
-          console.log(`Sockets in channel ${channelId}:`, Array.from(sockets));
-        });
+        .then((sockets) => {});
     });
 
     // When a user leaves a channel
@@ -44,9 +42,6 @@ const setupSockets = (server) => {
     });
 
     socket.on("sendMessage", ({ channelId, message }) => {
-      console.log("sender channelId", channelId);
-      console.log("sender message", message);
-
       // Ensure the server socket joins the specified channel
       socket.join(channelId);
 
