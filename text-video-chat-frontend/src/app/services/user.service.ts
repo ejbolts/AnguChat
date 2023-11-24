@@ -4,7 +4,6 @@ import { User } from '../models/user.model';
 import { Observable } from 'rxjs';
 import { Group } from '../models/group.model';
 import { Channel } from '../models/channel.model';
-import { ChatMessage } from '../models/chatmessage.model';
 
 @Injectable({
   providedIn: 'root'

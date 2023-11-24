@@ -138,14 +138,16 @@
                     </button>
                   </div>
 
-                  <div *ngIf="incomingCall">
-                    <h5>Incoming Call</h5>
-                    <button (click)="acceptCall()" class="btn btn-success">
-                      Accept
-                    </button>
-                    <button (click)="declineCall()" class="btn btn-danger">
-                      Decline
-                    </button>
+                  <div *ngIf="incomingCallFrom">
+                    <div class="incoming-call-notification">
+                      <p>Incoming call from: {{ incomingCallFrom }}</p>
+                      <button class="btn btn-success" (click)="acceptCall()">
+                        Accept
+                      </button>
+                      <button class="btn btn-danger" (click)="declineCall()">
+                        Decline
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

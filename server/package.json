@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "mocha ./test/*.test.js"
+    "test": "mocha ./test/*.test.js",
+    "devStart": "nodemon server.js"
   },
   "author": "Ethan Bolton",
   "license": "ISC",

@@ -1,9 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
 import {io} from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { ChatMessage } from '../models/chatmessage.model';  
 import { HttpClient } from '@angular/common/http';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -11,22 +10,44 @@ export class ChatService {
   private socket: any;
   public apiUrl = 'http://localhost:3000'; 
   public socketId: string | null = null;
+  incomingCall: any;
+  peerId: string | undefined; // To store the PeerJS ID
+  incomingCallEvent: EventEmitter<any> = new EventEmitter();
   constructor(private http: HttpClient) {
+    this.socket = io(this.apiUrl);
+    this.initializeSocketListeners();
+  }
 
-    this.socket = io('http://localhost:3000');
-
-    this.socket.on('connect', () => {
-      console.log("Socket successfully connected");
+  private initializeSocketListeners(): void {
+    this.socket.on('connection', (userId: string) => {
+      console.log("Socket successfully connected with user ID: ", userId);
+      this.socketId = userId;
     });
-  
+
     this.socket.on('connect_error', (error: any) => {
       console.error("Socket connection error:", error);
     });
-    this.socket.on('assign-id', (id: string) => {
-      this.socketId = id;
-  });
+
+
+    this.socket.on('incomingCall', (callDetails: any) => {
+      console.log("Incoming call from: ", callDetails.from);
+      this.incomingCallEvent.emit(callDetails.from); // Emit the entire callDetails object
+    });
+    
+    // this.socket.on('incomingCall', (from: string) => {
+    //   this.incomingCall = from;
+    //   console.log("Incoming call from: ", from);
+    //   this.incomingCallEvent.emit(from);
+    // });
   }
 
+
+  startCall(anotherUserSockID: string) {
+    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId });
+   
+  }
+
+  
   joinChannel(channelId: string, groupId: string,userId: string) {
     this.socket.emit('joinChannel', { channelId, groupId, userId });
   }
@@ -39,7 +60,6 @@ export class ChatService {
     this.socket.emit('sendMessage', { channelId, message });
   }
 
-  
 
   addMessageToChannel(channelId: string,  message: ChatMessage ) {
     console.log("Message sent to server with channelID:", message, channelId);
@@ -55,17 +75,13 @@ export class ChatService {
       });
     });
 }
-public getMessages(): Observable<ChatMessage> {
-  return new Observable<ChatMessage>(observer => {
+  public getMessages(): Observable<ChatMessage> {
+    return new Observable<ChatMessage>(observer => {
 
-    this.socket.on('channel-message', (msg: ChatMessage) => {
-        observer.next(msg);
+      this.socket.on('channel-message', (msg: ChatMessage) => {
+          observer.next(msg);
+      });
     });
-  });
-}
-
-
-
-
+  }
 
 }

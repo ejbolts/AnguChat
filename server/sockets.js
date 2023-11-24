@@ -10,6 +10,7 @@ const setupSockets = (server) => {
 
   io.on("connection", (socket) => {
     console.log("New user connected:", socket.id);
+    socket.emit("connection", socket.id);
 
     // When a user joins a channel
     socket.on("joinChannel", ({ channelId, groupId, userId }) => {
@@ -28,6 +29,11 @@ const setupSockets = (server) => {
         .then((sockets) => {});
     });
 
+    // Listen for 'callUser' event and relay it to the specified user
+    socket.on("callUser", ({ anotherUserSockID, from }) => {
+      // should needs to be the socket id of the user being called
+      io.to(anotherUserSockID).emit("incomingCall", { from });
+    });
     // When a user leaves a channel
     socket.on("leaveChannel", ({ channelId, groupId, userId }) => {
       socket.leave(channelId);
