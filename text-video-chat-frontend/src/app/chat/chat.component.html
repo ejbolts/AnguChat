@@ -63,10 +63,22 @@
                       <span *ngIf="msg.isSystemMessage; else userMessage">
                         <em class="text-muted"
                           >{{ msg.content }} -
-                          {{ msg.timestamp | date : "shortTime" }}</em
+                          {{ msg.timestamp | date : "dd/MM/yy, HH:mm" }}</em
                         >
                       </span>
                       <ng-template #userMessage>
+                        <img
+                          *ngIf="msg.profilePic"
+                          [src]="msg.profilePic"
+                          alt="Profile Picture"
+                          class="profile-pic"
+                          style="
+                            height: 30px;
+                            width: 30px;
+                            margin-right: 10px;
+                            border-radius: 50%;
+                          "
+                        />
                         <strong>{{ msg.username }}</strong
                         >: {{ msg.content }}
                         <img
@@ -75,7 +87,7 @@
                           alt="Sent image"
                         />
                         <small class="text-muted ml-2">{{
-                          msg.timestamp | date : "shortTime"
+                          msg.timestamp | date : "dd/MM/yy, HH:mm"
                         }}</small>
                       </ng-template>
                     </li>
@@ -109,6 +121,7 @@
                 </div>
 
                 <div class="video-chat-container">
+                  // might need a ngif template to tell between differnt groups
                   <!-- Local video preview -->
                   <h5>Local Video</h5>
                   <video
@@ -131,7 +144,7 @@
                   <!-- Control buttons -->
                   <div class="controls">
                     <button (click)="startCall()" class="btn btn-success">
-                      Start Call
+                      // have identifer like gropid Start Call
                     </button>
                     <button (click)="stopCall()" class="btn btn-danger">
                       Stop Call
@@ -139,6 +152,8 @@
                   </div>
 
                   <div *ngIf="incomingCallFrom">
+                    // if matching id to one of groups ui display buttons below
+                    that
                     <div class="incoming-call-notification">
                       <p>Incoming call from: {{ incomingCallFrom }}</p>
                       <button class="btn btn-success" (click)="acceptCall()">

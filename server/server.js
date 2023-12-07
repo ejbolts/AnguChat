@@ -10,7 +10,7 @@ const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
-
+const bucketRoute = require("./routes/bucket");
 const expressPeerServer = require("peer").ExpressPeerServer;
 
 const app = express();
@@ -36,7 +36,7 @@ app.use("/update", updateRoute);
 app.use("/remove", removeRoute);
 app.use("/group", groupRoute);
 app.use("/channel", channelRoute);
-
+app.use("/bucket", bucketRoute);
 // Start the server
 const PORT = 3000;
 server.listen(PORT, () => {

@@ -7,7 +7,6 @@ const User = require("../user.model");
 router.post("/", async (req, res) => {
   await connect();
   const userData = req.body;
-
   const existingUser = await db()
     .collection("users")
     .findOne({ username: userData.username });
@@ -21,7 +20,8 @@ router.post("/", async (req, res) => {
     userData.username,
     userData.email,
     userData.password,
-    userData.role
+    userData.role,
+    userData.profilePic
   );
   const result = await db().collection("users").insertOne(user);
 

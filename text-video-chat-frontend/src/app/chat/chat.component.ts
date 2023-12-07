@@ -53,8 +53,6 @@ export class ChatComponent implements OnInit {
       Object.values(this.groupChannels).forEach(channels => {
         // Find the channel within the group channels
         let channel = channels.find(c => c._id === msg.channelId); 
-        console.log("Channel:", channel);
-        console.log("Channel history:", channel?.history);
         if (channel) {
           channel.history.push(msg);
           console.log("Channel history:", channel.history);
@@ -257,7 +255,7 @@ stopCall(): void {
   this.incomingCall = null;
   this.incomingCallFrom = null;
 
-  // Additional UI reset if necessary
+  
 }
 
 
@@ -279,10 +277,10 @@ declineCall(): void {
  
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
-  
-    this.userService.joinGroup(group._id, currentUserId).subscribe(
+    console.log(group._id ,currentUserId)
+    this.userService.addUserToGroup(group._id, currentUserId).subscribe(
       response => {
-        console.log('Join request sent:', response);
+        this.fetchGroups(); 
         // Optionally, update your UI or provide feedback to the user here
       },
       error => {
@@ -336,7 +334,8 @@ handleSendMessages(channelId: string): void {
       content: this.message.trim(),
       timestamp: new Date(),
       image: this.selectedImage,
-      channelId: channelId
+      channelId: channelId,
+      profilePic: this.currentUser.profilePic,
     };
     
     // Call the service method with the channel ID and the chat message

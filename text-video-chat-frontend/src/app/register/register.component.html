@@ -1,5 +1,5 @@
 <div class="container register-container">
-  <form (submit)="register()" class="register-form">
+  <form (submit)="goToLogin()" class="register-form">
     <!-- Changed method name to register() -->
     <div class="form-group">
       <h2 class="register-title">Register</h2>
@@ -31,7 +31,6 @@
     </div>
 
     <div class="form-group">
-      <!-- Added div wrapper for better styling and consistent layout -->
       <label for="email">Email:</label>
       <input
         type="email"
@@ -44,8 +43,11 @@
       />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-2">
-      <!-- Added margin-top using bootstrap class -->
+    <div class="form-group">
+      <label for="profilePic">Profile Picture:</label>
+      <input type="file" (change)="handleFileInput($event)" accept="image/*" />
+    </div>
+    <button type="submit" (click)="register()" class="btn btn-primary mt-2">
       Register
     </button>
 

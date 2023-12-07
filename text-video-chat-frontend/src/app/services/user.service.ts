@@ -15,6 +15,7 @@ export class UserService {
 
   // Method to register a new user
   registerUser(user: User): Observable<any> {
+    console.log("registerUser called in service");
     return this.http.post(`${this.apiUrl}/register`, user);
   }
 
@@ -91,6 +92,9 @@ approveUserForGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/approveUser`, { userId: userId });
 }
 
+uploadFileToServer(fileData: FormData): Observable<any> {
+  return this.http.post(`${this.apiUrl}/bucket/upload`, fileData);
+}
 
 
 }

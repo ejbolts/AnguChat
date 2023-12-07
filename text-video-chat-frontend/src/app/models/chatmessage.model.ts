@@ -3,6 +3,7 @@ export interface ChatMessage {
     content: string;
     timestamp: Date;
     isSystemMessage?: boolean;
-    image?: string | null;  // Base64 encoded image
+    image?: string | null;  
     channelId?: string;
+    profilePic?: string | null;
   }
