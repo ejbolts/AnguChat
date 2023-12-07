@@ -34,11 +34,6 @@ export class ChatService {
       this.incomingCallEvent.emit(callDetails.from); // Emit the entire callDetails object
     });
     
-    // this.socket.on('incomingCall', (from: string) => {
-    //   this.incomingCall = from;
-    //   console.log("Incoming call from: ", from);
-    //   this.incomingCallEvent.emit(from);
-    // });
   }
 
 

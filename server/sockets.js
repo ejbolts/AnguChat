@@ -56,7 +56,9 @@ const setupSockets = (server) => {
         content: message.content,
         username: message.username,
         timestamp: message.timestamp,
+        image: message.image,
         channelId: channelId,
+        profilePic: message.profilePic,
       });
     });
 

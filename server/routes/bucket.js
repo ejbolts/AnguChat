@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" }); // Configures multer
+const fs = require("fs");
 const { connect, db, close } = require("./app");
 
 AWS.config.update({
@@ -24,6 +25,7 @@ router.post("/upload", upload.single("file"), (req, res) => {
   const params = {
     Bucket: "text-video-app-images-872342",
     Key: uniqueFileName, // Use the unique filename here
+    Body: fs.createReadStream(file.path),
   };
 
   s3.upload(params, async function (err, data) {

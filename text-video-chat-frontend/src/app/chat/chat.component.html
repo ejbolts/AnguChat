@@ -68,8 +68,11 @@
                       </span>
                       <ng-template #userMessage>
                         <img
-                          *ngIf="msg.profilePic"
-                          [src]="msg.profilePic"
+                          [src]="
+                            msg.profilePic
+                              ? msg.profilePic
+                              : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+                          "
                           alt="Profile Picture"
                           class="profile-pic"
                           style="
@@ -79,16 +82,20 @@
                             border-radius: 50%;
                           "
                         />
-                        <strong>{{ msg.username }}</strong
-                        >: {{ msg.content }}
+                        <strong>{{ msg.username }}</strong>
+                        <small class="text-muted ml-2">{{
+                          msg.timestamp | date : " dd/MM/yy, HH:mm"
+                        }}</small>
+                        <br />
+                        <div style="padding-left: 40px">
+                          {{ msg.content }}
+                        </div>
                         <img
                           *ngIf="msg.image"
                           [src]="msg.image"
                           alt="Sent image"
+                          style="max-width: 300px; max-height: 300px"
                         />
-                        <small class="text-muted ml-2">{{
-                          msg.timestamp | date : "dd/MM/yy, HH:mm"
-                        }}</small>
                       </ng-template>
                     </li>
                   </ul>
