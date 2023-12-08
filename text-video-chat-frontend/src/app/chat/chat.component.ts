@@ -41,6 +41,7 @@ export class ChatComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchGroups()
+    this.fetchUsers();
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
@@ -69,18 +70,23 @@ export class ChatComponent implements OnInit {
       path: '/peerjs' // or your PeerJS server path
     });
     
-    this.peer.on('open', (id) => {
-      console.log('My PeerJS ID is:', id);
+    this.peer.on('open', (peerId) => {
+      console.log('My PeerJS ID is:', peerId);
       // You can also store this ID in your service for later use
-      this.chatService.peerId = id;
+      this.chatService.peerId = peerId;
+      const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
+      this.chatService.userId  = currentUserId;
+      console.log("currentUserId in peerjs function",currentUserId)
+      console.log("peerId in peerjs function", peerId)
+      this.chatService.sendConnectionIDs( currentUserId, peerId );
+
     });
     this.peer.on('call', (call) => {
       this.incomingCall = call;
     });
     this.peer.on('close', () => {
       console.log("Peer connection is destroyed.");
-      // Update the application state
-      // e.g., inform the user, reset call-related variables, update UI, etc.
+    
     });
     
     
@@ -116,6 +122,19 @@ export class ChatComponent implements OnInit {
       }
     ); 
   }
+  fetchUsers(): void {
+    console.log(`Fetching users`);
+    this.userService.getUsers().subscribe(
+      (users: User[]) => {
+        this.users = users;
+        console.log("Users:", this.users);
+      },
+      error => {
+        console.error("Error fetching users:", error);
+      }
+    );
+  }
+
 
 onImageSelected(event: any): void {
   const file: File = event.target.files[0];
@@ -130,10 +149,17 @@ onImageSelected(event: any): void {
   reader.readAsDataURL(file);
 }
 
-startCall(): void {
+startCall(userId: string | undefined): void {
+ // api look up here
+ if (!userId) {
+  console.error('User ID is undefined');
+  return;
+}
+
+this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
-    const peerIdToCall = prompt("Enter the Peer ID of the user you want to call:");
-    const anotherUserSockID = prompt("Enter the socket ID of the user you want to call:");
+    const peerIdToCall = connectionInfo.peerId;
+    const anotherUserSockID = connectionInfo.socketId;
 
 
     // Access user's webcam and microphone
@@ -166,11 +192,12 @@ startCall(): void {
       .catch(error => {
         console.error("Error accessing media devices.", error);
       });
+    }
+  }, error => {
+    console.error('Error fetching user connection info:', error);
+  });
+  
   } 
- else {
-    console.error("Socket ID or Peer ID not available yet!");
-  }
-}
 
 acceptCall(): void {
   if (this.incomingCall) {

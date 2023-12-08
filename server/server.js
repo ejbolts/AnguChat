@@ -11,6 +11,7 @@ const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
 const bucketRoute = require("./routes/bucket");
+const socketsRoute = require("./sockets"); // Import the sockets.js file
 const expressPeerServer = require("peer").ExpressPeerServer;
 
 const app = express();
@@ -37,6 +38,8 @@ app.use("/remove", removeRoute);
 app.use("/group", groupRoute);
 app.use("/channel", channelRoute);
 app.use("/bucket", bucketRoute);
+app.use("/sockets", socketsRoute);
+
 // Start the server
 const PORT = 3000;
 server.listen(PORT, () => {

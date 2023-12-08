@@ -1,10 +1,8 @@
 <div class="container mt-5">
-  <!-- Place this code at the top or where you want the logout button to be -->
   <div class="d-flex justify-content-between mb-4">
     <span class="align-self-center"
       >Hello, <strong>{{ currentUser?.username }}</strong></span
     >
-    <!-- Display the current user's name. We use the safe navigation operator (?) to avoid null reference errors -->
     <div>
       <button (click)="logout()" class="btn btn-warning">Logout</button>
       <button (click)="deleteAccount(currentUser!)" class="btn btn-danger mx-2">
@@ -59,6 +57,31 @@
               <div class="container">
                 <div class="chat-messages mb-3">
                   <ul class="list-unstyled">
+                    <li *ngFor="let user of users">
+                      <img
+                        [src]="
+                          user.profilePic
+                            ? user.profilePic
+                            : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+                        "
+                        style="
+                          height: 30px;
+                          width: 30px;
+                          margin-right: 10px;
+                          border-radius: 50%;
+                        "
+                        alt="Profile Picture"
+                        class="profile-pic"
+                      />
+                      <strong>{{ user.username }}</strong>
+                      <button
+                        (click)="startCall(user._id)"
+                        class="btn btn-success"
+                      >
+                        Call
+                      </button>
+                    </li>
+
                     <li *ngFor="let msg of channel.history">
                       <span *ngIf="msg.isSystemMessage; else userMessage">
                         <em class="text-muted"
@@ -150,7 +173,10 @@
 
                   <!-- Control buttons -->
                   <div class="controls">
-                    <button (click)="startCall()" class="btn btn-success">
+                    <button
+                      (click)="startCall(channelId)"
+                      class="btn btn-success"
+                    >
                       // have identifer like gropid Start Call
                     </button>
                     <button (click)="stopCall()" class="btn btn-danger">

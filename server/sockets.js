@@ -1,4 +1,19 @@
 const socketIo = require("socket.io");
+const userConnections = {};
+const express = require("express");
+const router = express.Router();
+
+router.get("/getConnectionInfo/:userId", (req, res) => {
+  console.log("getConnectionInfo req:", req);
+  const userId = req.params.userId;
+  const connectionInfo = userConnections[userId];
+
+  if (connectionInfo) {
+    res.json(connectionInfo);
+  } else {
+    res.status(404).send("User connection info not found");
+  }
+});
 
 const setupSockets = (server) => {
   const io = socketIo(server, {
@@ -11,6 +26,16 @@ const setupSockets = (server) => {
   io.on("connection", (socket) => {
     console.log("New user connected:", socket.id);
     socket.emit("connection", socket.id);
+
+    // Listen for an event where the client sends their user ID and PeerJS ID
+    socket.on("connectUserIDs", ({ userId, peerId }) => {
+      userConnections[userId] = {
+        socketId: socket.id,
+        peerId: peerId,
+      };
+
+      console.log("userConnections:", userConnections);
+    });
 
     // When a user joins a channel
     socket.on("joinChannel", ({ channelId, groupId, userId }) => {
@@ -64,6 +89,13 @@ const setupSockets = (server) => {
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
+      for (const userId in userConnections) {
+        if (userConnections[userId].socketId === socket.id) {
+          delete userConnections[userId];
+          console.log(`Removed mapping for user ${userId}`);
+          break;
+        }
+      }
 
       // Send a disconnection message to all rooms the user was in
       socket.rooms.forEach((roomId) => {
@@ -80,6 +112,5 @@ const setupSockets = (server) => {
   });
 };
 
-module.exports = {
-  setupSockets,
-};
+module.exports = router;
+module.exports.setupSockets = setupSockets;

@@ -7,11 +7,12 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ChatService {
-  private socket: any;
+  public socket: any;
   public apiUrl = 'http://localhost:3000'; 
   public socketId: string | null = null;
   incomingCall: any;
-  peerId: string | undefined; // To store the PeerJS ID
+  public peerId: string | undefined; // To store the PeerJS ID
+  public userId: string | undefined;
   incomingCallEvent: EventEmitter<any> = new EventEmitter();
   constructor(private http: HttpClient) {
     this.socket = io(this.apiUrl);
@@ -35,6 +36,12 @@ export class ChatService {
     });
     
   }
+
+  sendConnectionIDs(userId: String, peerId: String) {
+    this.socket.emit('connectUserIDs', { userId, peerId });
+   
+  }
+
 
 
   startCall(anotherUserSockID: string) {
