@@ -11,7 +11,7 @@ export class ChatService {
   public apiUrl = 'http://localhost:3000'; 
   public socketId: string | null = null;
   incomingCall: any;
-  public peerId: string | undefined; // To store the PeerJS ID
+  public peerId: string | undefined; 
   public userId: string | undefined;
   incomingCallEvent: EventEmitter<any> = new EventEmitter();
   constructor(private http: HttpClient) {
@@ -31,8 +31,8 @@ export class ChatService {
 
 
     this.socket.on('incomingCall', (callDetails: any) => {
-      console.log("Incoming call from: ", callDetails.from);
-      this.incomingCallEvent.emit(callDetails.from); // Emit the entire callDetails object
+      console.log("Incoming call from: ", callDetails);
+      this.incomingCallEvent.emit(callDetails.username);
     });
     
   }
@@ -44,8 +44,8 @@ export class ChatService {
 
 
 
-  startCall(anotherUserSockID: string) {
-    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId });
+  startCall(anotherUserSockID: string, username: string) {
+    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, username});
    
   }
 

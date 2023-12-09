@@ -33,39 +33,43 @@
           >
             Leave Group
           </button>
-          <li
-            *ngFor="let user of users"
-            style="
-              list-style-type: none;
-              width: 190px;
-              display: flex;
-              justify-content: space-between;
-            "
-          >
-            <img
-              [src]="
-                user.profilePic
-                  ? user.profilePic
-                  : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
-              "
+          <div *ngFor="let user of users">
+            <div
+              *ngIf="currentUser?._id !== user._id"
               style="
-                height: 30px;
-                width: 30px;
-                margin-right: 10px;
-                border-radius: 50%;
+                list-style-type: none;
+                width: 190px;
+                display: flex;
+                justify-content: space-between;
               "
-              alt="Profile Picture"
-              class="profile-pic"
-            />
-            <strong>{{ user.username }}</strong>
-            <button
-              [disabled]="isCallActive"
-              (click)="startCall(user._id)"
-              class="btn btn-success"
             >
-              Call
-            </button>
-          </li>
+              <img
+                [src]="
+                  user.profilePic
+                    ? user.profilePic
+                    : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+                "
+                style="
+                  height: 30px;
+                  width: 30px;
+                  margin-right: 10px;
+                  border-radius: 50%;
+                "
+                alt="Profile Picture"
+                class="profile-pic"
+              />
+              <strong>{{ user.username }}</strong>
+              <!-- Control buttons -->
+
+              <button
+                [disabled]="isCallActive"
+                (click)="startCall(user._id, currentUser?.username!)"
+                class="btn btn-success"
+              >
+                Call
+              </button>
+            </div>
+          </div>
           <button
             [disabled]="!isCallActive"
             (click)="stopCall()"
@@ -73,6 +77,39 @@
           >
             Stop Call
           </button>
+          <div *ngIf="incomingCallFrom">
+            <div class="incoming-call-notification">
+              <p>
+                Incoming call from: <b>{{ incomingCallFrom }}</b>
+              </p>
+              <button class="btn btn-success" (click)="acceptCall()">
+                Accept
+              </button>
+              <button class="btn btn-danger" (click)="declineCall()">
+                Decline
+              </button>
+            </div>
+          </div>
+          <div class="video-chat-container" *ngIf="isCallActive">
+            <!-- Local video preview -->
+            <h5>Local Video</h5>
+            <video
+              id="localVideo"
+              autoplay
+              muted
+              class="border rounded mb-2"
+              style="width: 100%"
+            ></video>
+
+            <!-- Remote video display -->
+            <h5>Remote Video</h5>
+            <video
+              id="remoteVideo"
+              autoplay
+              class="border rounded mb-2"
+              style="width: 100%"
+            ></video>
+          </div>
 
           <div
             *ngFor="let channel of groupChannels[group._id]"
@@ -162,50 +199,6 @@
                     >
                       Send
                     </button>
-                  </div>
-                </div>
-
-                <div class="video-chat-container" *ngIf="isCallActive">
-                  // might need a ngif template to tell between differnt groups
-                  <!-- Local video preview -->
-                  <h5>Local Video</h5>
-                  <video
-                    id="localVideo"
-                    autoplay
-                    muted
-                    class="border rounded mb-2"
-                    style="width: 100%"
-                  ></video>
-
-                  <!-- Remote video display -->
-                  <h5>Remote Video</h5>
-                  <video
-                    id="remoteVideo"
-                    autoplay
-                    class="border rounded mb-2"
-                    style="width: 100%"
-                  ></video>
-
-                  <!-- Control buttons -->
-                  <div class="controls">
-                    // have identifer like gropid Start Call
-                    <button (click)="stopCall()" class="btn btn-danger">
-                      Stop Call
-                    </button>
-                  </div>
-
-                  <div *ngIf="incomingCallFrom">
-                    // if matching id to one of groups ui display buttons below
-                    that
-                    <div class="incoming-call-notification">
-                      <p>Incoming call from: {{ incomingCallFrom }}</p>
-                      <button class="btn btn-success" (click)="acceptCall()">
-                        Accept
-                      </button>
-                      <button class="btn btn-danger" (click)="declineCall()">
-                        Decline
-                      </button>
-                    </div>
                   </div>
                 </div>
               </div>

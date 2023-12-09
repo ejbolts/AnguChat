@@ -26,13 +26,15 @@ export class ChatComponent implements OnInit {
   users: User[] = [];
   selectedImage: string | null = null; // Base64 encoded image string
   incomingCall: any = null;  // This will hold the incoming call object
-  channelId: string | undefined;
+  channelId?: string ;
   incomingCallFrom: string | null = null;
   private incomingCallSubscription: any;
   isCallActive: boolean = false;
+  
+
 
   
-  constructor(private router: Router, private userService: UserService, private chatService: ChatService) {
+  constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
     this.incomingCallSubscription = this.chatService.incomingCallEvent.subscribe(from => {
     this.incomingCallFrom = from;
     // Display the UI for the incoming call here
@@ -151,7 +153,11 @@ onImageSelected(event: any): void {
   reader.readAsDataURL(file);
 }
 
-startCall(userId: string | undefined): void {
+startCall(userId: string | undefined, username: string): void {
+  if (userId === undefined) {
+    console.error('User ID is undefined');
+    return;
+  }
  // api look up here
  if (!userId) {
   console.error('User ID is undefined');
@@ -174,7 +180,7 @@ this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
         localVideo.srcObject = stream;
 
         if (peerIdToCall && anotherUserSockID) {
-          this.chatService.startCall(anotherUserSockID);
+          this.chatService.startCall(anotherUserSockID, username);
           const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
           this.activeCall = outgoingCall; // Set the active call
           outgoingCall.on('stream', remoteStream => {
@@ -259,7 +265,6 @@ resetCallUI(): void {
 
 stopCall(): void {
   // Stop the local stream tracks
-  this.isCallActive = false;
   if (this.localStream) {
     this.localStream.getTracks().forEach(track => track.stop());
     this.localStream = undefined;
@@ -285,6 +290,8 @@ stopCall(): void {
   // Reset incoming call information
   this.incomingCall = null;
   this.incomingCallFrom = null;
+  this.isCallActive = false;
+
 
   
 }
@@ -299,10 +306,11 @@ ngOnDestroy(): void {
 
 declineCall(): void {
   if (this.incomingCall) {
-    this.stopCall(); // Stop the call and reset UI
     this.incomingCall.close(); // Close the incoming call
     this.incomingCall = null; // Reset the incoming call to hide the UI
     this.incomingCallFrom = null; // Reset caller info
+    this.stopCall(); // Stop the call and reset UI
+
   }
 }
 

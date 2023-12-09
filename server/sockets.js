@@ -54,9 +54,9 @@ const setupSockets = (server) => {
     });
 
     // Listen for 'callUser' event and relay it to the specified user
-    socket.on("callUser", ({ anotherUserSockID, from }) => {
+    socket.on("callUser", ({ anotherUserSockID, from, username }) => {
       // should needs to be the socket id of the user being called
-      io.to(anotherUserSockID).emit("incomingCall", { from });
+      io.to(anotherUserSockID).emit("incomingCall", { from, username });
     });
     // When a user leaves a channel
     socket.on("leaveChannel", ({ channelId, groupId, userId }) => {
