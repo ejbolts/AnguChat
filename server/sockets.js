@@ -4,7 +4,6 @@ const express = require("express");
 const router = express.Router();
 
 router.get("/getConnectionInfo/:userId", (req, res) => {
-  console.log("getConnectionInfo req:", req);
   const userId = req.params.userId;
   const connectionInfo = userConnections[userId];
 

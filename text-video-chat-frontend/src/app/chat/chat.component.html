@@ -33,6 +33,46 @@
           >
             Leave Group
           </button>
+          <li
+            *ngFor="let user of users"
+            style="
+              list-style-type: none;
+              width: 190px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <img
+              [src]="
+                user.profilePic
+                  ? user.profilePic
+                  : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+              "
+              style="
+                height: 30px;
+                width: 30px;
+                margin-right: 10px;
+                border-radius: 50%;
+              "
+              alt="Profile Picture"
+              class="profile-pic"
+            />
+            <strong>{{ user.username }}</strong>
+            <button
+              [disabled]="isCallActive"
+              (click)="startCall(user._id)"
+              class="btn btn-success"
+            >
+              Call
+            </button>
+          </li>
+          <button
+            [disabled]="!isCallActive"
+            (click)="stopCall()"
+            class="btn btn-danger"
+          >
+            Stop Call
+          </button>
 
           <div
             *ngFor="let channel of groupChannels[group._id]"
@@ -57,31 +97,6 @@
               <div class="container">
                 <div class="chat-messages mb-3">
                   <ul class="list-unstyled">
-                    <li *ngFor="let user of users">
-                      <img
-                        [src]="
-                          user.profilePic
-                            ? user.profilePic
-                            : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
-                        "
-                        style="
-                          height: 30px;
-                          width: 30px;
-                          margin-right: 10px;
-                          border-radius: 50%;
-                        "
-                        alt="Profile Picture"
-                        class="profile-pic"
-                      />
-                      <strong>{{ user.username }}</strong>
-                      <button
-                        (click)="startCall(user._id)"
-                        class="btn btn-success"
-                      >
-                        Call
-                      </button>
-                    </li>
-
                     <li *ngFor="let msg of channel.history">
                       <span *ngIf="msg.isSystemMessage; else userMessage">
                         <em class="text-muted"
@@ -150,7 +165,7 @@
                   </div>
                 </div>
 
-                <div class="video-chat-container">
+                <div class="video-chat-container" *ngIf="isCallActive">
                   // might need a ngif template to tell between differnt groups
                   <!-- Local video preview -->
                   <h5>Local Video</h5>
@@ -173,12 +188,7 @@
 
                   <!-- Control buttons -->
                   <div class="controls">
-                    <button
-                      (click)="startCall(channelId)"
-                      class="btn btn-success"
-                    >
-                      // have identifer like gropid Start Call
-                    </button>
+                    // have identifer like gropid Start Call
                     <button (click)="stopCall()" class="btn btn-danger">
                       Stop Call
                     </button>

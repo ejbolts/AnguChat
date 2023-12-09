@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit {
   channelId: string | undefined;
   incomingCallFrom: string | null = null;
   private incomingCallSubscription: any;
+  isCallActive: boolean = false;
 
   
   constructor(private router: Router, private userService: UserService, private chatService: ChatService) {
@@ -155,6 +156,7 @@ startCall(userId: string | undefined): void {
   console.error('User ID is undefined');
   return;
 }
+this.isCallActive = true;
 
 this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
@@ -256,6 +258,7 @@ resetCallUI(): void {
 
 stopCall(): void {
   // Stop the local stream tracks
+  this.isCallActive = false;
   if (this.localStream) {
     this.localStream.getTracks().forEach(track => track.stop());
     this.localStream = undefined;
