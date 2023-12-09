@@ -83,6 +83,7 @@ export class ChatComponent implements OnInit {
 
     });
     this.peer.on('call', (call) => {
+      this.isCallActive = true;
       this.incomingCall = call;
     });
     this.peer.on('close', () => {
@@ -298,6 +299,7 @@ ngOnDestroy(): void {
 
 declineCall(): void {
   if (this.incomingCall) {
+    this.stopCall(); // Stop the call and reset UI
     this.incomingCall.close(); // Close the incoming call
     this.incomingCall = null; // Reset the incoming call to hide the UI
     this.incomingCallFrom = null; // Reset caller info
