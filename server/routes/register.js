@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const { connect, db, close } = require("./app");
 const User = require("../user.model");
+const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 router.post("/", async (req, res) => {
   await connect();
@@ -15,6 +17,8 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ message: "Username already exists." });
   }
 
+  const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+  userData.password = hashedPassword;
   const user = new User(
     null,
     userData.username,

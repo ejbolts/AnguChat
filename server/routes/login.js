@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { connect, db, close } = require("./app");
 const ObjectId = require("mongodb").ObjectId;
+const bcrypt = require("bcrypt");
 
 // Route for getting all users
 router.get("/", async (req, res) => {
@@ -36,15 +37,23 @@ router.post("/", async (req, res) => {
 
   const { username, password } = req.body;
 
-  const user = await db()
-    .collection("users")
-    .findOne({ username: username, password: password });
+  // Retrieve user by username only
+  const user = await db().collection("users").findOne({ username: username });
 
   if (user) {
-    console.log("User logged in successfully:", user);
-    res.json({ message: "Logged in successfully!", user: user });
+    // Compare the provided password with the hashed password
+    console.log("passowrd", password);
+    console.log("user passowrd", user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch) {
+      console.log("User logged in successfully:", user);
+      res.json({ message: "Logged in successfully!", user: user });
+    } else {
+      console.log("Invalid password!");
+      res.status(401).json({ message: "Invalid credentials!" });
+    }
   } else {
-    console.log("Login attempt failed!");
+    console.log("Username not found!");
     res.status(401).json({ message: "Invalid credentials!" });
   }
 
