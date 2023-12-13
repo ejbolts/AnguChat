@@ -7,6 +7,7 @@ module.exports = class User {
     email,
     password,
     role,
+    profilePic,
     groups,
     reported,
     bannedChannels,
@@ -17,6 +18,7 @@ module.exports = class User {
     this.email = email;
     this.password = password;
     this.role = role;
+    this.profilePic = profilePic;
     this.groups = groups || [];
     this.reported = reported || false;
     this.bannedChannels = bannedChannels || [];

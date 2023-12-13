@@ -171,6 +171,7 @@ removeChannel(channelId: string): void {
 
 
 addUserToGroup(groupId: string, userId: string): void {
+  console.log("added user")
   this.userService.addUserToGroup(groupId, userId).subscribe(
     () => {
       console.log('User added to group successfully');

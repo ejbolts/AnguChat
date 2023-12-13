@@ -6,7 +6,7 @@ import { Channel } from '../models/channel.model';
 import { UserService } from '../services/user.service';
 import { ChatService } from '../services/chat.service' ; 
 import { ChatMessage } from '../models/chatmessage.model';  
-import Peer from 'peerjs';
+import Peer, { MediaConnection } from 'peerjs';
 
 @Component({
   selector: 'app-chat',
@@ -14,50 +14,87 @@ import Peer from 'peerjs';
   styleUrls: ['./chat.component.css']
 })
 
-
-
 export class ChatComponent implements OnInit {
-  public messages: ChatMessage[] = [];
+  public channels: Channel[] = []; // shouldn't use this
+  activeCall: MediaConnection | null = null;
   private peer!: Peer;
   private localStream?: MediaStream;
-  public message: string = '';
   groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
   allGroups: Group[] = [];
   currentUser: User | null = null;
   users: User[] = [];
   selectedImage: string | null = null; // Base64 encoded image string
   incomingCall: any = null;  // This will hold the incoming call object
-
-
-
-  constructor(private router: Router, private userService: UserService, private chatService: ChatService) { } // Inject UserService
-
-
+  channelId?: string ;
+  incomingCallFrom: string | null = null;
+  private incomingCallSubscription: any;
+  isCallActive: boolean = false;
+  selectedImageChannelId: string | null = null;  
+  selectedImages = new Map<string, string | ArrayBuffer>();
+  channelMessages = new Map<string, string>();
   
+  constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
+    this.incomingCallSubscription = this.chatService.incomingCallEvent.subscribe(from => {
+    this.incomingCallFrom = from;
+    // Display the UI for the incoming call here
+  });
+
+}
+
   ngOnInit(): void {
-    this.fetchGroups();
+    this.fetchGroups()
+    this.fetchUsers();
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
     }
+    
     this.chatService.getMessages().subscribe((msg: ChatMessage) => {
-      this.messages.push(msg);
+      console.log("Received message for channel", msg);
+    
+      // Iterate through each group
+      Object.values(this.groupChannels).forEach(channels => {
+        // Find the channel within the group channels
+        let channel = channels.find(c => c._id === msg.channelId); 
+        if (channel) {
+          channel.history.push(msg);
+          console.log("Channel history:", channel.history);
+        }
+      });
     });
-    this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-      this.messages.push(msg);
-    });
+    
+    // this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+    //   this.messages.push(msg);
+    // });
     this.peer = new Peer({
       host: 'localhost',
-      port: 3000,
-      path: '/peerjs/myapp'
-    }); 
-    this.peer.on('call', (incomingCall) => {
-      this.incomingCall = incomingCall;
+      port: 3000, // or your PeerJS server port
+      path: '/peerjs' // or your PeerJS server path
     });
+    
+    this.peer.on('open', (peerId) => {
+      console.log('My PeerJS ID is:', peerId);
+      // You can also store this ID in your service for later use
+      this.chatService.peerId = peerId;
+      const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
+      this.chatService.userId  = currentUserId;
+      console.log("currentUserId in peerjs function",currentUserId)
+      console.log("peerId in peerjs function", peerId)
+      this.chatService.sendConnectionIDs( currentUserId, peerId );
 
+    });
+    this.peer.on('call', (call) => {
+      this.isCallActive = true;
+      this.incomingCall = call;
+    });
+    this.peer.on('close', () => {
+      console.log("Peer connection is destroyed.");
+    
+    });
     
     
   }
+  
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
@@ -77,124 +114,221 @@ export class ChatComponent implements OnInit {
   }
   fetchChannelsPerGroup(groupId: string): void {
     console.log(`Fetching channels for group ${groupId}`); 
-
     this.userService.getChannelsByGroupId(groupId).subscribe(
+      
       (channels: Channel[]) => {
         this.groupChannels[groupId] = channels;
+        console.log("channels:", channels); 
       },
       error => {
         console.error("Error fetching channels:", error);
+      }
+    ); 
+  }
+  fetchUsers(): void {
+    console.log(`Fetching users`);
+    this.userService.getUsers().subscribe(
+      (users: User[]) => {
+        this.users = users;
+        console.log("Users:", this.users);
+      },
+      error => {
+        console.error("Error fetching users:", error);
       }
     );
   }
 
 
-onImageSelected(event: any): void {
+onImageSelected(event: any, channelId: string): void {
   const file: File = event.target.files[0];
   const reader = new FileReader();
 
-  reader.onloadend = () => {
-      const base64String = reader.result as string;
+  reader.onload = e => {
+    if (e.target) {
+      const base64String = e.target.result as string;
+      // Set the image for the specific channel ID
+      this.selectedImages.set(channelId, base64String);
       // Do something with the Base64 string, like attach it to your message object
       this.selectedImage = base64String;
+      this.selectedImageChannelId = channelId;
+    }
   };
   
   reader.readAsDataURL(file);
 }
-sendMessage(): void {
-  if (this.message.trim() && this.currentUser) {
-      const chatMessage: ChatMessage = {
-          username: this.currentUser.username,
-          content: this.message.trim(),
-          timestamp: new Date(),
-          image: this.selectedImage
-      };
-      
-      this.chatService.sendMessage(chatMessage);
-      this.message = '';  
-      this.selectedImage = null;
-  }
-}
 
-startCall(): void {
-  if (this.chatService.socketId) {
-    const peerIdToCall = prompt("Enter the Peer ID of the user you want to call:") ;
+removeImage(channelId: string): void {
+  // Remove the image for the specific channel ID
+  this.selectedImages.delete(channelId);
+}
+startCall(userId: string | undefined, username: string): void {
+  if (userId === undefined) {
+    console.error('User ID is undefined');
+    return;
+  }
+ // api look up here
+ if (!userId) {
+  console.error('User ID is undefined');
+  return;
+}
+this.isCallActive = true;
+
+this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
+  if (this.chatService.socketId && this.chatService.peerId) {
+    const peerIdToCall = connectionInfo.peerId;
+    const anotherUserSockID = connectionInfo.socketId;
+
 
     // Access user's webcam and microphone
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       .then(stream => {
-        this.localStream = stream || undefined;
+        this.localStream = stream;
         const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        localVideo.muted = true;
         localVideo.srcObject = stream;
-        if (peerIdToCall !== null) {
-        const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
-        outgoingCall.on('stream', (remoteStream) => {
-          const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
-          remoteVideo.srcObject = remoteStream;
-        })}else {
+
+        if (peerIdToCall && anotherUserSockID) {
+          this.chatService.startCall(anotherUserSockID, username);
+          const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
+          this.activeCall = outgoingCall; // Set the active call
+          outgoingCall.on('stream', remoteStream => {
+            const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+            remoteVideo.srcObject = remoteStream;
+          });
+
+          if (this.activeCall) {
+            this.activeCall.on('close', () => {
+              this.stopCall(); // Use stopCall to handle cleanup
+            });
+          }
+          
+        } else {
           console.error("Peer ID not provided");
-      }
+        }
       })
       .catch(error => {
         console.error("Error accessing media devices.", error);
       });
-  } else {
-    console.error("Socket ID not available yet!");
+    }
+  }, error => {
+    console.error('Error fetching user connection info:', error);
+  });
+  
+  } 
+
+acceptCall(): void {
+  if (this.incomingCall) {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        this.localStream = stream;
+        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        localVideo.muted = true;
+        localVideo.srcObject = stream;
+
+        // Answer the call with the local stream
+        this.incomingCall.answer(stream);
+        this.activeCall = this.incomingCall; // Set the active call
+
+        // Listen for the remote stream
+        this.incomingCall.on('stream', (remoteStream: MediaStream) => {
+          const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+          remoteVideo.srcObject = remoteStream;
+        });
+        if (this.activeCall) {
+          this.activeCall.on('close', () => {
+            this.stopCall(); // Use stopCall to handle cleanup
+          });
+        }
+      })
+      .catch(error => {
+        console.error("Error accessing media devices.", error);
+      });
+      this.incomingCallFrom = null;
+  } 
+  else {
+    console.error("No incoming call to accept!");
   }
+}
+
+resetCallUI(): void {
+  // Resetting state variables
+  this.incomingCall = null;
+  this.localStream = undefined;
+
+  // Stopping the local video stream if it exists
+  const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+  if (localVideo.srcObject) {
+    const stream = localVideo.srcObject as MediaStream;
+    stream.getTracks().forEach(track => track.stop());
+    localVideo.srcObject = null;
+  }
+
+  // Resetting the remote video element
+  const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+  remoteVideo.srcObject = null;
+
+  // Optionally, reset any other UI elements or variables related to the call
 }
 
 
 stopCall(): void {
+  // Stop the local stream tracks
   if (this.localStream) {
     this.localStream.getTracks().forEach(track => track.stop());
     this.localStream = undefined;
+
+    const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+    if (localVideo) {
+      localVideo.srcObject = null;
+    }
   }
-  // Assuming the peer connection is still active, destroy it
-  this.peer.destroy();
+
+  // Reset the remote video
+  const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+  if (remoteVideo) {
+    remoteVideo.srcObject = null;
+  }
+
+  // Close any active call
+  if (this.activeCall) {
+    this.activeCall.close();
+    this.activeCall = null;
+  }
+
+  // Reset incoming call information
+  this.incomingCall = null;
+  this.incomingCallFrom = null;
+  this.isCallActive = false;
+
+
+  
 }
+
+
 
 ngOnDestroy(): void {
   this.stopCall();
 }
 
-acceptCall(): void {
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    .then(stream => {
-      this.localStream = stream;
-      const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
-      localVideo.srcObject = stream;
 
-      this.incomingCall.answer(this.localStream); // Answer the call with the local stream
-
-      this.incomingCall.on('stream', (remoteStream: MediaProvider | null) => {
-        const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
-        remoteVideo.srcObject = remoteStream; // Show the remote video stream
-      });
-
-      this.incomingCall = null;  // Reset the incoming call to hide the UI
-    })
-    .catch(error => {
-      console.error("Error accessing media devices.", error);
-    });
-}
 
 declineCall(): void {
-  this.incomingCall.close();  // Close the incoming call
-  this.incomingCall = null;  // Reset the incoming call to hide the UI
+  if (this.incomingCall) {
+    this.incomingCall.close(); // Close the incoming call
+    this.incomingCall = null; // Reset the incoming call to hide the UI
+    this.incomingCallFrom = null; // Reset caller info
+    this.stopCall(); // Stop the call and reset UI
+
+  }
 }
 
-
-
-
-
-  
  
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
-  
-    this.userService.joinGroup(group._id, currentUserId).subscribe(
+    console.log(group._id ,currentUserId)
+    this.userService.addUserToGroup(group._id, currentUserId).subscribe(
       response => {
-        console.log('Join request sent:', response);
+        this.fetchGroups(); 
         // Optionally, update your UI or provide feedback to the user here
       },
       error => {
@@ -240,9 +374,45 @@ removeUserFromGroup(groupId: string): void {
     }
   );
 }
-addUserToChannel(channelId: string, groupId: string, userId: string): void {
+
+handleSendMessages(channelId: string): void {
+  const messageToSend = this.channelMessages.get(channelId);
+  const imageToSend = this.selectedImages.get(channelId);
+  console.log("messageToSend", messageToSend)
+  if (messageToSend && this.currentUser) {
+    const chatMessage: ChatMessage = {
+      username: this.currentUser.username,
+      content: messageToSend || '', 
+      timestamp: new Date(),
+      image: imageToSend ? imageToSend.toString() : null,
+      channelId: channelId,
+      profilePic: this.currentUser.profilePic,
+    };
+    
+    // Call the service method with the channel ID and the chat message
+    this.chatService.addMessageToChannel(channelId, chatMessage)
+    .subscribe(response => {
+        console.log('Message added', response);
+    }, error => {
+        console.error('Error adding message', error);
+    });
+    this.chatService.sendMessage(channelId, chatMessage)
+ 
+    this.channelMessages.set(channelId, '');
+    this.selectedImages.delete(channelId);
+  }
+}
+handleMessageInput(event: Event, channelId: string): void {
+  const message = (event.target as HTMLInputElement).value;
+  this.channelMessages.set(channelId, message);
+}
+
+
+handleJoinChannel(channelId: string, groupId: string, userId: string): void {
+  console.log('Handling join channel:', channelId, groupId, userId);
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
+      this.chatService.joinChannel(channelId, groupId, userId);
       console.log('User added to channel successfully');
 
       this.fetchChannelsPerGroup(groupId);
@@ -252,9 +422,10 @@ addUserToChannel(channelId: string, groupId: string, userId: string): void {
     }
   );
 }
-removeUserFromChannel(channelId: string, userId: string, groupId: string): void {
+handleLeaveChannel(channelId: string, userId: string, groupId: string): void {
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
+      this.chatService.leaveChannel(channelId, groupId, userId);
       console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
 
@@ -312,7 +483,8 @@ get isAdmin(): boolean {
 updateGroupsStorage(): void {
   // Update the groups in your storage (localStorage or elsewhere)
   localStorage.setItem('groups', JSON.stringify(this.allGroups));
-} navigateToDashboard(): void {
+} 
+navigateToDashboard(): void {
   this.router.navigate(['/admin']);
 }
 

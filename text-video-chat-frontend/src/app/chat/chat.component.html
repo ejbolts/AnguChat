@@ -1,10 +1,8 @@
 <div class="container mt-5">
-  <!-- Place this code at the top or where you want the logout button to be -->
   <div class="d-flex justify-content-between mb-4">
     <span class="align-self-center"
       >Hello, <strong>{{ currentUser?.username }}</strong></span
     >
-    <!-- Display the current user's name. We use the safe navigation operator (?) to avoid null reference errors -->
     <div>
       <button (click)="logout()" class="btn btn-warning">Logout</button>
       <button (click)="deleteAccount(currentUser!)" class="btn btn-danger mx-2">
@@ -35,115 +33,205 @@
           >
             Leave Group
           </button>
+          <div *ngFor="let user of users">
+            <div
+              *ngIf="currentUser?._id !== user._id"
+              style="
+                list-style-type: none;
+                width: 190px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              <img
+                [src]="
+                  user.profilePic
+                    ? user.profilePic
+                    : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+                "
+                style="
+                  height: 30px;
+                  width: 30px;
+                  margin-right: 10px;
+                  border-radius: 50%;
+                "
+                alt="Profile Picture"
+                class="profile-pic"
+              />
+              <strong>{{ user.username }}</strong>
+              <!-- Control buttons -->
+
+              <button
+                [disabled]="isCallActive"
+                (click)="startCall(user._id, currentUser?.username!)"
+                class="btn btn-success"
+              >
+                Call
+              </button>
+            </div>
+          </div>
+          <button
+            [disabled]="!isCallActive"
+            (click)="stopCall()"
+            class="btn btn-danger"
+          >
+            Stop Call
+          </button>
+          <div *ngIf="incomingCallFrom">
+            <div class="incoming-call-notification">
+              <p>
+                Incoming call from: <b>{{ incomingCallFrom }}</b>
+              </p>
+              <button class="btn btn-success" (click)="acceptCall()">
+                Accept
+              </button>
+              <button class="btn btn-danger" (click)="declineCall()">
+                Decline
+              </button>
+            </div>
+          </div>
+          <div class="video-chat-container" *ngIf="isCallActive">
+            <!-- Local video preview -->
+            <h5>Local Video</h5>
+            <video
+              id="localVideo"
+              autoplay
+              muted
+              class="border rounded mb-2"
+              style="width: 100%"
+            ></video>
+
+            <!-- Remote video display -->
+            <h5>Remote Video</h5>
+            <video
+              id="remoteVideo"
+              autoplay
+              class="border rounded mb-2"
+              style="width: 100%"
+            ></video>
+          </div>
 
           <div
             *ngFor="let channel of groupChannels[group._id]"
             style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
           >
             <h4>{{ channel.name }}</h4>
-            <button
-              (click)="
-                addUserToChannel(channel._id, group._id, currentUser?._id!)
-              "
-              class="btn btn-primary"
-            >
-              Join Channel
-            </button>
 
-            <ng-container *ngIf="isChannelMember(channel._id, group._id)">
+            <ng-container
+              *ngIf="
+                isChannelMember(channel._id, group._id);
+                else joinChannelTemplate
+              "
+            >
+              <button
+                (click)="
+                  handleLeaveChannel(channel._id, currentUser?._id!, group._id)
+                "
+                class="btn btn-primary"
+              >
+                Leave Channel
+              </button>
               <div class="container">
                 <div class="chat-messages mb-3">
                   <ul class="list-unstyled">
-                    <li *ngFor="let msg of messages">
+                    <li *ngFor="let msg of channel.history">
                       <span *ngIf="msg.isSystemMessage; else userMessage">
                         <em class="text-muted"
                           >{{ msg.content }} -
-                          {{ msg.timestamp | date : "shortTime" }}</em
+                          {{ msg.timestamp | date : "dd/MM/yy, HH:mm" }}</em
                         >
                       </span>
                       <ng-template #userMessage>
-                        <strong>{{ msg.username }}</strong
-                        >: {{ msg.content }}
+                        <img
+                          [src]="
+                            msg.profilePic
+                              ? msg.profilePic
+                              : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+                          "
+                          alt="Profile Picture"
+                          class="profile-pic"
+                          style="
+                            height: 30px;
+                            width: 30px;
+                            margin-right: 10px;
+                            border-radius: 50%;
+                          "
+                        />
+                        <strong>{{ msg.username }}</strong>
+                        <small class="text-muted ml-2">{{
+                          msg.timestamp | date : " dd/MM/yy, HH:mm"
+                        }}</small>
+                        <br />
+                        <div style="padding-left: 40px">
+                          {{ msg.content }}
+                        </div>
                         <img
                           *ngIf="msg.image"
                           [src]="msg.image"
                           alt="Sent image"
-                          width="100"
-                          class="img-thumbnail"
+                          style="max-width: 300px; max-height: 300px"
                         />
-                        <small class="text-muted ml-2">{{
-                          msg.timestamp | date : "shortTime"
-                        }}</small>
                       </ng-template>
                     </li>
                   </ul>
                 </div>
 
                 <div class="chat-input mb-3">
+                  <div *ngIf="selectedImages.has(channel._id)">
+                    <img
+                      [src]="selectedImages.get(channel._id)"
+                      style="max-width: 100px; max-height: 100px"
+                    />
+                  </div>
                   <div class="input-group">
                     <input
-                      [(ngModel)]="message"
+                      [value]="channelMessages.get(channel._id) || ''"
+                      (input)="handleMessageInput($event, channel._id)"
                       type="text"
                       class="form-control"
                       placeholder="Type your message..."
                     />
                     <input
                       type="file"
-                      (change)="onImageSelected($event)"
+                      (change)="onImageSelected($event, channel._id)"
                       class="d-none"
-                      id="fileInput"
+                      [id]="'fileInput' + channel._id"
                     />
-                    <label class="btn btn-secondary" for="fileInput"
-                      >Attach Image</label
+                    <label
+                      class="btn btn-secondary"
+                      [for]="'fileInput' + channel._id"
                     >
-                    <button (click)="sendMessage()" class="btn btn-info">
+                      Attach Image
+                    </label>
+                    <div *ngIf="selectedImages.has(channel._id)">
+                      <button
+                        class="btn btn-danger"
+                        (click)="removeImage(channel._id)"
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+
+                    <button
+                      (click)="handleSendMessages(channel._id)"
+                      class="btn btn-info"
+                    >
                       Send
-                    </button>
-                  </div>
-                </div>
-
-                <div class="video-chat-container">
-                  <!-- Local video preview -->
-                  <h5>Local Video</h5>
-                  <video
-                    id="localVideo"
-                    autoplay
-                    muted
-                    class="border rounded mb-2"
-                    style="width: 100%"
-                  ></video>
-
-                  <!-- Remote video display -->
-                  <h5>Remote Video</h5>
-                  <video
-                    id="remoteVideo"
-                    autoplay
-                    class="border rounded mb-2"
-                    style="width: 100%"
-                  ></video>
-
-                  <!-- Control buttons -->
-                  <div class="controls">
-                    <button (click)="startCall()" class="btn btn-success">
-                      Start Call
-                    </button>
-                    <button (click)="stopCall()" class="btn btn-danger">
-                      Stop Call
-                    </button>
-                  </div>
-
-                  <div *ngIf="incomingCall">
-                    <h5>Incoming Call</h5>
-                    <button (click)="acceptCall()" class="btn btn-success">
-                      Accept
-                    </button>
-                    <button (click)="declineCall()" class="btn btn-danger">
-                      Decline
                     </button>
                   </div>
                 </div>
               </div>
             </ng-container>
+            <ng-template #joinChannelTemplate>
+              <button
+                (click)="
+                  handleJoinChannel(channel._id, group._id, currentUser?._id!)
+                "
+                class="btn btn-primary"
+              >
+                Join Channel
+              </button>
+            </ng-template>
           </div>
         </ng-container>
 

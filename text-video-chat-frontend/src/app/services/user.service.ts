@@ -9,12 +9,13 @@ import { Channel } from '../models/channel.model';
   providedIn: 'root'
 })
 export class UserService {
-  public apiUrl = 'http://localhost:3000'; // Your backend server URL
+  public apiUrl = 'http://localhost:3000'; 
 
   constructor(private http: HttpClient) {}
 
   // Method to register a new user
   registerUser(user: User): Observable<any> {
+    console.log("registerUser called in service");
     return this.http.post(`${this.apiUrl}/register`, user);
   }
 
@@ -36,6 +37,11 @@ export class UserService {
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/login`);
   }
+
+  getUsersConnectionInfo(userId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/sockets/getConnectionInfo/${userId}`);
+  }
+  
 
   // Method to fetch a specific user by its _id
   getUserById(id: string): Observable<User> {
@@ -66,6 +72,13 @@ deleteChannel(channelId: string): Observable<any> {
 getChannelsByGroupId(groupId: string): Observable<Channel[]> {
   return this.http.get<Channel[]>(`${this.apiUrl}/group/${groupId}/channels`);
 }
+
+
+getUsers(): Observable<User[]> {
+  return this.http.get<User[]>(`${this.apiUrl}/channel/getAllUsers`);
+}
+
+
 addUserToGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/addUser`, { userId });
 }
@@ -78,7 +91,8 @@ addUserToChannel(channelId: string, groupId: string, userId: string): Observable
   return this.http.post(`${this.apiUrl}/channel/${channelId}/addUser`, { groupId, userId });
 }
 
-removeUserFromChannel(channelId: string, userId: string): Observable<any> {
+
+removeUserFromChannel(channelId: string,  userId: string): Observable<any> {
   return this.http.delete(`${this.apiUrl}/channel/${channelId}/removeUser`, { body: { userId: userId } });
 }
 
@@ -90,6 +104,9 @@ approveUserForGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/approveUser`, { userId: userId });
 }
 
+uploadFileToServer(fileData: FormData): Observable<any> {
+  return this.http.post(`${this.apiUrl}/bucket/upload`, fileData);
+}
 
 
 }

@@ -10,6 +10,7 @@ router.post("/", async (req, res) => {
   const newChannel = {
     _id: new ObjectId(),
     name: name,
+    history: [],
   };
 
   // Insert the new channel into the 'channels' collection
@@ -93,6 +94,20 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/getAllUsers", async (req, res) => {
+  await connect();
+
+  try {
+    const users = await db().collection("users").find({}).toArray();
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Internal server error" });
+  } finally {
+    close();
+  }
+});
+
 router.delete("/:channelId", async (req, res) => {
   await connect();
   const channelId = new ObjectId(req.params.channelId);
@@ -111,4 +126,20 @@ router.delete("/:channelId", async (req, res) => {
   res.json({ message: "Channel deleted!" });
   close();
 });
+
+router.post("/:channelId/addMessage", async (req, res) => {
+  await connect();
+  const channelId = new ObjectId(req.body.channelId);
+
+  const { message } = req.body;
+  console.log("channelID and message.content:", channelId, message);
+
+  await db()
+    .collection("channels")
+    .updateOne({ _id: channelId }, { $addToSet: { history: message } });
+
+  res.json({ message: "message added to channel!" });
+  close();
+});
+
 module.exports = router;

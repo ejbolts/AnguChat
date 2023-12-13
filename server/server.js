@@ -10,14 +10,14 @@ const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
-
+const bucketRoute = require("./routes/bucket");
+const socketsRoute = require("./sockets"); // Import the sockets.js file
 const expressPeerServer = require("peer").ExpressPeerServer;
 
 const app = express();
 const server = http.createServer(app);
 const options = {
   debug: true,
-  path: "/myapp",
 };
 
 // Middleware
@@ -37,6 +37,8 @@ app.use("/update", updateRoute);
 app.use("/remove", removeRoute);
 app.use("/group", groupRoute);
 app.use("/channel", channelRoute);
+app.use("/bucket", bucketRoute);
+app.use("/sockets", socketsRoute);
 
 // Start the server
 const PORT = 3000;
