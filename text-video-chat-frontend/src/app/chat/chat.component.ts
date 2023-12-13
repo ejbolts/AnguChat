@@ -19,7 +19,6 @@ export class ChatComponent implements OnInit {
   activeCall: MediaConnection | null = null;
   private peer!: Peer;
   private localStream?: MediaStream;
-  public message: string = '';
   groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
   allGroups: Group[] = [];
   currentUser: User | null = null;
@@ -30,9 +29,9 @@ export class ChatComponent implements OnInit {
   incomingCallFrom: string | null = null;
   private incomingCallSubscription: any;
   isCallActive: boolean = false;
-  
-
-
+  selectedImageChannelId: string | null = null;  
+  selectedImages = new Map<string, string | ArrayBuffer>();
+  channelMessages = new Map<string, string>();
   
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
     this.incomingCallSubscription = this.chatService.incomingCallEvent.subscribe(from => {
@@ -140,19 +139,28 @@ export class ChatComponent implements OnInit {
   }
 
 
-onImageSelected(event: any): void {
+onImageSelected(event: any, channelId: string): void {
   const file: File = event.target.files[0];
   const reader = new FileReader();
 
-  reader.onloadend = () => {
-      const base64String = reader.result as string;
+  reader.onload = e => {
+    if (e.target) {
+      const base64String = e.target.result as string;
+      // Set the image for the specific channel ID
+      this.selectedImages.set(channelId, base64String);
       // Do something with the Base64 string, like attach it to your message object
       this.selectedImage = base64String;
+      this.selectedImageChannelId = channelId;
+    }
   };
   
   reader.readAsDataURL(file);
 }
 
+removeImage(channelId: string): void {
+  // Remove the image for the specific channel ID
+  this.selectedImages.delete(channelId);
+}
 startCall(userId: string | undefined, username: string): void {
   if (userId === undefined) {
     console.error('User ID is undefined');
@@ -368,12 +376,15 @@ removeUserFromGroup(groupId: string): void {
 }
 
 handleSendMessages(channelId: string): void {
-  if (this.message.trim() && this.currentUser) {
+  const messageToSend = this.channelMessages.get(channelId);
+  const imageToSend = this.selectedImages.get(channelId);
+  console.log("messageToSend", messageToSend)
+  if (messageToSend && this.currentUser) {
     const chatMessage: ChatMessage = {
       username: this.currentUser.username,
-      content: this.message.trim(),
+      content: messageToSend || '', 
       timestamp: new Date(),
-      image: this.selectedImage,
+      image: imageToSend ? imageToSend.toString() : null,
       channelId: channelId,
       profilePic: this.currentUser.profilePic,
     };
@@ -387,11 +398,14 @@ handleSendMessages(channelId: string): void {
     });
     this.chatService.sendMessage(channelId, chatMessage)
  
-    this.message = '';  
-    this.selectedImage = null;
+    this.channelMessages.set(channelId, '');
+    this.selectedImages.delete(channelId);
   }
 }
-
+handleMessageInput(event: Event, channelId: string): void {
+  const message = (event.target as HTMLInputElement).value;
+  this.channelMessages.set(channelId, message);
+}
 
 
 handleJoinChannel(channelId: string, groupId: string, userId: string): void {
