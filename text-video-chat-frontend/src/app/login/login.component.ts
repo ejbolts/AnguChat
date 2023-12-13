@@ -39,7 +39,21 @@ export class LoginComponent {
       );
     }
   }
-  
+  loginGuest(): void {
+      this.userService.loginUser({ username: "Guest1", password: "Guest1" }).subscribe(
+        response => {
+          if (response.user) {  
+            sessionStorage.setItem('currentUser', JSON.stringify(response.user));
+            this.router.navigate(['chat']);
+          } else {
+            this.errorMessage = "Unexpected error occurred!";
+          }
+        },
+        error => {
+          this.errorMessage = "Invalid credentials!";
+        }
+      );
+  }
   
   
 
