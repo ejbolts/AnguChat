@@ -32,9 +32,9 @@ export class ChatService {
 
     this.socket.on('incomingCall', (callDetails: any) => {
       console.log("Incoming call from: ", callDetails);
-      this.incomingCallEvent.emit(callDetails.username);
+      this.incomingCallEvent.emit(callDetails);
     });
-    
+
   }
 
   sendConnectionIDs(userId: String, peerId: String) {
@@ -45,12 +45,12 @@ export class ChatService {
 
 
   startCall(anotherUserSockID: string, username: string) {
-    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, username});
+    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username });
    
   }
 
   
-  joinChannel(channelId: string, groupId: string,userId: string) {
+  joinChannel(channelId: string, groupId: string, userId: string) {
     this.socket.emit('joinChannel', { channelId, groupId, userId });
   }
 
@@ -86,4 +86,7 @@ export class ChatService {
     });
   }
 
+  public calldeclined(callerId: string) {
+    this.socket.emit('call-declined', { callerId });
+  }
 }

@@ -77,10 +77,10 @@
           >
             Stop Call
           </button>
-          <div *ngIf="incomingCallFrom">
+          <div *ngIf="incomingCallDetails">
             <div class="incoming-call-notification">
               <p>
-                Incoming call from: <b>{{ incomingCallFrom }}</b>
+                Incoming call from: <b>{{ incomingCallDetails.username }}</b>
               </p>
               <button class="btn btn-success" (click)="acceptCall()">
                 Accept

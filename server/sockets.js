@@ -54,10 +54,23 @@ const setupSockets = (server) => {
     });
 
     // Listen for 'callUser' event and relay it to the specified user
-    socket.on("callUser", ({ anotherUserSockID, from, username }) => {
+    socket.on("callUser", ({ anotherUserSockID, from, socketID, username }) => {
       // should needs to be the socket id of the user being called
-      io.to(anotherUserSockID).emit("incomingCall", { from, username });
+      console.log("callUser", anotherUserSockID, from, socketID, username);
+      io.to(anotherUserSockID).emit("incomingCall", {
+        from,
+        socketID,
+        username,
+      });
     });
+
+    socket.on("call-declined", (data) => {
+      // Notify the caller that the call was declined
+      // 'data.callerId' should be the socket ID of the caller
+      console.log("call-declined", data);
+      io.to(data.callerId).emit("call-declined", { message: "Call declined" });
+    });
+
     // When a user leaves a channel
     socket.on("leaveChannel", ({ channelId, groupId, userId }) => {
       socket.leave(channelId);

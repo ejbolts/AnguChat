@@ -32,12 +32,17 @@ export class ChatComponent implements OnInit {
   selectedImageChannelId: string | null = null;  
   selectedImages = new Map<string, string | ArrayBuffer>();
   channelMessages = new Map<string, string>();
+  anotherUserSockID: string | null = null;
+  incomingCallDetails: any;
   
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
-    this.incomingCallSubscription = this.chatService.incomingCallEvent.subscribe(from => {
-    this.incomingCallFrom = from;
-    // Display the UI for the incoming call here
-  });
+    this.chatService.incomingCallEvent.subscribe((callDetails: any) => {
+      this.incomingCallDetails = callDetails; // Store the entire callDetails object
+    });
+    this.chatService.socket.on('call-declined', (data: { message: string }) => {
+      alert(data.message); // Show an alert that the call was declined
+      this.stopCall();    // Stop the call
+    });
 
 }
 
@@ -172,11 +177,10 @@ startCall(userId: string | undefined, username: string): void {
   return;
 }
 this.isCallActive = true;
-
 this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
     const peerIdToCall = connectionInfo.peerId;
-    const anotherUserSockID = connectionInfo.socketId;
+     this.anotherUserSockID = connectionInfo.socketId; // how can i store this id so that i can access it in the decline call function
 
 
     // Access user's webcam and microphone
@@ -187,8 +191,8 @@ this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
         localVideo.muted = true;
         localVideo.srcObject = stream;
 
-        if (peerIdToCall && anotherUserSockID) {
-          this.chatService.startCall(anotherUserSockID, username);
+        if (peerIdToCall && this.anotherUserSockID) {
+          this.chatService.startCall(this.anotherUserSockID, username);
           const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
           this.activeCall = outgoingCall; // Set the active call
           outgoingCall.on('stream', remoteStream => {
@@ -311,14 +315,16 @@ ngOnDestroy(): void {
 }
 
 
-
 declineCall(): void {
-  if (this.incomingCall) {
+ 
+  if (this.incomingCall && this.incomingCallDetails.socketID) {
+    console.log("Declining call from Socket ID:", this.incomingCallDetails.socketID);
+
+    this.chatService.calldeclined(this.incomingCallDetails.socketID);
     this.incomingCall.close(); // Close the incoming call
     this.incomingCall = null; // Reset the incoming call to hide the UI
-    this.incomingCallFrom = null; // Reset caller info
+    this.incomingCallDetails = null; // Reset caller info
     this.stopCall(); // Stop the call and reset UI
-
   }
 }
 
