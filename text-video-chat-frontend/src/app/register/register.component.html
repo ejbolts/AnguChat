@@ -50,14 +50,24 @@
     <button type="submit" (click)="register()" class="btn btn-primary mt-2">
       Register
     </button>
-
-    <button
-      (click)="goToLogin()"
-      class="btn btn-outline-primary mt-2"
-      type="button"
+    <div
+      class="d-flex align-items-center justify-content-center"
+      style="margin-top: 10px"
     >
-      Login
-    </button>
+      <span class="me-2">Already have an account?</span>
+      <button
+        (click)="goToLogin()"
+        class="btn btn-link"
+        style="
+          text-decoration: underline;
+          border: none;
+          background: none;
+          padding: 0;
+        "
+      >
+        Login Here
+      </button>
+    </div>
 
     <div *ngIf="errorMessage" class="alert alert-danger mt-2">
       {{ errorMessage }}

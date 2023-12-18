@@ -1,14 +1,19 @@
 body {
   font-family: "Arial", sans-serif;
-  background-color: #f4f4f4;
+  color: white;
+  background-color: #000d18;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Cpolygon fill='%23001324' points='957 450 539 900 1396 900'/%3E%3Cpolygon fill='%23001b33' points='957 450 872.9 900 1396 900'/%3E%3Cpolygon fill='%23001325' points='-60 900 398 662 816 900'/%3E%3Cpolygon fill='%23001c35' points='337 900 398 662 816 900'/%3E%3Cpolygon fill='%23001425' points='1203 546 1552 900 876 900'/%3E%3Cpolygon fill='%23001d36' points='1203 546 1552 900 1162 900'/%3E%3Cpolygon fill='%23001426' points='641 695 886 900 367 900'/%3E%3Cpolygon fill='%23001e38' points='587 900 641 695 886 900'/%3E%3Cpolygon fill='%23001526' points='1710 900 1401 632 1096 900'/%3E%3Cpolygon fill='%23001f39' points='1710 900 1401 632 1365 900'/%3E%3Cpolygon fill='%23001527' points='1210 900 971 687 725 900'/%3E%3Cpolygon fill='%2300203b' points='943 900 1210 900 971 687'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
 }
 
 .container {
   max-width: 800px;
   margin: 50px auto;
-  background-color: #fff;
-  padding: 30px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 button {
