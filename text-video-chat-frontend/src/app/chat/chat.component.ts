@@ -247,7 +247,7 @@ acceptCall(): void {
       .catch(error => {
         console.error("Error accessing media devices.", error);
       });
-      this.incomingCallFrom = null;
+      this.incomingCallDetails = null;
   } 
   else {
     console.error("No incoming call to accept!");
@@ -411,6 +411,10 @@ handleSendMessages(channelId: string): void {
 handleMessageInput(event: Event, channelId: string): void {
   const message = (event.target as HTMLInputElement).value;
   this.channelMessages.set(channelId, message);
+
+  const textarea = event.target as HTMLTextAreaElement;
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 'px';
 }
 
 

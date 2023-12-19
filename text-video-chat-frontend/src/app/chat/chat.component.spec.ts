@@ -79,11 +79,12 @@ describe('ChatComponent', () => {
   it('should assign Base64 string of an image to selectedImage', () => {
     const mockFile = new Blob([''], { type: 'image/jpg' });
     const mockEvent = { target: { files: [mockFile] } };
+    const mockImage = 'data:image/jpg;base64,';
     
     const reader = jasmine.createSpyObj('FileReader', ['readAsDataURL', 'onloadend']);
     spyOn(window as any, 'FileReader').and.returnValue(reader);
     
-    component.onImageSelected(mockEvent);
+    component.onImageSelected(mockEvent,mockImage);
     expect(reader.readAsDataURL).toHaveBeenCalledWith(mockFile);
   
     // Simulating reader's onloadend event

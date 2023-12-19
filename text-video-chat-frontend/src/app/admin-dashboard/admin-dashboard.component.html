@@ -1,13 +1,22 @@
 <div class="container mt-5">
-  <h2 class="admin-title">Admin Dashboard</h2>
+  <h2 class="admin-title" style="color: white">Admin Dashboard</h2>
   <div class="current-user">
     Logged in as: <strong>{{ currentUser?.username }}</strong>
   </div>
 
-  <button (click)="logout()" class="btn btn-warning">Logout</button>
-  <button (click)="navigateToChat()" class="btn btn-info mx-2">Chat</button>
+  <button (click)="logout()" class="btn btn-outline-warning">Logout</button>
+  <button (click)="navigateToChat()" class="btn btn-outline-info mx-2">
+    Chat
+  </button>
 
-  <table class="table table-striped mt-3">
+  <table
+    class="table-striped mt-3"
+    style="
+      background-color: rgb(255, 255, 255, 0.07);
+      width: 100%;
+      border-radius: 10px;
+    "
+  >
     <thead>
       <tr>
         <th>Username</th>
@@ -30,10 +39,13 @@
           </select>
         </td>
         <td>
-          <button (click)="promoteUser(user)" class="btn btn-primary mx-2">
+          <button
+            (click)="promoteUser(user)"
+            class="btn btn-outline-primary mx-2"
+          >
             Promote
           </button>
-          <button (click)="removeUser(user)" class="btn btn-danger">
+          <button (click)="removeUser(user)" class="btn btn-outline-danger">
             Remove
           </button>
         </td>
@@ -55,16 +67,21 @@
             required
           />
         </div>
-        <button type="submit" class="btn btn-primary">Create Group</button>
+        <button type="submit" class="btn btn-outline-primary">
+          Create Group
+        </button>
       </form>
     </div>
   </div>
 
   <!-- List Groups and Channels -->
   <div *ngFor="let group of groups" class="mb-4">
-    <div class="bg-light p-3 rounded">
+    <div
+      class="p-3 rounded"
+      style="background-color: rgb(255, 255, 255, 0.07); border-radius: 10px"
+    >
       <h3 class="d-inline-block mr-3">{{ group.name }}</h3>
-      <button (click)="deleteGroup(group._id)" class="btn btn-danger">
+      <button (click)="deleteGroup(group._id)" class="btn btn-outline-danger">
         Delete Group
       </button>
       <!-- Add Channel to Group -->
@@ -78,7 +95,7 @@
         <div class="input-group-append">
           <button
             (click)="createNewChannel(group._id, channelInput.value)"
-            class="btn btn-secondary"
+            class="btn btn-outline-secondary"
           >
             Add Channel
           </button>
@@ -98,7 +115,7 @@
         <div class="input-group-append">
           <button
             (click)="addUserToGroup(group._id, selectedUser.value)"
-            class="btn btn-primary"
+            class="btn btn-outline-primary"
           >
             Add User to Group
           </button>
@@ -115,7 +132,7 @@
             {{ user.username }}
             <button
               (click)="approveUserForGroup(user._id!, group._id)"
-              class="btn btn-success btn-sm"
+              class="btn btn-outline-success btn-outline-sm"
             >
               Approve
             </button>
@@ -124,7 +141,7 @@
       </div>
 
       <!-- List Users in Group with Remove Option -->
-      <ul class="list-group">
+      <ul style="background-color: rgb(0, 0, 0, 0.2); border-radius: 10px">
         <h5 class="mb-3">Users in group:</h5>
         <li
           *ngFor="let userId of group.users"
@@ -134,7 +151,7 @@
 
           <button
             (click)="removeUserFromGroup(group._id, userId)"
-            class="btn btn-danger btn-sm"
+            class="btn btn-outline-danger btn-outline-sm"
           >
             Remove User
           </button>
@@ -152,7 +169,7 @@
         <div *ngFor="let userId of channel.users">
           {{ getUsernameFromId(userId) }}
           <button
-            class="btn btn-danger btn-sm ml-2"
+            class="btn btn-outline-danger btn-outline-sm ml-2"
             (click)="removeUserFromChannel(channel._id, userId, group._id)"
           >
             Remove
@@ -161,7 +178,7 @@
 
         <button
           (click)="removeChannel(channel._id)"
-          class="btn btn-danger btn-sm"
+          class="btn btn-outline-danger btn-outline-sm"
         >
           Remove Channel
         </button>
@@ -183,7 +200,7 @@
           </select>
           <button
             (click)="addUserToChannel(channel._id, group._id, userSelect.value)"
-            class="btn btn-primary"
+            class="btn btn-outline-primary"
           >
             Add User to Channel
           </button>
