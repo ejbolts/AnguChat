@@ -128,6 +128,8 @@ router.delete("/:channelId", async (req, res) => {
 });
 
 router.post("/:channelId/addMessage", async (req, res) => {
+  console.log("CSRF token received in headers:", req.headers["csrf-token"]);
+
   await connect();
   const channelId = new ObjectId(req.body.channelId);
 

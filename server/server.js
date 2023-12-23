@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const http = require("http");
 const socketModule = require("./sockets");
-
+const cookieParser = require("cookie-parser");
 const registerRoute = require("./routes/register");
 const loginRoute = require("./routes/login");
 const updateRoute = require("./routes/update");
@@ -14,16 +14,31 @@ const bucketRoute = require("./routes/bucket");
 const socketsRoute = require("./sockets"); // Import the sockets.js file
 const expressPeerServer = require("peer").ExpressPeerServer;
 
+const csrf = require("csurf");
+
 const app = express();
+app.use(cookieParser());
+
 const server = http.createServer(app);
 const options = {
   debug: true,
 };
+// Body parser for parsing JSON and urlencoded data
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors({ origin: "http://localhost:4200", credentials: true }));
+const csrfProtection = csrf({ cookie: { httpOnly: true, sameSite: "Strict" } });
 
+app.use(csrfProtection);
+
+app.get("/get-csrf-token", (req, res) => {
+  const token = req.csrfToken();
+  console.log("Generated CSRF token:", token);
+  res.json({ csrfToken: token });
+});
 // Peer Server setup
 app.use("/peerjs", expressPeerServer(server, options)); // Integrate PeerServer with express
 
@@ -31,6 +46,7 @@ app.use("/peerjs", expressPeerServer(server, options)); // Integrate PeerServer 
 socketModule.setupSockets(server);
 
 // Routes
+
 app.use("/register", registerRoute);
 app.use("/login", loginRoute);
 app.use("/update", updateRoute);

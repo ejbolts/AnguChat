@@ -63,11 +63,12 @@ export class ChatService {
   }
 
 
-  addMessageToChannel(channelId: string,  message: ChatMessage ) {
+  addMessageToChannel(channelId: string, message: ChatMessage) {
     console.log("Message sent to server with channelID:", message, channelId);
-    console.log("this.apiUrl",this.apiUrl)
-    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message });
+  
+    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message }, { withCredentials: true });
   }
+  
   
 
   public getSystemMessages(): Observable<ChatMessage> {

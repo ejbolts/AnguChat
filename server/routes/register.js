@@ -7,6 +7,10 @@ const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 router.post("/", async (req, res) => {
+  // Log the received CSRF token (from headers or cookies)
+  console.log("CSRF token received in headers:", req.headers["csrf-token"]);
+  // If you're using cookies to transmit the token, you can log the cookies like this:
+  console.log("Cookies received:", req.cookies);
   await connect();
   const userData = req.body;
   const existingUser = await db()

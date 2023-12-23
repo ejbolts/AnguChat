@@ -33,6 +33,10 @@ router.get("/:id", async (req, res) => {
 // Route for logging in a user
 router.post("/", async (req, res) => {
   console.log(`Attempting to login user with username: ${req.body.username}`);
+  // Log the received CSRF token (from headers or cookies)
+  console.log("CSRF token received in headers:", req.headers["csrf-token"]);
+  // If you're using cookies to transmit the token, you can log the cookies like this:
+  console.log("Cookies received:", req.cookies);
   await connect();
 
   const { username, password } = req.body;
