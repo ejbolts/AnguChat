@@ -245,6 +245,9 @@
                           style="max-width: 100px; max-height: 100px"
                         />
                       </div>
+                      <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+                        {{ errorMessage }}
+                      </div>
                       <div class="input-group">
                         <textarea
                           [value]="channelMessages.get(channel._id) || ''"

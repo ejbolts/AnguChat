@@ -46,6 +46,10 @@
         <span class="text">Sign In</span>
       </button>
     </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+      {{ errorMessage }}
+    </div>
     <div
       class="d-flex align-items-center justify-content-center"
       style="margin-top: 10px"

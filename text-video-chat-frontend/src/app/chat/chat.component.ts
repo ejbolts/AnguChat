@@ -33,7 +33,7 @@ export class ChatComponent implements OnInit {
   channelMessages = new Map<string, string>();
   anotherUserSockID: string | null = null;
   incomingCallDetails: any;
-  
+  errorMessage?: string;
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
     this.chatService.incomingCallEvent.subscribe((callDetails: any) => {
       this.incomingCallDetails = callDetails; // Store the entire callDetails object
@@ -396,6 +396,7 @@ handleSendMessages(channelId: string): void {
     .subscribe(response => {
         console.log('Message added', response);
     }, error => {
+      this.errorMessage = error.message;
         console.error('Error adding message', error);
     });
     this.chatService.sendMessage(channelId, chatMessage)
