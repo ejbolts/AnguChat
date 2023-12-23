@@ -37,15 +37,16 @@ const setupSockets = (server) => {
     });
 
     // When a user joins a channel
-    socket.on("joinChannel", ({ channelId, groupId, userId }) => {
+    socket.on("joinChannel", ({ channelId, groupId, username }) => {
       socket.join(channelId);
-      console.log(`${userId} from ${groupId} joined channel ${channelId}`);
+      console.log(`${username} from ${groupId} joined channel ${channelId}`);
 
       // Notify users in the channel
       io.to(channelId).emit("system-message", {
-        content: `user ${userId} has joined channel ${channelId}`,
+        content: `User ${username} has joined the channel`,
         timestamp: new Date(),
         isSystemMessage: true,
+        channelId: channelId,
       });
 
       io.in(channelId)
@@ -72,15 +73,16 @@ const setupSockets = (server) => {
     });
 
     // When a user leaves a channel
-    socket.on("leaveChannel", ({ channelId, groupId, userId }) => {
+    socket.on("leaveChannel", ({ channelId, groupId, username }) => {
       socket.leave(channelId);
-      console.log(`${userId} left channel ${channelId}`);
+      console.log(`${username} left channel ${channelId}`);
 
       // Notify users in the channel
       io.to(channelId).emit("system-message", {
-        content: `${userId} has left channel ${channelId}`,
+        content: `User ${username} has left the channel`,
         timestamp: new Date(),
         isSystemMessage: true,
+        channelId: channelId,
       });
     });
 

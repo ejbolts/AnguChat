@@ -38,28 +38,31 @@ export class ChatService {
   }
 
   sendConnectionIDs(userId: String, peerId: String) {
-    this.socket.emit('connectUserIDs', { userId, peerId });
+    this.socket.emit('connectUserIDs', { userId, peerId }, { withCredentials: true });
    
   }
 
 
 
   startCall(anotherUserSockID: string, username: string) {
-    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username });
+    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username }, { withCredentials: true });
    
   }
 
   
-  joinChannel(channelId: string, groupId: string, userId: string) {
-    this.socket.emit('joinChannel', { channelId, groupId, userId });
+  joinChannel(channelId: string, groupId: string, username: string) {
+    console.log("Joining channel:", username, channelId);
+    this.socket.emit('joinChannel', { channelId, groupId, username }, { withCredentials: true });
   }
 
-  leaveChannel(channelId: string, groupId: string,userId: string) {
-    this.socket.emit('leaveChannel', { channelId, groupId, userId });
+  leaveChannel(channelId: string, groupId: string, username: string) {
+    console.log("leaving channel:", username, channelId);
+
+    this.socket.emit('leaveChannel', { channelId, groupId, username }, { withCredentials: true });
   }
 
   sendMessage(channelId: string, message: ChatMessage) {
-    this.socket.emit('sendMessage', { channelId, message });
+    this.socket.emit('sendMessage', { channelId, message }, { withCredentials: true });
   }
 
 
@@ -74,6 +77,7 @@ export class ChatService {
   public getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
       this.socket.on('system-message', (message: ChatMessage) => {
+        console.log("System message received:", message);
         observer.next(message);
       });
     });

@@ -173,8 +173,9 @@
                     (click)="
                       handleLeaveChannel(
                         channel._id,
-                        currentUser?._id!,
-                        group._id
+                        currentUser?.username!,
+                        group._id,
+                        currentUser?._id!
                       )
                     "
                     class="btn btn-outline-danger"
@@ -189,11 +190,12 @@
                     <div class="chat-messages mb-3">
                       <ul class="list-unstyled">
                         <li *ngFor="let msg of channel.history">
-                          <span *ngIf="msg.isSystemMessage; else userMessage">
-                            <em class="text-muted"
-                              >{{ msg.content }} -
-                              {{ msg.timestamp | date : "dd/MM/yy, HH:mm" }}</em
-                            >
+                          <span
+                            style="color: rgb(255, 255, 255, 0.5)"
+                            *ngIf="msg.isSystemMessage; else userMessage"
+                          >
+                            {{ msg.content }} -
+                            {{ msg.timestamp | date : "dd/MM/yy, HH:mm" }}
                           </span>
                           <ng-template #userMessage>
                             <img
@@ -296,6 +298,7 @@
                       handleJoinChannel(
                         channel._id,
                         group._id,
+                        currentUser?.username!,
                         currentUser?._id!
                       )
                     "

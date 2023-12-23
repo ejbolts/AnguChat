@@ -27,7 +27,6 @@ export class ChatComponent implements OnInit {
   incomingCall: any = null;  // This will hold the incoming call object
   channelId?: string ;
   incomingCallFrom: string | null = null;
-  private incomingCallSubscription: any;
   isCallActive: boolean = false;
   selectedImageChannelId: string | null = null;  
   selectedImages = new Map<string, string | ArrayBuffer>();
@@ -67,10 +66,7 @@ export class ChatComponent implements OnInit {
         }
       });
     });
-    
-    // this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-    //   this.messages.push(msg);
-    // });
+  
     this.peer = new Peer({
       host: 'localhost',
       port: 3000, // or your PeerJS server port
@@ -99,7 +95,7 @@ export class ChatComponent implements OnInit {
     
     
   }
-  
+   
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
@@ -418,11 +414,11 @@ handleMessageInput(event: Event, channelId: string): void {
 }
 
 
-handleJoinChannel(channelId: string, groupId: string, userId: string): void {
-  console.log('Handling join channel:', channelId, groupId, userId);
+handleJoinChannel(channelId: string, groupId: string, username: string,userId: string): void {
+  console.log('Handling join channel:', channelId, groupId, this.currentUser?.username );
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
-      this.chatService.joinChannel(channelId, groupId, userId);
+      this.chatService.joinChannel(channelId, groupId, username);
       console.log('User added to channel successfully');
 
       this.fetchChannelsPerGroup(groupId);
@@ -431,11 +427,27 @@ handleJoinChannel(channelId: string, groupId: string, userId: string): void {
       console.error('Error adding user to channel:', error);
     }
   );
+  this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+    console.log("Received message for channel", msg);
+
+    // Iterate through each group
+    Object.values(this.groupChannels).forEach(channels => {
+      // Find the channel within the group channels
+      let channel = channels.find(c => c._id === msg.channelId); 
+      console.log("channel", channel)
+
+      if (channel) {
+        channel.history.push(msg);
+        console.log("Channel history:", channel.history);
+      }
+    });
+  }
+  );
 }
-handleLeaveChannel(channelId: string, userId: string, groupId: string): void {
+handleLeaveChannel(channelId: string, username: string, groupId: string, userId: string): void {
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
-      this.chatService.leaveChannel(channelId, groupId, userId);
+      this.chatService.leaveChannel(channelId, groupId, username);
       console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
 
