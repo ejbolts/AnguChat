@@ -32,47 +32,52 @@ export class ChatService {
 
     this.socket.on('incomingCall', (callDetails: any) => {
       console.log("Incoming call from: ", callDetails);
-      this.incomingCallEvent.emit(callDetails.username);
+      this.incomingCallEvent.emit(callDetails);
     });
-    
+
   }
 
   sendConnectionIDs(userId: String, peerId: String) {
-    this.socket.emit('connectUserIDs', { userId, peerId });
+    this.socket.emit('connectUserIDs', { userId, peerId }, { withCredentials: true });
    
   }
 
 
 
   startCall(anotherUserSockID: string, username: string) {
-    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, username});
+    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username }, { withCredentials: true });
    
   }
 
   
-  joinChannel(channelId: string, groupId: string,userId: string) {
-    this.socket.emit('joinChannel', { channelId, groupId, userId });
+  joinChannel(channelId: string, groupId: string, username: string) {
+    console.log("Joining channel:", username, channelId);
+    this.socket.emit('joinChannel', { channelId, groupId, username }, { withCredentials: true });
   }
 
-  leaveChannel(channelId: string, groupId: string,userId: string) {
-    this.socket.emit('leaveChannel', { channelId, groupId, userId });
+  leaveChannel(channelId: string, groupId: string, username: string) {
+    console.log("leaving channel:", username, channelId);
+
+    this.socket.emit('leaveChannel', { channelId, groupId, username }, { withCredentials: true });
   }
 
   sendMessage(channelId: string, message: ChatMessage) {
-    this.socket.emit('sendMessage', { channelId, message });
+    this.socket.emit('sendMessage', { channelId, message }, { withCredentials: true });
   }
 
 
-  addMessageToChannel(channelId: string,  message: ChatMessage ) {
+  addMessageToChannel(channelId: string, message: ChatMessage) {
     console.log("Message sent to server with channelID:", message, channelId);
-    console.log("this.apiUrl",this.apiUrl)
-    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message });
+  
+    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message }, { withCredentials: true });
   }
+  
   
 
   public getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
       this.socket.on('system-message', (message: ChatMessage) => {
+        console.log("System message received:", message);
         observer.next(message);
       });
     });
@@ -86,4 +91,7 @@ export class ChatService {
     });
   }
 
+  public calldeclined(callerId: string) {
+    this.socket.emit('call-declined', { callerId });
+  }
 }

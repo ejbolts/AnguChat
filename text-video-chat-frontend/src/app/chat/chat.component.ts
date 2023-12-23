@@ -27,17 +27,21 @@ export class ChatComponent implements OnInit {
   incomingCall: any = null;  // This will hold the incoming call object
   channelId?: string ;
   incomingCallFrom: string | null = null;
-  private incomingCallSubscription: any;
   isCallActive: boolean = false;
   selectedImageChannelId: string | null = null;  
   selectedImages = new Map<string, string | ArrayBuffer>();
   channelMessages = new Map<string, string>();
-  
+  anotherUserSockID: string | null = null;
+  incomingCallDetails: any;
+  errorMessage?: string;
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
-    this.incomingCallSubscription = this.chatService.incomingCallEvent.subscribe(from => {
-    this.incomingCallFrom = from;
-    // Display the UI for the incoming call here
-  });
+    this.chatService.incomingCallEvent.subscribe((callDetails: any) => {
+      this.incomingCallDetails = callDetails; // Store the entire callDetails object
+    });
+    this.chatService.socket.on('call-declined', (data: { message: string }) => {
+      alert(data.message); // Show an alert that the call was declined
+      this.stopCall();    // Stop the call
+    });
 
 }
 
@@ -62,10 +66,7 @@ export class ChatComponent implements OnInit {
         }
       });
     });
-    
-    // this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-    //   this.messages.push(msg);
-    // });
+  
     this.peer = new Peer({
       host: 'localhost',
       port: 3000, // or your PeerJS server port
@@ -94,7 +95,7 @@ export class ChatComponent implements OnInit {
     
     
   }
-  
+   
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
@@ -172,11 +173,10 @@ startCall(userId: string | undefined, username: string): void {
   return;
 }
 this.isCallActive = true;
-
 this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
     const peerIdToCall = connectionInfo.peerId;
-    const anotherUserSockID = connectionInfo.socketId;
+     this.anotherUserSockID = connectionInfo.socketId; // how can i store this id so that i can access it in the decline call function
 
 
     // Access user's webcam and microphone
@@ -187,8 +187,8 @@ this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
         localVideo.muted = true;
         localVideo.srcObject = stream;
 
-        if (peerIdToCall && anotherUserSockID) {
-          this.chatService.startCall(anotherUserSockID, username);
+        if (peerIdToCall && this.anotherUserSockID) {
+          this.chatService.startCall(this.anotherUserSockID, username);
           const outgoingCall = this.peer.call(peerIdToCall, this.localStream);
           this.activeCall = outgoingCall; // Set the active call
           outgoingCall.on('stream', remoteStream => {
@@ -243,7 +243,7 @@ acceptCall(): void {
       .catch(error => {
         console.error("Error accessing media devices.", error);
       });
-      this.incomingCallFrom = null;
+      this.incomingCallDetails = null;
   } 
   else {
     console.error("No incoming call to accept!");
@@ -311,14 +311,16 @@ ngOnDestroy(): void {
 }
 
 
-
 declineCall(): void {
-  if (this.incomingCall) {
+ 
+  if (this.incomingCall && this.incomingCallDetails.socketID) {
+    console.log("Declining call from Socket ID:", this.incomingCallDetails.socketID);
+
+    this.chatService.calldeclined(this.incomingCallDetails.socketID);
     this.incomingCall.close(); // Close the incoming call
     this.incomingCall = null; // Reset the incoming call to hide the UI
-    this.incomingCallFrom = null; // Reset caller info
+    this.incomingCallDetails = null; // Reset caller info
     this.stopCall(); // Stop the call and reset UI
-
   }
 }
 
@@ -394,6 +396,7 @@ handleSendMessages(channelId: string): void {
     .subscribe(response => {
         console.log('Message added', response);
     }, error => {
+      this.errorMessage = error.message;
         console.error('Error adding message', error);
     });
     this.chatService.sendMessage(channelId, chatMessage)
@@ -405,14 +408,18 @@ handleSendMessages(channelId: string): void {
 handleMessageInput(event: Event, channelId: string): void {
   const message = (event.target as HTMLInputElement).value;
   this.channelMessages.set(channelId, message);
+
+  const textarea = event.target as HTMLTextAreaElement;
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 'px';
 }
 
 
-handleJoinChannel(channelId: string, groupId: string, userId: string): void {
-  console.log('Handling join channel:', channelId, groupId, userId);
+handleJoinChannel(channelId: string, groupId: string, username: string,userId: string): void {
+  console.log('Handling join channel:', channelId, groupId, this.currentUser?.username );
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
-      this.chatService.joinChannel(channelId, groupId, userId);
+      this.chatService.joinChannel(channelId, groupId, username);
       console.log('User added to channel successfully');
 
       this.fetchChannelsPerGroup(groupId);
@@ -421,11 +428,27 @@ handleJoinChannel(channelId: string, groupId: string, userId: string): void {
       console.error('Error adding user to channel:', error);
     }
   );
+  this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+    console.log("Received message for channel", msg);
+
+    // Iterate through each group
+    Object.values(this.groupChannels).forEach(channels => {
+      // Find the channel within the group channels
+      let channel = channels.find(c => c._id === msg.channelId); 
+      console.log("channel", channel)
+
+      if (channel) {
+        channel.history.push(msg);
+        console.log("Channel history:", channel.history);
+      }
+    });
+  }
+  );
 }
-handleLeaveChannel(channelId: string, userId: string, groupId: string): void {
+handleLeaveChannel(channelId: string, username: string, groupId: string, userId: string): void {
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
-      this.chatService.leaveChannel(channelId, groupId, userId);
+      this.chatService.leaveChannel(channelId, groupId, username);
       console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
 

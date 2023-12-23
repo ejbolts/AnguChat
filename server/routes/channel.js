@@ -126,20 +126,28 @@ router.delete("/:channelId", async (req, res) => {
   res.json({ message: "Channel deleted!" });
   close();
 });
-
 router.post("/:channelId/addMessage", async (req, res) => {
-  await connect();
-  const channelId = new ObjectId(req.body.channelId);
+  try {
+    console.log("CSRF token received in headers:", req.headers["csrf-token"]);
 
-  const { message } = req.body;
-  console.log("channelID and message.content:", channelId, message);
+    await connect();
+    const channelId = new ObjectId(req.body.channelId);
+    const { message } = req.body;
+    console.log("channelID and message.content:", channelId, message);
 
-  await db()
-    .collection("channels")
-    .updateOne({ _id: channelId }, { $addToSet: { history: message } });
+    await db()
+      .collection("channels")
+      .updateOne({ _id: channelId }, { $addToSet: { history: message } });
 
-  res.json({ message: "message added to channel!" });
-  close();
+    res.json({ message: "Message added to channel!" });
+  } catch (error) {
+    console.error("Error adding message to channel:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while adding the message." });
+  } finally {
+    close();
+  }
 });
 
 module.exports = router;

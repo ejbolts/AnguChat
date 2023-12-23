@@ -1,15 +1,27 @@
-.login-container {
-  max-width: 400px;
-  margin: 100px auto;
-}
-
 .login-title {
   text-align: center;
   margin-bottom: 20px;
-  color: #333;
+  font-weight: bold;
+  font-size: 40px;
 }
-
+.login-container {
+  padding-bottom: 30px;
+}
+.login-image {
+  width: 150px;
+  height: 150px;
+  margin: 32px;
+}
 .login-form {
   display: flex;
   flex-direction: column;
+  max-width: 600px;
+  margin: auto;
+}
+.gradient-text {
+  background: #f10a4c;
+  background: linear-gradient(to right, #f10a4c 32%, #28648f 71%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
 }

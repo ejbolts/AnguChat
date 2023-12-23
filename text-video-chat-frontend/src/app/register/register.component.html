@@ -1,13 +1,12 @@
 <div class="container register-container">
   <form (submit)="goToLogin()" class="register-form">
-    <!-- Changed method name to register() -->
     <div class="form-group">
       <h2 class="register-title">Register</h2>
 
       <label for="username">Username:</label>
       <input
         type="text"
-        class="form-control"
+        class="gradient-bottom-border"
         id="username"
         name="username"
         [(ngModel)]="user.username"
@@ -17,11 +16,10 @@
     </div>
 
     <div class="form-group">
-      <!-- Added div wrapper for better styling and consistent layout -->
       <label for="password">Password:</label>
       <input
         type="password"
-        class="form-control"
+        class="gradient-bottom-border"
         id="password"
         name="password"
         [(ngModel)]="user.password"
@@ -34,7 +32,7 @@
       <label for="email">Email:</label>
       <input
         type="email"
-        class="form-control"
+        class="gradient-bottom-border"
         id="email"
         name="email"
         [(ngModel)]="user.email"
@@ -44,20 +42,55 @@
     </div>
 
     <div class="form-group">
-      <label for="profilePic">Profile Picture:</label>
-      <input type="file" (change)="handleFileInput($event)" accept="image/*" />
+      <label for="profilePic" class="file-upload-label">Profile Picture:</label>
+      <label
+        for="profilePic"
+        style="width: 140px; font-size: 18px; margin-bottom: 8px"
+        class="btn-primary-custom"
+        ><span class="text">Choose File</span></label
+      >
+      <input
+        type="file"
+        id="profilePic"
+        (change)="handleFileInput($event)"
+        accept="image/*"
+        class="file-input"
+      />
+      <span
+        id="file-chosen"
+        style="display: inline; padding-top: 10px; padding-right: 10px"
+        >{{ fileName }}</span
+      >
+      <button
+        class="custom-link-button"
+        style="display: inline; text-decoration: none; margin-top: 10px"
+        *ngIf="imageSrc"
+        (click)="clearImage()"
+      >
+        X
+      </button>
+      <img
+        id="imagePreview"
+        [src]="imageSrc"
+        *ngIf="imageSrc"
+        style="width: 200px; height: 200px; margin-top: 10px; display: block"
+      />
     </div>
-    <button type="submit" (click)="register()" class="btn btn-primary mt-2">
-      Register
-    </button>
 
-    <button
-      (click)="goToLogin()"
-      class="btn btn-outline-primary mt-2"
-      type="button"
+    <div class="center-button">
+      <button type="button" (click)="register()" class="btn-primary-custom">
+        <span class="text">Register</span>
+      </button>
+    </div>
+    <div
+      class="d-flex align-items-center justify-content-center"
+      style="margin-top: 10px"
     >
-      Login
-    </button>
+      <span class="me-1">Already have an account?</span>
+      <button (click)="goToLogin()" class="custom-link-button">
+        Login Here
+      </button>
+    </div>
 
     <div *ngIf="errorMessage" class="alert alert-danger mt-2">
       {{ errorMessage }}

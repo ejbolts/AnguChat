@@ -13,6 +13,8 @@ import { User } from '../models/user.model';
 export class RegisterComponent implements OnInit {
   selectedFile: File | null = null; 
   errorMessage: string | null = null;  
+  imageSrc: string | ArrayBuffer | null = null;
+  fileName: string = 'No image selected';
   user: User = {
     username: '',
     email: '',
@@ -21,15 +23,28 @@ export class RegisterComponent implements OnInit {
     profilePic: null,
     groups: [], 
   };
-  handleFileInput(event: Event): void {
+  handleFileInput(event: any): void {
+    const file = event.target.files[0];
     const input = event.target as HTMLInputElement;
-    console.log(input.files);
+    if (file) {
+      this.fileName = file.name; 
+      const reader = new FileReader();
+      reader.onload = e => this.imageSrc = reader.result;
+      reader.readAsDataURL(file);
+    }
     if (input && input.files && input.files.length > 0) {
       console.log(input.files[0]);
+      
       this.selectedFile = input.files[0];}
    
   }
-
+  clearImage(): void {
+    this.imageSrc = null;
+    this.fileName = 'No image selected';
+    // Reset the file input
+    const fileInput = document.getElementById('profilePic') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  }
   
   uploadImage(username: string): any {
     if (this.selectedFile) {
@@ -67,7 +82,7 @@ export class RegisterComponent implements OnInit {
     
     }, error => {
       this.errorMessage = error.error.message || 'Registration failed.';
-      console.log('Error during user registration:', error);
+      console.log('Error during user registration:', error.error.message);
     });
   }
   
