@@ -139,24 +139,57 @@ export class ChatComponent implements OnInit {
     );
   }
 
-
-onImageSelected(event: any, channelId: string): void {
-  const file: File = event.target.files[0];
-  const reader = new FileReader();
-
-  reader.onload = e => {
-    if (e.target) {
-      const base64String = e.target.result as string;
-      // Set the image for the specific channel ID
-      this.selectedImages.set(channelId, base64String);
-      // Do something with the Base64 string, like attach it to your message object
-      this.selectedImage = base64String;
-      this.selectedImageChannelId = channelId;
-    }
-  };
+/*
+    The image file is read into an Image object.
+    Once loaded, the image is drawn onto a canvas at a reduced size.
+    The canvas.toDataURL method is used to get the compressed image as a Base64 string.
+     The second argument (0.3 in this case) is the quality parameter, which you can adjust
+     to balance between size and quality.
+*/
+  onImageSelected(event: any, channelId: string): void {
+    const file: File = event.target.files[0];
   
-  reader.readAsDataURL(file);
-}
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 600;
+          let width = img.width;
+          let height = img.height;
+  
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+  
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+  
+          // Compress the image and get the new Base64 string
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.3); 
+          this.selectedImages.set(channelId, compressedBase64);
+          this.selectedImage = compressedBase64;
+          this.selectedImageChannelId = channelId;
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+  
 
 removeImage(channelId: string): void {
   // Remove the image for the specific channel ID
@@ -381,7 +414,7 @@ handleSendMessages(channelId: string): void {
   const messageToSend = this.channelMessages.get(channelId);
   const imageToSend = this.selectedImages.get(channelId);
   console.log("messageToSend", messageToSend)
-  if (messageToSend && this.currentUser) {
+  if (this.currentUser) {
     const chatMessage: ChatMessage = {
       username: this.currentUser.username,
       content: messageToSend || '', 

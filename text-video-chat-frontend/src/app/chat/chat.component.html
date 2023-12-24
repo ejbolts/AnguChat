@@ -185,11 +185,17 @@
                   </button>
                   <div
                     class="container"
-                    style="background-color: rgba(255, 255, 255, 0)"
+                    style="
+                      background-color: rgba(255, 255, 255, 0);
+                      margin: 0px;
+                    "
                   >
                     <div class="chat-messages mb-3">
                       <ul class="list-unstyled">
-                        <li *ngFor="let msg of channel.history">
+                        <li
+                          *ngFor="let msg of channel.history"
+                          style="padding-top: 15px"
+                        >
                           <span
                             style="color: rgb(255, 255, 255, 0.5)"
                             *ngIf="msg.isSystemMessage; else userMessage"
@@ -231,7 +237,11 @@
                               *ngIf="msg.image"
                               [src]="msg.image"
                               alt="Sent image"
-                              style="max-width: 300px; max-height: 300px"
+                              style="
+                                max-width: 75%;
+                                max-height: 75%;
+                                margin-top: 10px;
+                              "
                             />
                           </ng-template>
                         </li>
@@ -305,7 +315,8 @@
                         currentUser?._id!
                       )
                     "
-                    class="btn btn-primary"
+                    class="btn btn-outline-primary"
+                    style="max-width: 33%"
                   >
                     Join Channel
                   </button>
