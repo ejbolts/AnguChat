@@ -11,7 +11,7 @@ import { User } from '../models/user.model';
 
 export class LoginComponent {
   
-  user: User = {
+  public user: User = {
     username: '',
     password: '',
     email: '',
@@ -19,7 +19,7 @@ export class LoginComponent {
     groups: []
   };
 
-  errorMessage?: string;
+  public errorMessage?: string;
 
   constructor(private userService: UserService, private router: Router) {}
   login(): void {

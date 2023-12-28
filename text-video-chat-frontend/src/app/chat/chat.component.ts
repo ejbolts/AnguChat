@@ -7,7 +7,15 @@ import { UserService } from '../services/user.service';
 import { ChatService } from '../services/chat.service' ; 
 import { ChatMessage } from '../models/chatmessage.model';  
 import Peer, { MediaConnection } from 'peerjs';
-
+interface IncomingCallDetails {
+  from: string;
+  socketID: string;
+  username: string;
+}
+export interface CallDetails {
+  callerId: string;    
+  callerName: string;  
+}
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -15,27 +23,38 @@ import Peer, { MediaConnection } from 'peerjs';
 })
 
 export class ChatComponent implements OnInit {
-  public channels: Channel[] = []; // shouldn't use this
-  activeCall: MediaConnection | null = null;
+  // Channel information
+  public channels: Channel[] = [];
+  public channelMessages = new Map<string, string>();
+  public channelId!: string;
+
+  // Group and user information
+  public groupChannels: { [groupId: string]: Channel[] } = {};
+  public allGroups: Group[] = [];
+  public currentUser: User | null = null;
+  public users: User[] = [];
+
+  // Image management
+  public selectedImage: string | null = null; // Base64 encoded image string
+  public selectedImageChannelId: string | null = null;
+  public selectedImages = new Map<string, string | ArrayBuffer>();
+
+  // Call management
   private peer!: Peer;
   private localStream?: MediaStream;
-  groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
-  allGroups: Group[] = [];
-  currentUser: User | null = null;
-  users: User[] = [];
-  selectedImage: string | null = null; // Base64 encoded image string
-  incomingCall: any = null;  // This will hold the incoming call object
-  channelId?: string ;
-  incomingCallFrom: string | null = null;
-  isCallActive: boolean = false;
-  selectedImageChannelId: string | null = null;  
-  selectedImages = new Map<string, string | ArrayBuffer>();
-  channelMessages = new Map<string, string>();
-  anotherUserSockID: string | null = null;
-  incomingCallDetails: any;
-  errorMessage?: string;
+  public incomingCallFrom: string | null = null;
+  private incomingCall: MediaConnection | null = null;
+  public incomingCallDetails: IncomingCallDetails | null = null;
+  private activeCall: MediaConnection | null = null;
+  public isCallActive: boolean = false;
+  private anotherUserSockID: string | null = null;
+
+  // Error handling
+  public errorMessage?: string;
+  
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
-    this.chatService.incomingCallEvent.subscribe((callDetails: any) => {
+    this.chatService.incomingCallEvent.subscribe((callDetails: IncomingCallDetails) => {
+      console.log("Received incoming call event:", callDetails);
       this.incomingCallDetails = callDetails; // Store the entire callDetails object
     });
     this.chatService.socket.on('call-declined', (data: { message: string }) => {
@@ -43,7 +62,7 @@ export class ChatComponent implements OnInit {
       this.stopCall();    // Stop the call
     });
 
-}
+  }
 
   ngOnInit(): void {
     this.fetchGroups()
@@ -92,8 +111,6 @@ export class ChatComponent implements OnInit {
       console.log("Peer connection is destroyed.");
     
     });
-    
-    
   }
    
   fetchGroups(): void {
@@ -113,6 +130,7 @@ export class ChatComponent implements OnInit {
       }
     );
   }
+
   fetchChannelsPerGroup(groupId: string): void {
     console.log(`Fetching channels for group ${groupId}`); 
     this.userService.getChannelsByGroupId(groupId).subscribe(
@@ -126,6 +144,7 @@ export class ChatComponent implements OnInit {
       }
     ); 
   }
+
   fetchUsers(): void {
     console.log(`Fetching users`);
     this.userService.getUsers().subscribe(
@@ -139,16 +158,14 @@ export class ChatComponent implements OnInit {
     );
   }
 
-/*
-    The image file is read into an Image object.
+    /*The image file is read into an Image object.
     Once loaded, the image is drawn onto a canvas at a reduced size.
     The canvas.toDataURL method is used to get the compressed image as a Base64 string.
-     The second argument (0.3 in this case) is the quality parameter, which you can adjust
-     to balance between size and quality.
-*/
+    The second argument (0.3 in this case) is the quality parameter, which can be adjusted
+    to balance between size and quality.*/
+
   onImageSelected(event: any, channelId: string): void {
     const file: File = event.target.files[0];
-  
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -189,7 +206,6 @@ export class ChatComponent implements OnInit {
       reader.readAsDataURL(file);
     }
   }
-  
 
 removeImage(channelId: string): void {
   // Remove the image for the specific channel ID
@@ -210,7 +226,6 @@ this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
     const peerIdToCall = connectionInfo.peerId;
      this.anotherUserSockID = connectionInfo.socketId; // how can i store this id so that i can access it in the decline call function
-
 
     // Access user's webcam and microphone
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -246,7 +261,6 @@ this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   }, error => {
     console.error('Error fetching user connection info:', error);
   });
-  
   } 
 
 acceptCall(): void {
@@ -259,11 +273,11 @@ acceptCall(): void {
         localVideo.srcObject = stream;
 
         // Answer the call with the local stream
-        this.incomingCall.answer(stream);
+        this.incomingCall?.answer(stream);
         this.activeCall = this.incomingCall; // Set the active call
 
         // Listen for the remote stream
-        this.incomingCall.on('stream', (remoteStream: MediaStream) => {
+        this.incomingCall?.on('stream', (remoteStream: MediaStream) => {
           const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
           remoteVideo.srcObject = remoteStream;
         });
@@ -295,14 +309,10 @@ resetCallUI(): void {
     stream.getTracks().forEach(track => track.stop());
     localVideo.srcObject = null;
   }
-
   // Resetting the remote video element
   const remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
   remoteVideo.srcObject = null;
-
-  // Optionally, reset any other UI elements or variables related to the call
 }
-
 
 stopCall(): void {
   // Stop the local stream tracks
@@ -332,21 +342,15 @@ stopCall(): void {
   this.incomingCall = null;
   this.incomingCallFrom = null;
   this.isCallActive = false;
-
-
-  
 }
-
-
 
 ngOnDestroy(): void {
   this.stopCall();
 }
 
-
 declineCall(): void {
  
-  if (this.incomingCall && this.incomingCallDetails.socketID) {
+  if (this.incomingCall && this.incomingCallDetails?.socketID) {
     console.log("Declining call from Socket ID:", this.incomingCallDetails.socketID);
 
     this.chatService.calldeclined(this.incomingCallDetails.socketID);
@@ -356,8 +360,6 @@ declineCall(): void {
     this.stopCall(); // Stop the call and reset UI
   }
 }
-
- 
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
     console.log(group._id ,currentUserId)
@@ -372,14 +374,13 @@ declineCall(): void {
     );
   }
   
-  
   isPending(groupId: string): boolean {
     const pending = this.currentUser?.pendingGroups?.includes(groupId) || false;
     return pending;
  }
 
  logout(): void {
-  sessionStorage.removeItem('currentUser'); // Assuming 'currentUser' is the session key
+  sessionStorage.removeItem('currentUser'); 
   this.router.navigate(['/login']); 
 }
 
@@ -394,15 +395,12 @@ isMemberOfGroup(groupId: string): boolean {
   return group.users?.includes(this.currentUser?._id ?? '') || false;
 }
 
-
 removeUserFromGroup(groupId: string): void {
   const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
   this.userService.removeUserFromGroup(groupId, currentUserId).subscribe(
     () => {
       console.log('User removed from group successfully');
-      
-      this.fetchGroups();  // to refresh the group data and reflect changes
-
+      this.fetchGroups();  
     },
     (error: any) => {
       console.error('Error removing user from group:', error);
@@ -447,7 +445,6 @@ handleMessageInput(event: Event, channelId: string): void {
   textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-
 handleJoinChannel(channelId: string, groupId: string, username: string,userId: string): void {
   console.log('Handling join channel:', channelId, groupId, this.currentUser?.username );
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
@@ -484,7 +481,6 @@ handleLeaveChannel(channelId: string, username: string, groupId: string, userId:
       this.chatService.leaveChannel(channelId, groupId, username);
       console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
-
       this.fetchChannelsPerGroup(groupId);
     },
     error => {
@@ -510,8 +506,6 @@ deleteAccount(user: User): void {
 
 }
 
-
-
 isChannelMember(channelId: string, groupId: string): boolean {
   // Check if the channels for the group are fetched and stored
   if (!this.groupChannels[groupId]) {
@@ -535,7 +529,6 @@ get isAdmin(): boolean {
   return currentUser.role === 'groupAdmin' || currentUser.role === 'superAdmin';
 }
 
-
 updateGroupsStorage(): void {
   // Update the groups in your storage (localStorage or elsewhere)
   localStorage.setItem('groups', JSON.stringify(this.allGroups));
@@ -543,7 +536,4 @@ updateGroupsStorage(): void {
 navigateToDashboard(): void {
   this.router.navigate(['/admin']);
 }
-
-
-
 }
