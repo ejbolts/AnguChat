@@ -88,13 +88,13 @@ export class ChatComponent implements OnInit {
   
     this.peer = new Peer({
       host: 'localhost',
-      port: 3000, // or your PeerJS server port
-      path: '/peerjs' // or your PeerJS server path
+      port: 3000, 
+      path: '/peerjs' 
     });
     
     this.peer.on('open', (peerId) => {
       console.log('My PeerJS ID is:', peerId);
-      // You can also store this ID in your service for later use
+      
       this.chatService.peerId = peerId;
       const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
       this.chatService.userId  = currentUserId;
@@ -216,7 +216,7 @@ startCall(userId: string | undefined, username: string): void {
     console.error('User ID is undefined');
     return;
   }
- // api look up here
+ 
  if (!userId) {
   console.error('User ID is undefined');
   return;
@@ -225,7 +225,7 @@ this.isCallActive = true;
 this.userService.getUsersConnectionInfo(userId).subscribe(connectionInfo => {
   if (this.chatService.socketId && this.chatService.peerId) {
     const peerIdToCall = connectionInfo.peerId;
-     this.anotherUserSockID = connectionInfo.socketId; // how can i store this id so that i can access it in the decline call function
+     this.anotherUserSockID = connectionInfo.socketId; 
 
     // Access user's webcam and microphone
     navigator.mediaDevices.getUserMedia({ video: true, audio: true })

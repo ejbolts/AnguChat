@@ -10,7 +10,6 @@ import { User } from '../models/user.model';
 })
 
 export class LoginComponent {
-  
   public user: User = {
     username: '',
     password: '',
@@ -18,7 +17,6 @@ export class LoginComponent {
     role: '',
     groups: []
   };
-
   public errorMessage?: string;
 
   constructor(private userService: UserService, private router: Router) {}
@@ -39,6 +37,7 @@ export class LoginComponent {
       );
     }
   }
+  
   loginGuest(): void {
       this.userService.loginUser({ username: "Guest1", password: "Guest1" }).subscribe(
         response => {
@@ -55,10 +54,6 @@ export class LoginComponent {
       );
   }
   
-  
-
-
-  // If you have a method to navigate to the register page:
   goToRegister(): void {
     this.router.navigate(['/register']);
   }

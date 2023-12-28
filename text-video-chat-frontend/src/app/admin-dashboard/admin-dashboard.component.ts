@@ -243,7 +243,6 @@ banUserFromChannel(userId: string, channelId: string): void {
     if (!channel.bannedUsers) channel.bannedUsers = [];
     if (!channel.bannedUsers.includes(userId)) {
       channel.bannedUsers.push(userId);
-     // this.removeUserFromChannel(userId, channelId); // Ban and remove from the channel's users list
       localStorage.setItem('groups', JSON.stringify(this.groups));
     }
   }

@@ -5,7 +5,7 @@ const path = require("path");
 const dotenv = require("dotenv");
 dotenv.config();
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" }); // Configures multer
+const upload = multer({ dest: "uploads/" });
 const fs = require("fs");
 const { connect, db, close } = require("./app");
 
