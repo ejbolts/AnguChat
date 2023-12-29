@@ -54,7 +54,7 @@ export class ChatComponent implements OnInit {
   
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
     this.chatService.incomingCallEvent.subscribe((callDetails: IncomingCallDetails) => {
-      console.log("Received incoming call event:", callDetails);
+      //console.log("Received incoming call event:", callDetails);
       this.incomingCallDetails = callDetails; // Store the entire callDetails object
     });
     this.chatService.socket.on('call-declined', (data: { message: string }) => {
@@ -73,7 +73,7 @@ export class ChatComponent implements OnInit {
     }
     
     this.chatService.getMessages().subscribe((msg: ChatMessage) => {
-      console.log("Received message for channel", msg);
+      //console.log("Received message for channel", msg);
     
       // Iterate through each group
       Object.values(this.groupChannels).forEach(channels => {
@@ -81,7 +81,7 @@ export class ChatComponent implements OnInit {
         let channel = channels.find(c => c._id === msg.channelId); 
         if (channel) {
           channel.history.push(msg);
-          console.log("Channel history:", channel.history);
+          //console.log("Channel history:", channel.history);
         }
       });
     });
@@ -93,13 +93,13 @@ export class ChatComponent implements OnInit {
     });
     
     this.peer.on('open', (peerId) => {
-      console.log('My PeerJS ID is:', peerId);
+      //console.log('My PeerJS ID is:', peerId);
       
       this.chatService.peerId = peerId;
       const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
       this.chatService.userId  = currentUserId;
-      console.log("currentUserId in peerjs function",currentUserId)
-      console.log("peerId in peerjs function", peerId)
+      //console.log("currentUserId in peerjs function",currentUserId)
+      //console.log("peerId in peerjs function", peerId)
       this.chatService.sendConnectionIDs( currentUserId, peerId );
 
     });
@@ -108,7 +108,7 @@ export class ChatComponent implements OnInit {
       this.incomingCall = call;
     });
     this.peer.on('close', () => {
-      console.log("Peer connection is destroyed.");
+      //console.log("Peer connection is destroyed.");
     
     });
   }
@@ -132,12 +132,12 @@ export class ChatComponent implements OnInit {
   }
 
   fetchChannelsPerGroup(groupId: string): void {
-    console.log(`Fetching channels for group ${groupId}`); 
+    //console.log(`Fetching channels for group ${groupId}`); 
     this.userService.getChannelsByGroupId(groupId).subscribe(
       
       (channels: Channel[]) => {
         this.groupChannels[groupId] = channels;
-        console.log("channels:", channels); 
+        //console.log("channels:", channels); 
       },
       error => {
         console.error("Error fetching channels:", error);
@@ -146,11 +146,11 @@ export class ChatComponent implements OnInit {
   }
 
   fetchUsers(): void {
-    console.log(`Fetching users`);
+    //console.log(`Fetching users`);
     this.userService.getUsers().subscribe(
       (users: User[]) => {
         this.users = users;
-        console.log("Users:", this.users);
+        //console.log("Users:", this.users);
       },
       error => {
         console.error("Error fetching users:", error);
@@ -351,7 +351,7 @@ ngOnDestroy(): void {
 declineCall(): void {
  
   if (this.incomingCall && this.incomingCallDetails?.socketID) {
-    console.log("Declining call from Socket ID:", this.incomingCallDetails.socketID);
+    //console.log("Declining call from Socket ID:", this.incomingCallDetails.socketID);
 
     this.chatService.calldeclined(this.incomingCallDetails.socketID);
     this.incomingCall.close(); // Close the incoming call
@@ -362,7 +362,7 @@ declineCall(): void {
 }
   joinGroup(group: Group): void {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
-    console.log(group._id ,currentUserId)
+    //console.log(group._id ,currentUserId)
     this.userService.addUserToGroup(group._id, currentUserId).subscribe(
       response => {
         this.fetchGroups(); 
@@ -399,7 +399,7 @@ removeUserFromGroup(groupId: string): void {
   const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
   this.userService.removeUserFromGroup(groupId, currentUserId).subscribe(
     () => {
-      console.log('User removed from group successfully');
+      //console.log('User removed from group successfully');
       this.fetchGroups();  
     },
     (error: any) => {
@@ -411,7 +411,7 @@ removeUserFromGroup(groupId: string): void {
 handleSendMessages(channelId: string): void {
   const messageToSend = this.channelMessages.get(channelId);
   const imageToSend = this.selectedImages.get(channelId);
-  console.log("messageToSend", messageToSend)
+  //console.log("messageToSend", messageToSend)
   if (this.currentUser) {
     const chatMessage: ChatMessage = {
       username: this.currentUser.username,
@@ -425,7 +425,7 @@ handleSendMessages(channelId: string): void {
     // Call the service method with the channel ID and the chat message
     this.chatService.addMessageToChannel(channelId, chatMessage)
     .subscribe(response => {
-        console.log('Message added', response);
+        //console.log('Message added', response);
     }, error => {
       this.errorMessage = error.message;
         console.error('Error adding message', error);
@@ -446,11 +446,11 @@ handleMessageInput(event: Event, channelId: string): void {
 }
 
 handleJoinChannel(channelId: string, groupId: string, username: string,userId: string): void {
-  console.log('Handling join channel:', channelId, groupId, this.currentUser?.username );
+  //console.log('Handling join channel:', channelId, groupId, this.currentUser?.username );
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
       this.chatService.joinChannel(channelId, groupId, username);
-      console.log('User added to channel successfully');
+      //console.log('User added to channel successfully');
 
       this.fetchChannelsPerGroup(groupId);
     },
@@ -459,17 +459,17 @@ handleJoinChannel(channelId: string, groupId: string, username: string,userId: s
     }
   );
   this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-    console.log("Received message for channel", msg);
+    //console.log("Received message for channel", msg);
 
     // Iterate through each group
     Object.values(this.groupChannels).forEach(channels => {
       // Find the channel within the group channels
       let channel = channels.find(c => c._id === msg.channelId); 
-      console.log("channel", channel)
+      //console.log("channel", channel)
 
       if (channel) {
         channel.history.push(msg);
-        console.log("Channel history:", channel.history);
+        //console.log("Channel history:", channel.history);
       }
     });
   }
@@ -479,7 +479,7 @@ handleLeaveChannel(channelId: string, username: string, groupId: string, userId:
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
       this.chatService.leaveChannel(channelId, groupId, username);
-      console.log("User removed from channel successfully");
+      //console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
       this.fetchChannelsPerGroup(groupId);
     },
@@ -496,7 +496,7 @@ deleteAccount(user: User): void {
     if (!confirmDelete) return;
   this.userService.deleteUser(user._id!).subscribe(
     response => {
-      console.log("User removed successfully:", response);
+      //console.log("User removed successfully:", response);
     },
     error => {
       console.error('Error removing user:', error);

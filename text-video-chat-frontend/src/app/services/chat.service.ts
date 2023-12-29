@@ -25,7 +25,7 @@ export class ChatService {
 
   private initializeSocketListeners(): void {
     this.socket.on('connection', (userId: string) => {
-      console.log("Socket successfully connected with user ID: ", userId);
+      // console.log("Socket successfully connected with user ID: ", userId);
       this.socketId = userId;
     });
 
@@ -35,7 +35,7 @@ export class ChatService {
 
 
     this.socket.on('incomingCall', (callDetails: any) => {
-      console.log("Incoming call from: ", callDetails);
+      // console.log("Incoming call from: ", callDetails);
       this.incomingCallEvent.emit(callDetails);
     });
 
@@ -52,12 +52,12 @@ export class ChatService {
   }
   
   joinChannel(channelId: string, groupId: string, username: string) {
-    console.log("Joining channel:", username, channelId);
+    // console.log("Joining channel:", username, channelId);
     this.socket.emit('joinChannel', { channelId, groupId, username }, { withCredentials: true });
   }
 
   leaveChannel(channelId: string, groupId: string, username: string) {
-    console.log("leaving channel:", username, channelId);
+    // console.log("leaving channel:", username, channelId);
 
     this.socket.emit('leaveChannel', { channelId, groupId, username }, { withCredentials: true });
   }
@@ -68,7 +68,7 @@ export class ChatService {
 
 
   addMessageToChannel(channelId: string, message: ChatMessage) {
-    console.log("Message sent to server with channelID:", message, channelId);
+    // console.log("Message sent to server with channelID:", message, channelId);
   
     return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message }, { withCredentials: true });
   }
@@ -76,7 +76,7 @@ export class ChatService {
   getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
       this.socket.on('system-message', (message: ChatMessage) => {
-        console.log("System message received:", message);
+        // console.log("System message received:", message);
         observer.next(message);
       });
     });
