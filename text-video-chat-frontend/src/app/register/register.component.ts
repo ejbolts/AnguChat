@@ -34,7 +34,7 @@ export class RegisterComponent implements OnInit {
       reader.readAsDataURL(file);
     }
     if (input && input.files && input.files.length > 0) {
-      console.log(input.files[0]);
+      // console.log(input.files[0]);
       
       this.selectedFile = input.files[0];}
    
@@ -55,7 +55,7 @@ export class RegisterComponent implements OnInit {
         formData.append('username', username);
   
         this.userService.uploadFileToServer(formData).subscribe(() => {
-          console.log('File uploaded successfully to server');
+          // console.log('File uploaded successfully to server');
           // Handle successful upload
         }, error => {
           console.error('Error uploading file:', error);
@@ -63,7 +63,7 @@ export class RegisterComponent implements OnInit {
         });
       });
     } else {
-      console.log('No file selected');
+      // console.log('No file selected');
     }
   }
 
@@ -119,14 +119,14 @@ export class RegisterComponent implements OnInit {
   register(): void {
     this.userService.registerUser(this.user).subscribe(
       () => {
-        console.log('User registration successful');
+        // console.log('User registration successful');
         this.uploadImage(this.user.username);
         this.goToLogin();
       },
       error => {
         // This block runs only if there is an error in registerUser
         this.errorMessage = error.error.message || 'Registration failed.';
-        console.log('Error during user registration:', error.error.message);
+        // console.log('Error during user registration:', error.error.message);
       }
     );
   }

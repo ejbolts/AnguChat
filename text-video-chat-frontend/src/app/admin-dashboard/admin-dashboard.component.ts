@@ -63,7 +63,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   fetchChannelsPerGroup(groupId: string): void {
-    console.log(`Fetching channels for group ${groupId}`); //Fetching channels for group 6525c1e721a00f6bd9e5d901
+    //console.log(`Fetching channels for group ${groupId}`); //Fetching channels for group 6525c1e721a00f6bd9e5d901
 
     this.userService.getChannelsByGroupId(groupId).subscribe(
       (channels: Channel[]) => {
@@ -78,7 +78,7 @@ export class AdminDashboardComponent implements OnInit {
   removeUser(user: User): void {
     this.userService.deleteUser(user._id!).subscribe(
       response => {
-        console.log("User removed successfully:", response);
+        //console.log("User removed successfully:", response);
         this.fetchUsers();  // Refresh the list of users after deletion
       },
       error => {
@@ -95,7 +95,7 @@ export class AdminDashboardComponent implements OnInit {
     if (user.role) {
       this.userService.updateUserRole(user._id!, user.role)
         .subscribe(() => {
-          console.log('User role updated successfully');
+          //console.log('User role updated successfully');
           this.fetchUsers(); // Refresh the list of users after the update
         }, error => {
           console.error('Error updating user role:', error);
@@ -112,7 +112,7 @@ export class AdminDashboardComponent implements OnInit {
     const currentUserId = JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
     this.userService.createGroup(this.group.name, currentUserId)
       .subscribe((response: any) => {
-        console.log('Group created:', response);
+        //console.log('Group created:', response);
         this.fetchGroups();
       },  (error: HttpErrorResponse) => {
         console.error('Error creating group:', error);
@@ -126,7 +126,7 @@ export class AdminDashboardComponent implements OnInit {
   deleteGroup(groupId: string): void {
     this.userService.deleteGroup(groupId).subscribe(
       () => {
-        console.log("Group deleted successfully");
+        //console.log("Group deleted successfully");
         // Reload the groups or remove the deleted group from your local data
         this.fetchGroups();
       },
@@ -138,7 +138,7 @@ export class AdminDashboardComponent implements OnInit {
   createNewChannel(groupId: string, channelName: string): void {
     this.userService.createChannel(groupId, channelName).subscribe(
         response => {
-            console.log("Channel created:", response);
+            //console.log("Channel created:", response);
             this.fetchGroups();
         },
         (error: any) => {
@@ -148,10 +148,10 @@ export class AdminDashboardComponent implements OnInit {
   }
 
 removeChannel(channelId: string): void {
-  console.log(`Deleting channel ${channelId}`);
+  //console.log(`Deleting channel ${channelId}`);
   this.userService.deleteChannel(channelId).subscribe(
       () => {
-          console.log("Channel deleted successfully");
+          //console.log("Channel deleted successfully");
           this.fetchGroups();
       },
       (error: any) => {
@@ -161,10 +161,10 @@ removeChannel(channelId: string): void {
 }
 
 addUserToGroup(groupId: string, userId: string): void {
-  console.log("added user")
+  //console.log("added user")
   this.userService.addUserToGroup(groupId, userId).subscribe(
     () => {
-      console.log('User added to group successfully');
+      //console.log('User added to group successfully');
       this.fetchGroups();  // to reflect changes
     },
     (error: any) => {
@@ -176,7 +176,7 @@ addUserToGroup(groupId: string, userId: string): void {
 addUserToChannel(channelId: string, groupId: string, userId: string): void {
   this.userService.addUserToChannel(channelId, groupId, userId).subscribe(
     () => {
-      console.log('User added to channel successfully');
+      //console.log('User added to channel successfully');
       this.fetchChannelsPerGroup(groupId);
     },
     (error: any) => {
@@ -188,7 +188,7 @@ addUserToChannel(channelId: string, groupId: string, userId: string): void {
 removeUserFromChannel(channelId: string, userId: string, groupId: string): void {
   this.userService.removeUserFromChannel(channelId, userId).subscribe(
     () => {
-      console.log("User removed from channel successfully");
+      //console.log("User removed from channel successfully");
       // Refetch channels for the group to reflect the change
       this.fetchChannelsPerGroup(groupId);
     },
@@ -201,7 +201,7 @@ removeUserFromChannel(channelId: string, userId: string, groupId: string): void 
 removeUserFromGroup(groupId: string, userId: string): void {
   this.userService.removeUserFromGroup(groupId, userId).subscribe(
     () => {
-      console.log('User removed from group successfully');
+      //console.log('User removed from group successfully');
       this.fetchGroups();  // to refresh the group data and reflect changes
     },
     (error: any) => {
@@ -321,7 +321,7 @@ getPendingUsersForGroup(groupId: string): User[] {
 approveUserForGroup(userId: string, groupId: string): void {
   this.userService.approveUserForGroup(groupId, userId).subscribe(
     response => {
-      console.log('User approved:', response);
+      //console.log('User approved:', response);
       // Refetch group data to update the UI
       this.fetchGroups();
     },
