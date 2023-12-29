@@ -90,7 +90,6 @@ router.get("/", async (req, res) => {
     console.error("Error fetching channels:", err);
     res.status(500).json({ message: "Internal server error" });
   } finally {
-    close();
   }
 });
 
@@ -104,7 +103,6 @@ router.get("/getAllUsers", async (req, res) => {
     console.error("Error fetching users:", err);
     res.status(500).json({ message: "Internal server error" });
   } finally {
-    close();
   }
 });
 

@@ -4,13 +4,10 @@ const { connect, db, close } = require("./app");
 const ObjectId = require("mongodb").ObjectId;
 
 router.delete("/:id", async (req, res) => {
-  console.log("Received delete request for user ID:", req.params.id); // Log the received user ID
-
   await connect();
   try {
     const userId = new ObjectId(req.params.id);
 
-    // Delete the user from the users collection
     await db().collection("users").deleteOne({ _id: userId });
 
     // Remove the user from any group's users array

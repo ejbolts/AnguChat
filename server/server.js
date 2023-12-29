@@ -11,7 +11,7 @@ const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
 const bucketRoute = require("./routes/bucket");
-const socketsRoute = require("./sockets"); // Import the sockets.js file
+const socketsRoute = require("./sockets");
 const expressPeerServer = require("peer").ExpressPeerServer;
 
 const csrf = require("csurf");
@@ -46,7 +46,6 @@ app.use("/peerjs", expressPeerServer(server, options)); // Integrate PeerServer 
 socketModule.setupSockets(server);
 
 // Routes
-
 app.use("/register", registerRoute);
 app.use("/login", loginRoute);
 app.use("/update", updateRoute);

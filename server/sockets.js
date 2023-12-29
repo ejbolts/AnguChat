@@ -32,7 +32,6 @@ const setupSockets = (server) => {
         socketId: socket.id,
         peerId: peerId,
       };
-
       console.log("userConnections:", userConnections);
     });
 
@@ -90,7 +89,6 @@ const setupSockets = (server) => {
       // Ensure the server socket joins the specified channel
       socket.join(channelId);
 
-      // Emit the message to the specified channel
       io.to(channelId).emit("channel-message", {
         content: message.content,
         username: message.username,

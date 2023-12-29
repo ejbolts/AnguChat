@@ -11,11 +11,11 @@ import { HttpErrorResponse } from '@angular/common/http';
   styleUrls: ['./admin-dashboard.component.css']
 })
 export class AdminDashboardComponent implements OnInit {
-  groups: Group[] = [];
-  users: User[] = [];
-  groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
-  currentUser?: User; 
-group: Group = {
+  public groups: Group[] = [];
+  public users: User[] = [];
+  public groupChannels: { [groupId: string]: Channel[] } = {};  // Map to hold channels for each group
+  public currentUser?: User; 
+  public group: Group = {
   name: '',
   _id: '',
   channels: [],
@@ -32,7 +32,6 @@ group: Group = {
     }
     
   }
- 
   
   fetchUsers(): void {
     this.userService.getAllUsers().subscribe(
@@ -44,6 +43,7 @@ group: Group = {
       }
     );
   }
+
   fetchGroups(): void {
     this.userService.fetchAllGroups().subscribe(
       (data: Group[]) => {
@@ -61,7 +61,6 @@ group: Group = {
       }
     );
   }
-  
 
   fetchChannelsPerGroup(groupId: string): void {
     console.log(`Fetching channels for group ${groupId}`); //Fetching channels for group 6525c1e721a00f6bd9e5d901
@@ -76,8 +75,6 @@ group: Group = {
     );
   }
   
-  
-
   removeUser(user: User): void {
     this.userService.deleteUser(user._id!).subscribe(
       response => {
@@ -106,8 +103,6 @@ group: Group = {
     }
   }
   
-  
-
   logout(): void {
     sessionStorage.removeItem('currentUser');  // Remove the logged-in user from the session storage
     this.router.navigate(['/login']);   // Redirect to the login page
@@ -127,8 +122,6 @@ group: Group = {
     const user = this.users.find(user => user._id === userId);
     return user ? user.username : 'Unknown User';
   }
-  
-
 
   deleteGroup(groupId: string): void {
     this.userService.deleteGroup(groupId).subscribe(
@@ -152,8 +145,7 @@ group: Group = {
             console.error("Error creating channel:", error);
         }
     );
-}
-
+  }
 
 removeChannel(channelId: string): void {
   console.log(`Deleting channel ${channelId}`);
@@ -167,8 +159,6 @@ removeChannel(channelId: string): void {
       }
   );
 }
-
-
 
 addUserToGroup(groupId: string, userId: string): void {
   console.log("added user")
@@ -208,9 +198,6 @@ removeUserFromChannel(channelId: string, userId: string, groupId: string): void 
   );
 }
 
-
-
-
 removeUserFromGroup(groupId: string, userId: string): void {
   this.userService.removeUserFromGroup(groupId, userId).subscribe(
     () => {
@@ -227,8 +214,6 @@ getUsernameById(userId: string): string {
   const user = this.users.find(u => u._id === userId);
   return user ? user.username : 'Unknown User';
 }
-
-
 
 joinChannel(userId: string, channelId: string): void {
   let channel: Channel | undefined;
@@ -252,20 +237,16 @@ reportUser(userId: string): void {
   }
 }
 
-
 banUserFromChannel(userId: string, channelId: string): void {
   const channel = this.findChannelById(channelId);
   if (channel) {
     if (!channel.bannedUsers) channel.bannedUsers = [];
     if (!channel.bannedUsers.includes(userId)) {
       channel.bannedUsers.push(userId);
-     // this.removeUserFromChannel(userId, channelId); // Ban and remove from the channel's users list
       localStorage.setItem('groups', JSON.stringify(this.groups));
     }
   }
 }
-
-
 
 // Utility function to fetch channel by ID
 findChannelById(channelId: string): Channel | undefined {
@@ -364,6 +345,5 @@ getCurrentUsername(): string | null {
   }
   return null;
 }
-
 
 }

@@ -19,18 +19,14 @@ export class UserService {
       });
   }
 
-  
   public getCsrfToken(): string {
     return this.csrfToken;
   }
 
-  // Method to register a new user
   registerUser(user: User): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, user, { withCredentials: true });
   }
-  
 
-  // Method to login a user
   loginUser(credentials: {username: string, password: string}): Observable<{message: string, user: User}> {
     return this.http.post<{message: string, user: User}>(`${this.apiUrl}/login`, credentials, { withCredentials: true });
   }
@@ -44,7 +40,6 @@ export class UserService {
     return this.http.put(`${this.apiUrl}/update/${userId}/role`, { role: role }, { withCredentials: true });
   }
   
-  // Method to fetch all users
   getAllUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/login`);
   }
@@ -53,12 +48,9 @@ export class UserService {
     return this.http.get(`${this.apiUrl}/sockets/getConnectionInfo/${userId}`);
   }
   
-
-  // Method to fetch a specific user by its _id
   getUserById(id: string): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/login/${id}`);
   }
-
 
   createGroup(name: string, userId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/group/create`, { name: name, userId: userId }, { withCredentials: true });
@@ -67,7 +59,6 @@ export class UserService {
   fetchAllGroups(): Observable<Group[]> {
     return this.http.get<Group[]>(`${this.apiUrl}/group`);
   }
-  
 
   deleteGroup(groupId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/group/${groupId}`, { withCredentials: true });
@@ -85,11 +76,9 @@ export class UserService {
     return this.http.get<Channel[]>(`${this.apiUrl}/group/${groupId}/channels`);
   }
 
-
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/channel/getAllUsers`);
   }
-
 
 addUserToGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/addUser`, { userId },{ withCredentials: true });
@@ -98,7 +87,6 @@ addUserToGroup(groupId: string, userId: string): Observable<any> {
 removeUserFromGroup(groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/group/${groupId}/removeUser`, { userId }, {withCredentials: true });
 }
-
 
 addUserToChannel(channelId: string, groupId: string, userId: string): Observable<any> {
   return this.http.post(`${this.apiUrl}/channel/${channelId}/addUser`, { groupId, userId }, {withCredentials: true });
@@ -119,6 +107,5 @@ approveUserForGroup(groupId: string, userId: string): Observable<any> {
 uploadFileToServer(fileData: FormData): Observable<any> {
   return this.http.post(`${this.apiUrl}/bucket/upload`, fileData, { withCredentials: true });
 }
-
 
 }

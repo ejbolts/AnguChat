@@ -11,11 +11,11 @@ import { User } from '../models/user.model';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
-  selectedFile: File | null = null; 
-  errorMessage: string | null = null;  
-  imageSrc: string | ArrayBuffer | null = null;
-  fileName: string = 'No image selected';
-  user: User = {
+  public selectedFile: File | null = null; 
+  public errorMessage?: string | null = null;  
+  public imageSrc: string | ArrayBuffer | null = null;
+  public fileName: string = 'No image selected';
+  public user: User = {
     username: '',
     email: '',
     password: '',
@@ -23,6 +23,7 @@ export class RegisterComponent implements OnInit {
     profilePic: null,
     groups: [], 
   };
+  
   handleFileInput(event: any): void {
     const file = event.target.files[0];
     const input = event.target as HTMLInputElement;
@@ -46,45 +47,90 @@ export class RegisterComponent implements OnInit {
     if (fileInput) fileInput.value = '';
   }
   
-  uploadImage(username: string): any {
+  uploadImage(username: string): void {
     if (this.selectedFile) {
-      const fileSize = this.selectedFile.size / 1024 / 1024; // size in MB
-      if (fileSize > 2) {
-        alert('File is too large. Maximum size is 2MB.');
-        return;
-      }
+      this.compressImage(this.selectedFile, (compressedFile) => {
+        const formData = new FormData();
+        formData.append('file', compressedFile);
+        formData.append('username', username);
   
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      formData.append('username', username); // Append username to the FormData
-  
-      this.userService.uploadFileToServer(formData).subscribe(() => {
-        console.log('File uploaded successfully to server');
-        // Handle successful upload
-      }, error => {
-        console.error('Error uploading file:', error);
-        // Handle upload error
+        this.userService.uploadFileToServer(formData).subscribe(() => {
+          console.log('File uploaded successfully to server');
+          // Handle successful upload
+        }, error => {
+          console.error('Error uploading file:', error);
+          // Handle upload error
+        });
       });
     } else {
       console.log('No file selected');
     }
   }
+
+  /*compressImage function that takes the original file and a callback function.
+  It compresses the image and then calls the callback with the compressed file.
+  In uploadImage, call compressImage, and once the image is compressed,
+  proceed with creating FormData and uploading it to s3 bucket.*/
+  compressImage(file: File, callback: (compressedFile: File) => void): void {
+    const reader = new FileReader();
+    reader.onload = (event: any) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+  
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+  
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+  
+        canvas.width = width;
+        canvas.height = height;
+        ctx?.drawImage(img, 0, 0, width, height);
+  
+        // Convert canvas to Blob, then to File
+        canvas.toBlob((blob) => {
+          const compressedFile = new File([blob!], file.name, { type: 'image/jpeg', lastModified: Date.now() });
+          callback(compressedFile);
+        }, 'image/jpeg', 0.1); 
+      };
+    };
+    reader.readAsDataURL(file);
+  }
+
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
   constructor(private userService: UserService, private router: Router) {}
 
-
   register(): void {
-    this.userService.registerUser(this.user).subscribe(() => {
-      this.uploadImage(this.user.username)
-        
-    
-    }, error => {
-      this.errorMessage = error.error.message || 'Registration failed.';
-      console.log('Error during user registration:', error.error.message);
-    });
+    this.userService.registerUser(this.user).subscribe(
+      () => {
+        console.log('User registration successful');
+        this.uploadImage(this.user.username);
+        this.goToLogin();
+      },
+      error => {
+        // This block runs only if there is an error in registerUser
+        this.errorMessage = error.error.message || 'Registration failed.';
+        console.log('Error during user registration:', error.error.message);
+      }
+    );
   }
+  
   
   ngOnInit(): void {}
 }

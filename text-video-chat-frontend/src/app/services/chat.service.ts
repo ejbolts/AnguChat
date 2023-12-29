@@ -1,19 +1,23 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import {io} from 'socket.io-client';
+import {Socket, io} from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { ChatMessage } from '../models/chatmessage.model';  
 import { HttpClient } from '@angular/common/http';
+import { CallDetails } from '../chat/chat.component'
 @Injectable({
   providedIn: 'root'
 })
+
 export class ChatService {
-  public socket: any;
   public apiUrl = 'http://localhost:3000'; 
+  // socket information
+  public socket: Socket;
   public socketId: string | null = null;
-  incomingCall: any;
-  public peerId: string | undefined; 
-  public userId: string | undefined;
-  incomingCallEvent: EventEmitter<any> = new EventEmitter();
+
+  // IDs of the current user
+  public peerId?: string;
+  public userId?: string;
+  incomingCallEvent: EventEmitter<CallDetails> = new EventEmitter();
   constructor(private http: HttpClient) {
     this.socket = io(this.apiUrl);
     this.initializeSocketListeners();
@@ -42,13 +46,10 @@ export class ChatService {
    
   }
 
-
-
   startCall(anotherUserSockID: string, username: string) {
     this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username }, { withCredentials: true });
    
   }
-
   
   joinChannel(channelId: string, groupId: string, username: string) {
     console.log("Joining channel:", username, channelId);
@@ -72,9 +73,7 @@ export class ChatService {
     return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message }, { withCredentials: true });
   }
   
-  
-
-  public getSystemMessages(): Observable<ChatMessage> {
+  getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
       this.socket.on('system-message', (message: ChatMessage) => {
         console.log("System message received:", message);
@@ -82,7 +81,7 @@ export class ChatService {
       });
     });
 }
-  public getMessages(): Observable<ChatMessage> {
+  getMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>(observer => {
 
       this.socket.on('channel-message', (msg: ChatMessage) => {
@@ -91,7 +90,7 @@ export class ChatService {
     });
   }
 
-  public calldeclined(callerId: string) {
+  calldeclined(callerId: string) {
     this.socket.emit('call-declined', { callerId });
   }
 }
