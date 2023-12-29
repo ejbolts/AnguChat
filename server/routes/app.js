@@ -1,11 +1,20 @@
 // app.js
-const MongoClient = require("mongodb").MongoClient;
-const url = "mongodb://127.0.0.1:27017/TextVideoDB";
-let db = null;
-let client = null;
+let db = "TextVideoDB";
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const dotenv = require("dotenv");
+const uri = process.env.MONGODB_URI;
+dotenv.config();
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
 
 async function connect() {
-  client = new MongoClient(url);
   try {
     await client.connect();
     db = client.db("TextVideoDB");

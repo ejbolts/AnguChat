@@ -51,6 +51,8 @@ export class ChatComponent implements OnInit {
 
   // Error handling
   public errorMessage?: string;
+
+  public isLoading: boolean = false;
   
   constructor(private router: Router, private userService: UserService, private chatService: ChatService,  ) {
     this.chatService.incomingCallEvent.subscribe((callDetails: IncomingCallDetails) => {
@@ -64,9 +66,11 @@ export class ChatComponent implements OnInit {
 
   }
 
-  ngOnInit(): void {
-    this.fetchGroups()
-    this.fetchUsers();
+  async ngOnInit(): Promise<void> {
+    this.isLoading = true;
+    await this.fetchGroups()
+    await this.fetchUsers();
+    this.isLoading = false;
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
         this.currentUser = JSON.parse(storedUser);
@@ -113,50 +117,61 @@ export class ChatComponent implements OnInit {
     });
   }
    
-  fetchGroups(): void {
-    this.userService.fetchAllGroups().subscribe(
-      (data: Group[]) => {
-        this.allGroups = data;
+  async fetchGroups(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.fetchAllGroups().subscribe(
+        async (data: Group[]) => {
+          this.allGroups = data;
   
-        // For each group fetched, fetch its channels
-        this.allGroups.forEach(group => {
-          this.fetchChannelsPerGroup(group._id);
-          
-        });
+          try {
+            for (const group of this.allGroups) {
+              await this.fetchChannelsPerGroup(group._id);
+            }
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        },
+        (error: any) => {
+          console.error("Error fetching groups:", error);
+          reject(error);
+        }
+      );
+    });
+  }
   
-      },
-      (error: any) => {
-        console.error("Error fetching groups:", error);
-      }
-    );
-  }
+  
+  fetchUsers(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        this.userService.getUsers().subscribe(
+            (users: User[]) => {
+                this.users = users;
+                resolve();
+            },
+            error => {
+                console.error("Error fetching users:", error);
+                reject(error);
+            }
+        );
+    });
+}
 
-  fetchChannelsPerGroup(groupId: string): void {
-    //console.log(`Fetching channels for group ${groupId}`); 
-    this.userService.getChannelsByGroupId(groupId).subscribe(
-      
-      (channels: Channel[]) => {
-        this.groupChannels[groupId] = channels;
-        //console.log("channels:", channels); 
-      },
-      error => {
-        console.error("Error fetching channels:", error);
-      }
-    ); 
+  async fetchChannelsPerGroup(groupId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.getChannelsByGroupId(groupId).subscribe(
+        (channels: Channel[]) => {
+          this.groupChannels[groupId] = channels;
+          resolve();
+        },
+        error => {
+          console.error("Error fetching channels:", error);
+          reject(error);
+        }
+      );
+    });
   }
+  
 
-  fetchUsers(): void {
-    //console.log(`Fetching users`);
-    this.userService.getUsers().subscribe(
-      (users: User[]) => {
-        this.users = users;
-        //console.log("Users:", this.users);
-      },
-      error => {
-        console.error("Error fetching users:", error);
-      }
-    );
-  }
 
     /*The image file is read into an Image object.
     Once loaded, the image is drawn onto a canvas at a reduced size.
