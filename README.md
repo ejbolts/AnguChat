@@ -1,9 +1,12 @@
 
-# Text-video-chat-app
+# AnguChat
+
+![DALL_E_AnguChat_icon2](https://github.com/ejbolts/Text-video-chat-app/assets/86194451/36ac81db-9fc5-41f2-b09f-62e11c245342)
 
 ## Overview
 
-**Text-video-chat-app** is an interactive communication platform. It's designed to provide seamless chat experiences, where users can participate in different groups and channels. The application comes with administrative functionalities, allowing management of users, groups, and channels.
+
+**AnguChat** is a text and video streaming chat app. It's designed to provide seamless chat experiences, where users can participate in different groups and channels. The application comes with administrative functionalities, allowing management of users, groups, and channels.
 
 ## Responsibilities Division between Client and Server
 
