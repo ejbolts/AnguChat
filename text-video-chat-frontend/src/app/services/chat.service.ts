@@ -1,91 +1,116 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import {Socket, io} from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 import { Observable } from 'rxjs';
-import { ChatMessage } from '../models/chatmessage.model';  
+import { ChatMessage } from '../models/chatmessage.model';
 import { HttpClient } from '@angular/common/http';
-import { CallDetails } from '../chat/chat.component'
+import { environment } from '../../environments/environment';
+import { CallDetails, IncomingCallDetails } from '../models/callDetails.model';
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class ChatService {
-  public apiUrl = 'http://localhost:3000'; 
+  apiUrl = environment.apiUrl;
   // socket information
-  public socket: Socket;
-  public socketId: string | null = null;
+  socket: Socket;
+  socketId: string | null = null;
 
   // IDs of the current user
-  public peerId?: string;
-  public userId?: string;
-  incomingCallEvent: EventEmitter<CallDetails> = new EventEmitter();
+  peerId?: string;
+  userId?: string;
+  incomingCallEvent: EventEmitter<IncomingCallDetails> = new EventEmitter();
   constructor(private http: HttpClient) {
+    // const socketUrl = environment.apiUrl + "/socket.io";
     this.socket = io(this.apiUrl);
     this.initializeSocketListeners();
   }
 
   private initializeSocketListeners(): void {
+    this.socket.on('error', (err) => console.log('error:', err));
     this.socket.on('connection', (userId: string) => {
       // console.log("Socket successfully connected with user ID: ", userId);
       this.socketId = userId;
     });
 
-    this.socket.on('connect_error', (error: any) => {
-      console.error("Socket connection error:", error);
+    this.socket.on('connect_error', (error: Error) => {
+      console.error('Socket connection error:', error);
     });
 
-
-    this.socket.on('incomingCall', (callDetails: any) => {
+    this.socket.on('incomingCall', (callDetails: IncomingCallDetails) => {
       // console.log("Incoming call from: ", callDetails);
       this.incomingCallEvent.emit(callDetails);
     });
-
   }
 
   sendConnectionIDs(userId: String, peerId: String) {
-    this.socket.emit('connectUserIDs', { userId, peerId }, { withCredentials: true });
-   
+    this.socket.emit(
+      'connectUserIDs',
+      { userId, peerId },
+      { withCredentials: true }
+    );
   }
 
   startCall(anotherUserSockID: string, username: string) {
-    this.socket.emit('callUser', { anotherUserSockID, from: this.peerId, socketID: this.socketId, username }, { withCredentials: true });
-   
+    this.socket.emit(
+      'callUser',
+      {
+        anotherUserSockID,
+        from: this.peerId,
+        socketID: this.socketId,
+        username,
+      },
+      { withCredentials: true }
+    );
   }
-  
+
   joinChannel(channelId: string, groupId: string, username: string) {
     // console.log("Joining channel:", username, channelId);
-    this.socket.emit('joinChannel', { channelId, groupId, username }, { withCredentials: true });
+    this.socket.emit(
+      'joinChannel',
+      { channelId, groupId, username },
+      { withCredentials: true }
+    );
   }
 
   leaveChannel(channelId: string, groupId: string, username: string) {
     // console.log("leaving channel:", username, channelId);
 
-    this.socket.emit('leaveChannel', { channelId, groupId, username }, { withCredentials: true });
+    this.socket.emit(
+      'leaveChannel',
+      { channelId, groupId, username },
+      { withCredentials: true }
+    );
   }
 
   sendMessage(channelId: string, message: ChatMessage) {
-    this.socket.emit('sendMessage', { channelId, message }, { withCredentials: true });
+    this.socket.emit(
+      'sendMessage',
+      { channelId, message },
+      { withCredentials: true }
+    );
   }
-
 
   addMessageToChannel(channelId: string, message: ChatMessage) {
     // console.log("Message sent to server with channelID:", message, channelId);
-  
-    return this.http.post(`${this.apiUrl}/channel/${channelId}/addMessage`, { channelId, message }, { withCredentials: true });
+
+    return this.http.post(
+      `${this.apiUrl}/api/channel/${channelId}/addMessage`,
+      { channelId, message },
+      { withCredentials: true }
+    );
   }
-  
+
   getSystemMessages(): Observable<ChatMessage> {
-    return new Observable<ChatMessage>(observer => {
+    return new Observable<ChatMessage>((observer) => {
       this.socket.on('system-message', (message: ChatMessage) => {
         // console.log("System message received:", message);
         observer.next(message);
       });
     });
-}
+  }
   getMessages(): Observable<ChatMessage> {
-    return new Observable<ChatMessage>(observer => {
-
+    return new Observable<ChatMessage>((observer) => {
       this.socket.on('channel-message', (msg: ChatMessage) => {
-          observer.next(msg);
+        observer.next(msg);
       });
     });
   }

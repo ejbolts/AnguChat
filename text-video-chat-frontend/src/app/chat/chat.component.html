@@ -8,6 +8,7 @@
         Logout
       </button>
       <button
+        *ngIf="currentUser?._id !== guestUserID"
         (click)="deleteAccount(currentUser!)"
         class="btn btn-outline-danger mx-2"
       >
