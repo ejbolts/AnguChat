@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Group } from '../models/group.model';
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
@@ -8,13 +8,32 @@ import { ChatService } from '../services/chat.service';
 import { ChatMessage } from '../models/chatmessage.model';
 import Peer, { MediaConnection } from 'peerjs';
 import { IncomingCallDetails } from '../models/callDetails.model';
-
+import { environment } from 'src/environments/environment';
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent implements OnInit {
+  apiUrl = environment.apiUrl;
+  isModalOpen: boolean = true;
+
+  toggleModal() {
+    this.isModalOpen = !this.isModalOpen;
+  }
+  // Listen for window resize events
+  @HostListener('window:resize', ['$event'])
+  onResize(_: any) {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    if (window.innerWidth <= 720) {
+      this.isModalOpen = false;
+    } else {
+      this.isModalOpen = true;
+    }
+  }
   // Channel information
   channels: Channel[] = [];
   channelMessages = new Map<string, string>();
@@ -63,6 +82,7 @@ export class ChatComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+    this.checkScreenSize();
     this.isLoading = true;
     await this.fetchGroups();
     await this.fetchUsers();
@@ -88,9 +108,8 @@ export class ChatComponent implements OnInit {
 
     this.peer = new Peer({
       host: 'localhost',
-      port: 3000,
-      path: '/peerjs',
-      secure: true,
+      port: 3001,
+      path: '/',
     });
 
     this.peer.on('open', (peerId) => {

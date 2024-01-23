@@ -3,7 +3,7 @@ const userConnections = {};
 const express = require("express");
 const router = express.Router();
 
-router.get("/getConnectionInfo/:userId", (req, res) => {
+router.get("/api/getConnectionInfo/:userId", (req, res) => {
   const userId = req.params.userId;
   const connectionInfo = userConnections[userId];
 
@@ -14,8 +14,12 @@ router.get("/getConnectionInfo/:userId", (req, res) => {
   }
 });
 
-const setupSockets = (server) => {
-  const io = socketIo(server, {
+const setupSockets = (expressSocketIOServer) => {
+
+
+
+
+  const io = socketIo(expressSocketIOServer, {
     cors: {
       origin: "http://localhost:4200",
       methods: ["GET", "POST", "PUT", "DELETE"],
@@ -50,7 +54,7 @@ const setupSockets = (server) => {
 
       io.in(channelId)
         .allSockets()
-        .then((sockets) => {});
+        .then((sockets) => { });
     });
 
     // Listen for 'callUser' event and relay it to the specified user
@@ -122,7 +126,7 @@ const setupSockets = (server) => {
       });
     });
   });
+  return io;
 };
-
 module.exports = router;
-module.exports.setupSockets = setupSockets;
+module.exports.setupSockets = setupSockets; 

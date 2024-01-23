@@ -1,5 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import { Socket, io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { ChatMessage } from '../models/chatmessage.model';
 import { HttpClient } from '@angular/common/http';
@@ -11,25 +11,23 @@ import { CallDetails, IncomingCallDetails } from '../models/callDetails.model';
 export class ChatService {
   apiUrl = environment.apiUrl;
   // socket information
-  socket: Socket;
   socketId: string | null = null;
-
+  socket: Socket;
   // IDs of the current user
   peerId?: string;
   userId?: string;
   incomingCallEvent: EventEmitter<IncomingCallDetails> = new EventEmitter();
   constructor(private http: HttpClient) {
-    // const socketUrl = environment.apiUrl + "/socket.io";
     this.socket = io(this.apiUrl);
+
+    this.socket.on('connect', () => {
+      console.log('Connected to server');
+    });
     this.initializeSocketListeners();
   }
 
   private initializeSocketListeners(): void {
     this.socket.on('error', (err) => console.log('error:', err));
-    this.socket.on('connection', (userId: string) => {
-      // console.log("Socket successfully connected with user ID: ", userId);
-      this.socketId = userId;
-    });
 
     this.socket.on('connect_error', (error: Error) => {
       console.error('Socket connection error:', error);

@@ -19,46 +19,62 @@ const csrf = require("csurf");
 const app = express();
 app.use(cookieParser());
 
-const server = http.createServer(app);
-const options = {
-  debug: true,
-};
+const expressSocketIOServer = http.createServer(app);
+const peerServer = http.createServer(app);
 // Body parser for parsing JSON and urlencoded data
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware
-app.use(cors({ origin: "http://localhost:4200", credentials: true }));
 const csrfProtection = csrf({ cookie: { httpOnly: true, sameSite: "Strict" } });
-
+app.use(cors({
+  origin: function (origin, callback) {
+    const allowedOrigins = ['http://localhost:4200'];
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed from this origin'));
+    }
+  },
+  credentials: true
+}));
 app.use(csrfProtection);
 
-app.get("/get-csrf-token", (req, res) => {
+app.get("/api/get-csrf-token", (req, res) => {
   const token = req.csrfToken();
   console.log("Generated CSRF token:", token);
   res.json({ csrfToken: token });
 });
 // Peer Server setup
-app.use("/peerjs", expressPeerServer(server, options)); // Integrate PeerServer with express
+const peerJsOptions = { debug: true };
+app.use("/", expressPeerServer(peerServer, peerJsOptions)); // Integrate PeerServer with express
 
 // Socket.io setup
-socketModule.setupSockets(server);
+socketModule.setupSockets(expressSocketIOServer);
+
+
 
 // Routes
-app.use("/register", registerRoute);
-app.use("/login", loginRoute);
-app.use("/update", updateRoute);
-app.use("/remove", removeRoute);
-app.use("/group", groupRoute);
-app.use("/channel", channelRoute);
-app.use("/bucket", bucketRoute);
-app.use("/sockets", socketsRoute);
+app.use("/api/register", registerRoute);
+app.use("/api/login", loginRoute);
+app.use("/api/update", updateRoute);
+app.use("/api/remove", removeRoute);
+app.use("/api/group", groupRoute);
+app.use("/api/channel", channelRoute);
+app.use("/api/bucket", bucketRoute);
+app.use("/api/sockets", socketsRoute);
 
 // Start the server
-const PORT = 3000;
-server.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+const expressPort = 3000;
+const peerPort = 3001;
+
+expressSocketIOServer.listen(expressPort, () => {
+  console.log(`Express and Socket.io server running on port ${expressPort}`);
+});
+
+peerServer.listen(peerPort, () => {
+  console.log(`PeerJS server running on port ${peerPort}`);
 });
 
 module.exports = app;

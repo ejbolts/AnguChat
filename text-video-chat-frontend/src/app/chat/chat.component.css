@@ -25,19 +25,42 @@
 /* Medium screens (tablets, small desktops) */
 @media screen and (min-width: 720px) and (max-width: 1079px) {
   .list-group-item-responsive {
-    max-height: 450px;
+    max-height: 550px;
   }
 }
 
 /* Smaller screens (mobile devices) */
-@media screen and (max-width: 719px) {
+@media screen and (max-width: 720px) {
   .list-group-item-responsive {
-    max-height: 350px;
+    max-height: 700px;
+  }
+  #UsersGroupDiv {
+    z-index: 10;
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(30px);
+    border-radius: 10px;
+    padding: 55px 96px 0 96px;
+    padding-top: 80px;
+  }
+  #showModal {
+    z-index: 11;
+    display: block;
+    margin: 10px;
+  }
+}
+@media screen and (min-width: 721px) {
+  #UsersGroupDiv {
+    padding: 25px 25px 0 25px;
+    display: block;
+  }
+  #showModal {
+    display: none;
   }
 }
 .spinner-container {
   position: relative;
-  height: 100vh; /* or any specific height */
+  height: 100vh;
 }
 
 .loading-spinner {
@@ -45,5 +68,12 @@
   top: 50%;
   left: 50%;
   transform: translate(-20%, -50%);
-  /* Your spinner styling */
+}
+
+.Profile-picture {
+  height: 30px;
+  width: 30px;
+  margin-right: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
 }
