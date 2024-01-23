@@ -1,8 +1,8 @@
 
 # AnguChat
 
+![294302427-36ac81db-9fc5-41f2-b09f-62e11c245342](https://github.com/ejbolts/Text-video-chat-app/assets/86194451/c91e065e-e91b-4331-a22f-101a56546d05)
 
-![Anguchat_Logo](https://github.com/ejbolts/Text-video-chat-app/assets/86194451/75381862-65d2-4ae1-9b93-222fd8135a49)
 
 ### Table of Contents
 
