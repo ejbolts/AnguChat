@@ -235,25 +235,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  reportUser(userId: string): void {
-    const user = this.users.find((u) => u._id === userId);
-    if (user) {
-      user.reported = true;
-      localStorage.setItem('users', JSON.stringify(this.users));
-    }
-  }
-
-  banUserFromChannel(userId: string, channelId: string): void {
-    const channel = this.findChannelById(channelId);
-    if (channel) {
-      if (!channel.bannedUsers) channel.bannedUsers = [];
-      if (!channel.bannedUsers.includes(userId)) {
-        channel.bannedUsers.push(userId);
-        localStorage.setItem('groups', JSON.stringify(this.groups));
-      }
-    }
-  }
-
   // Utility function to fetch channel by ID
   findChannelById(channelId: string): Channel | undefined {
     let foundChannel: Channel | undefined;
@@ -264,33 +245,6 @@ export class AdminDashboardComponent implements OnInit {
     return foundChannel;
   }
 
-  unbanUserFromChannel(userId: string, channelId: string): void {
-    const group = this.groups.find((g) =>
-      g.channels.some((c) => c._id === channelId)
-    );
-    if (group) {
-      const channel = group.channels.find((c) => c._id === channelId);
-      if (channel) {
-        // Remove the user from the list of banned users
-        if (channel.bannedUsers) {
-          const index = channel.bannedUsers.indexOf(userId);
-          if (index > -1) {
-            channel.bannedUsers.splice(index, 1);
-          }
-        }
-        // Add the user back to the channel
-        if (!channel.users) {
-          channel.users = [];
-        }
-        if (!channel.users.includes(userId)) {
-          channel.users.push(userId);
-        }
-        // Update localStorage
-        localStorage.setItem('groups', JSON.stringify(this.groups));
-      }
-    }
-  }
-
   // Utility function to fetch user name by ID
   getUserIdName(userId: string): string {
     const user = this.users.find((u) => u._id === userId);
@@ -299,33 +253,6 @@ export class AdminDashboardComponent implements OnInit {
 
   getUserById(userId: string): AdminUser | undefined {
     return this.users.find((user) => user._id === userId);
-  }
-
-  isUserBannedFromChannel(userId: string, channelId: string): boolean {
-    const group = this.groups.find((g) =>
-      g.channels.some((c) => c._id === channelId)
-    );
-    if (group) {
-      const channel = group.channels.find((c) => c._id === channelId);
-      if (channel && channel.bannedUsers) {
-        return channel.bannedUsers.includes(userId);
-      }
-    }
-    return false;
-  }
-  getPendingUsersForGroup(groupId: string): User[] {
-    let pendingUsers: User[] = [];
-    this.groups.forEach((group) => {
-      if (group._id === groupId && group.pendingUsers) {
-        group.pendingUsers.forEach((userId) => {
-          const user = this.users.find((u) => u._id === userId);
-          if (user) {
-            pendingUsers.push(user);
-          }
-        });
-      }
-    });
-    return pendingUsers;
   }
 
   approveUserForGroup(userId: string, groupId: string): void {

@@ -346,11 +346,6 @@
         </ng-container>
 
         <ng-template #notMemberTemplate>
-          <ng-container *ngIf="isPending(group._id); else joinButtonTemplate">
-            <span class="badge badge-warning badge-pill text-dark"
-              >Pending</span
-            >
-          </ng-container>
           <ng-template #joinButtonTemplate>
             <div *ngIf="isLoading; else showButton" class="spinner-container">
               <svg

@@ -448,11 +448,6 @@ export class ChatComponent implements OnInit {
     );
   }
 
-  isPending(groupId: string): boolean {
-    const pending = this.currentUser?.pendingGroups?.includes(groupId) || false;
-    return pending;
-  }
-
   logout(): void {
     const currentUser = JSON.parse(sessionStorage.getItem('currentUser')!);
     if (currentUser) {
