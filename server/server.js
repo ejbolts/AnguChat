@@ -4,8 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const socketModule = require("./sockets");
 const cookieParser = require("cookie-parser");
-const registerRoute = require("./routes/register");
-const loginRoute = require("./routes/login");
+const authenticationRoute = require("./routes/authentication");
 const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
@@ -14,8 +13,8 @@ const bucketRoute = require("./routes/bucket");
 const socketsRoute = require("./sockets");
 const expressPeerServer = require("peer").ExpressPeerServer;
 
-const csrf = require("csurf");
 
+const csrf = require("csurf");
 const app = express();
 app.use(cookieParser());
 
@@ -56,8 +55,7 @@ socketModule.setupSockets(expressSocketIOServer);
 
 
 // Routes
-app.use("/api/register", registerRoute);
-app.use("/api/login", loginRoute);
+app.use("/api/authentication", authenticationRoute);
 app.use("/api/update", updateRoute);
 app.use("/api/remove", removeRoute);
 app.use("/api/group", groupRoute);

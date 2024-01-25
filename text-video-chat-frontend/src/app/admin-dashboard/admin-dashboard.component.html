@@ -20,7 +20,6 @@
     <thead>
       <tr>
         <th>Username</th>
-        <th>Email</th>
         <th>Role</th>
         <th>Change Role</th>
         <th>Action</th>
@@ -29,7 +28,6 @@
     <tbody>
       <tr *ngFor="let user of users">
         <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
           <select [(ngModel)]="user.role" class="form-control">

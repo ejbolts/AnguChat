@@ -17,11 +17,11 @@ export class RegisterComponent implements OnInit {
   fileName: string = 'No image selected';
   user: User = {
     username: '',
-    email: '',
     password: '',
     role: 'user',
     profilePic: null,
     groups: [],
+    isOnline: false,
   };
 
   handleFileInput(event: Event): void {
@@ -134,7 +134,6 @@ export class RegisterComponent implements OnInit {
   register(): void {
     this.userService.registerUser(this.user).subscribe(
       () => {
-        // console.log('User registration successful');
         this.uploadImage(this.user.username);
         this.goToLogin();
       },

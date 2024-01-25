@@ -28,8 +28,9 @@ export class UserService {
   }
 
   registerUser(user: User): Observable<{ message: string; _id: string }> {
+    console.log('user: ', user);
     return this.http.post<{ message: string; _id: string }>(
-      `${this.apiUrl}/api/register`,
+      `${this.apiUrl}/api/authentication`,
       user,
       {
         withCredentials: true,
@@ -42,7 +43,7 @@ export class UserService {
     password: string;
   }): Observable<{ message: string; user: User }> {
     return this.http.post<{ message: string; user: User }>(
-      `${this.apiUrl}/api/login`,
+      `${this.apiUrl}/api/authentication/login`,
       credentials,
       { withCredentials: true }
     );
@@ -69,17 +70,19 @@ export class UserService {
   }
 
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/api/login`);
+    return this.http.get<User[]>(`${this.apiUrl}/api/authentication`);
   }
 
   getUserById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/api/login/${id}`);
+    return this.http.get<User>(`${this.apiUrl}/api/authentication/${id}`);
   }
 
-  getUsersConnectionInfo(
-    userId: string
-  ): Observable<{ socketId: string; peerId: string }> {
-    return this.http.get<{ socketId: string; peerId: string }>(
+  getUsersConnectionInfo(userId: string): Observable<{
+    socketId: string | null;
+    peerId: string | null;
+    message: string;
+  }> {
+    return this.http.get<{ socketId: string; peerId: string; message: string }>(
       `${this.apiUrl}/api/sockets/getConnectionInfo/${userId}`
     );
   }

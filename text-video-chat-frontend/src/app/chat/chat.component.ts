@@ -9,6 +9,7 @@ import { ChatMessage } from '../models/chatmessage.model';
 import Peer, { MediaConnection } from 'peerjs';
 import { IncomingCallDetails } from '../models/callDetails.model';
 import { environment } from 'src/environments/environment';
+import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-chat',
   templateUrl: './chat.component.html',
@@ -17,7 +18,7 @@ import { environment } from 'src/environments/environment';
 export class ChatComponent implements OnInit {
   apiUrl = environment.apiUrl;
   isModalOpen: boolean = true;
-
+  isOnline: boolean = false;
   toggleModal() {
     this.isModalOpen = !this.isModalOpen;
   }
@@ -58,7 +59,7 @@ export class ChatComponent implements OnInit {
   incomingCallDetails: IncomingCallDetails | null = null;
   private activeCall: MediaConnection | null = null;
   isCallActive: boolean = false;
-  private anotherUserSockID: string | null = null;
+  private anotherUserSocketID: string | null = null;
 
   // Error handling
   errorMessage?: string;
@@ -126,6 +127,19 @@ export class ChatComponent implements OnInit {
     this.peer.on('close', () => {
       //console.log("Peer connection is destroyed.");
     });
+
+    this.chatService.getLoginUpdates().subscribe((userId: string) => {
+      const userIndex = this.users.findIndex((user) => user._id === userId);
+      if (userIndex !== -1) {
+        this.users[userIndex].isOnline = true;
+      }
+    });
+    this.chatService.getlogoutUser().subscribe((userId: string) => {
+      const userIndex = this.users.findIndex((user) => user._id === userId);
+      if (userIndex !== -1) {
+        this.users[userIndex].isOnline = false;
+      }
+    });
   }
 
   async fetchGroups(): Promise<void> {
@@ -173,7 +187,7 @@ export class ChatComponent implements OnInit {
           this.groupChannels[groupId] = channels;
           resolve();
         },
-        (error) => {
+        (error: Error) => {
           console.error('Error fetching channels:', error);
           reject(error);
         }
@@ -240,21 +254,20 @@ export class ChatComponent implements OnInit {
     this.selectedImages.delete(channelId);
   }
   startCall(userId: string | undefined, username: string): void {
-    if (userId === undefined) {
-      console.error('User ID is undefined');
-      return;
-    }
-
+    // Check for undefined userId
     if (!userId) {
       console.error('User ID is undefined');
+      this.errorMessage = 'User ID is undefined.';
       return;
     }
+    // Activate call flag
     this.isCallActive = true;
+
     this.userService.getUsersConnectionInfo(userId).subscribe(
       (connectionInfo) => {
         if (this.chatService.socketId && this.chatService.peerId) {
           const peerIdToCall = connectionInfo.peerId;
-          this.anotherUserSockID = connectionInfo.socketId;
+          this.anotherUserSocketID = connectionInfo.socketId;
 
           // Access user's webcam and microphone
           navigator.mediaDevices
@@ -267,8 +280,8 @@ export class ChatComponent implements OnInit {
               localVideo.muted = true;
               localVideo.srcObject = stream;
 
-              if (peerIdToCall && this.anotherUserSockID) {
-                this.chatService.startCall(this.anotherUserSockID, username);
+              if (peerIdToCall && this.anotherUserSocketID) {
+                this.chatService.startCall(this.anotherUserSocketID, username);
                 const outgoingCall = this.peer.call(
                   peerIdToCall,
                   this.localStream
@@ -290,15 +303,26 @@ export class ChatComponent implements OnInit {
                 console.error('Peer ID not provided');
               }
             })
-            .catch((error) => {
-              console.error('Error accessing media devices.', error);
+            .catch((error: Error) => {
+              console.log(error);
+              this.errorMessage = 'Error accessing media devices';
+              return;
             });
         }
       },
-      (error) => {
-        console.error('Error fetching user connection info:', error);
+      (error: HttpErrorResponse) => {
+        if (error.status === 404) {
+          this.errorMessage = 'User Not Online.';
+          return;
+        }
+        if (error.status === 500) {
+          this.errorMessage = 'Internal Server Error Sorry!';
+          return;
+        }
       }
     );
+    // on successful call
+    this.errorMessage = '';
   }
 
   acceptCall(): void {
@@ -430,8 +454,26 @@ export class ChatComponent implements OnInit {
   }
 
   logout(): void {
-    sessionStorage.removeItem('currentUser');
-    this.router.navigate(['/login']);
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser')!);
+    if (currentUser) {
+      const currentUsername = currentUser.username;
+      const currentUserId = currentUser._id;
+
+      this.chatService.logoutUser(currentUsername, currentUserId).subscribe({
+        next: (response) => {
+          //console.log(response.message);
+        },
+        error: (error) => {
+          console.error('Logout error:', error);
+        },
+        complete: () => {
+          sessionStorage.removeItem('currentUser');
+          this.router.navigate(['/login']);
+        },
+      });
+    } else {
+      console.error('No current user found in sessionStorage');
+    }
   }
 
   isMemberOfGroup(groupId: string): boolean {

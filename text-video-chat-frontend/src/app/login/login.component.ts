@@ -12,9 +12,9 @@ export class LoginComponent {
   user: User = {
     username: '',
     password: '',
-    email: '',
     role: '',
     groups: [],
+    isOnline: true,
   };
   errorMessage?: string;
 

@@ -3,22 +3,24 @@ const userConnections = {};
 const express = require("express");
 const router = express.Router();
 
-router.get("/api/getConnectionInfo/:userId", (req, res) => {
+router.get("/getConnectionInfo/:userId", (req, res) => {
+  console.log("testtestest")
   const userId = req.params.userId;
   const connectionInfo = userConnections[userId];
 
   if (connectionInfo) {
-    res.json(connectionInfo);
-  } else {
-    res.status(404).send("User connection info not found");
+    console.log(connectionInfo)
+    return res.json(connectionInfo);
   }
+
+  if (res.status(404)) {
+    return res.status(404).json({ socketId: null, peerId: null, message: "User connection info not found" });
+
+  }
+
 });
 
 const setupSockets = (expressSocketIOServer) => {
-
-
-
-
   const io = socketIo(expressSocketIOServer, {
     cors: {
       origin: "http://localhost:4200",
@@ -36,8 +38,20 @@ const setupSockets = (expressSocketIOServer) => {
         socketId: socket.id,
         peerId: peerId,
       };
+      socket.broadcast.emit('login', userId)
+      console.log("bordcast login")
       console.log("userConnections:", userConnections);
     });
+
+    socket.on("UserLogout", (userId) => {
+      console.log("user logging out: ", userId)
+      delete userConnections[userId]
+      console.log("userConnections:", userConnections);
+      socket.broadcast.emit('logout', userId)
+      console.log("emitted logout")
+    });
+
+
 
     // When a user joins a channel
     socket.on("joinChannel", ({ channelId, groupId, username }) => {

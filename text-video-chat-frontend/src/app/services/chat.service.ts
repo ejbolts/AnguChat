@@ -20,9 +20,10 @@ export class ChatService {
   constructor(private http: HttpClient) {
     this.socket = io(this.apiUrl);
 
-    this.socket.on('connect', () => {
-      console.log('Connected to server');
+    this.socket.on('connection', (userId: string) => {
+      this.socketId = userId;
     });
+
     this.initializeSocketListeners();
   }
 
@@ -38,7 +39,7 @@ export class ChatService {
       this.incomingCallEvent.emit(callDetails);
     });
   }
-
+  // acts as emit signal for logging in user
   sendConnectionIDs(userId: String, peerId: String) {
     this.socket.emit(
       'connectUserIDs',
@@ -71,7 +72,6 @@ export class ChatService {
 
   leaveChannel(channelId: string, groupId: string, username: string) {
     // console.log("leaving channel:", username, channelId);
-
     this.socket.emit(
       'leaveChannel',
       { channelId, groupId, username },
@@ -88,8 +88,6 @@ export class ChatService {
   }
 
   addMessageToChannel(channelId: string, message: ChatMessage) {
-    // console.log("Message sent to server with channelID:", message, channelId);
-
     return this.http.post(
       `${this.apiUrl}/api/channel/${channelId}/addMessage`,
       { channelId, message },
@@ -115,5 +113,34 @@ export class ChatService {
 
   calldeclined(callerId: string) {
     this.socket.emit('call-declined', { callerId });
+  }
+
+  getLoginUpdates(): Observable<string> {
+    return new Observable<string>((observer) => {
+      this.socket.on('login', (userId: string) => {
+        console.log('testtest');
+        observer.next(userId);
+      });
+    });
+  }
+
+  logoutUser(
+    username: string,
+    userId: string
+  ): Observable<{ message: string }> {
+    console.log('userId logging out:', userId);
+    this.socket.emit('UserLogout', userId, { withCredentials: true });
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/api/authentication/logout`,
+      { username: username },
+      { withCredentials: true }
+    );
+  }
+  getlogoutUser(): Observable<string> {
+    return new Observable<string>((observer) => {
+      this.socket.on('logout', (userId: string) => {
+        observer.next(userId);
+      });
+    });
   }
 }
