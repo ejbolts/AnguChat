@@ -19,6 +19,10 @@ export class ChatComponent implements OnInit {
   apiUrl = environment.apiUrl;
   isModalOpen: boolean = true;
   isOnline: boolean = false;
+
+  private typingTimer: ReturnType<typeof setTimeout> | null = null;
+  typingStatus: { [channelId: string]: string } = {};
+
   toggleModal() {
     this.isModalOpen = !this.isModalOpen;
   }
@@ -63,6 +67,7 @@ export class ChatComponent implements OnInit {
 
   // Error handling
   errorMessage?: string;
+  chatErrorMessage?: string;
   isLoading: boolean = false;
 
   constructor(
@@ -77,8 +82,22 @@ export class ChatComponent implements OnInit {
       }
     );
     this.chatService.socket.on('call-declined', (data: { message: string }) => {
-      alert(data.message); // Show an alert that the call was declined
-      this.stopCall(); // Stop the call
+      alert(data.message);
+      this.stopCall();
+    });
+
+    this.chatService.getUserTyping().subscribe(({ channelId, message }) => {
+      // used for displaying only to other users that the currently logged in user is tpying.
+      if (message.indexOf(this.currentUser!.username) === -1) {
+        this.typingStatus[channelId] = message;
+        if (this.typingTimer !== null) {
+          clearTimeout(this.typingTimer);
+        }
+        this.typingTimer = setTimeout(
+          () => (this.typingStatus[channelId] = ''),
+          3000
+        );
+      }
     });
   }
 
@@ -292,6 +311,7 @@ export class ChatComponent implements OnInit {
                     'remoteVideo'
                   ) as HTMLVideoElement;
                   remoteVideo.srcObject = remoteStream;
+                  this.errorMessage = '';
                 });
 
                 if (this.activeCall) {
@@ -420,6 +440,9 @@ export class ChatComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.stopCall();
+    if (this.typingTimer !== null) {
+      clearTimeout(this.typingTimer);
+    }
   }
 
   declineCall(): void {
@@ -497,13 +520,13 @@ export class ChatComponent implements OnInit {
   }
 
   handleSendMessages(channelId: string): void {
-    const messageToSend = this.channelMessages.get(channelId);
+    const messageToSend = this.channelMessages.get(channelId) || '';
     const imageToSend = this.selectedImages.get(channelId);
-    //console.log("messageToSend", messageToSend)
-    if (this.currentUser) {
+
+    if (this.currentUser && (messageToSend.trim() !== '' || imageToSend)) {
       const chatMessage: ChatMessage = {
         username: this.currentUser.username,
-        content: messageToSend || '',
+        content: messageToSend,
         timestamp: new Date(),
         image: imageToSend ? imageToSend.toString() : null,
         channelId: channelId,
@@ -516,16 +539,20 @@ export class ChatComponent implements OnInit {
           //console.log('Message added', response);
         },
         (error) => {
-          this.errorMessage = error.message;
+          this.chatErrorMessage = error.message;
           console.error('Error adding message', error);
         }
       );
       this.chatService.sendMessage(channelId, chatMessage);
 
       this.channelMessages.set(channelId, '');
+      this.chatErrorMessage = '';
       this.selectedImages.delete(channelId);
+    } else {
+      this.chatErrorMessage = 'Message must not be empty';
     }
   }
+
   handleMessageInput(event: Event, channelId: string): void {
     const message = (event.target as HTMLInputElement).value;
     this.channelMessages.set(channelId, message);
@@ -533,6 +560,9 @@ export class ChatComponent implements OnInit {
     const textarea = event.target as HTMLTextAreaElement;
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
+    if (this.currentUser) {
+      this.chatService.notifyTyping(channelId, this.currentUser.username);
+    }
   }
 
   handleJoinChannel(

@@ -5,11 +5,18 @@ import { ChatMessage } from '../models/chatmessage.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { CallDetails, IncomingCallDetails } from '../models/callDetails.model';
+import { Subject } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
   apiUrl = environment.apiUrl;
+  private typingSubject = new Subject<{
+    channelId: string;
+    username: string;
+  }>();
+
   // socket information
   socketId: string | null = null;
   socket: Socket;
@@ -24,7 +31,32 @@ export class ChatService {
       this.socketId = userId;
     });
 
+    // Initialize typing event listener
+    this.typingSubject
+      .pipe(throttleTime(1000))
+      .subscribe(({ channelId, username }) => {
+        this.socket.emit('typing', { channelId, username });
+      });
+
     this.initializeSocketListeners();
+  }
+
+  notifyTyping(channelId: string, username: string): void {
+    this.typingSubject.next({ channelId, username });
+  }
+
+  getUserTyping(): Observable<{ channelId: string; message: string }> {
+    return new Observable<{ channelId: string; message: string }>(
+      (observer) => {
+        this.socket.on(
+          'serverEmitTyping',
+          (data: { channelId: string; message: string }) => {
+            console.log(data);
+            observer.next(data);
+          }
+        );
+      }
+    );
   }
 
   private initializeSocketListeners(): void {
@@ -118,7 +150,6 @@ export class ChatService {
   getLoginUpdates(): Observable<string> {
     return new Observable<string>((observer) => {
       this.socket.on('login', (userId: string) => {
-        console.log('testtest');
         observer.next(userId);
       });
     });

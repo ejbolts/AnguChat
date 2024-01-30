@@ -80,3 +80,13 @@
 .online-border {
   border-color: green;
 }
+.typing-notification {
+  height: 20px;
+  margin: 0 5px 5px 5px;
+  opacity: 0;
+}
+
+.typing-notification.show {
+  opacity: 1;
+  margin: 0 5px 5px 5px;
+}

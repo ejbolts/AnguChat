@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { connect, db, close } = require("./app");
 const ObjectId = require("mongodb").ObjectId;
+const Filter = require('bad-words'),
 
+  filter = new Filter();
 router.post("/", async (req, res) => {
   await connect();
   const { groupId, name, userId } = req.body;
@@ -131,6 +133,7 @@ router.post("/:channelId/addMessage", async (req, res) => {
     await connect();
     const channelId = new ObjectId(req.body.channelId);
     const { message } = req.body;
+    message.content = filter.clean(message.content)
     console.log("channelID and message.content:", channelId, message);
 
     await db()

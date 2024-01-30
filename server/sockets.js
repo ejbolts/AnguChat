@@ -2,7 +2,9 @@ const socketIo = require("socket.io");
 const userConnections = {};
 const express = require("express");
 const router = express.Router();
+const Filter = require('bad-words'),
 
+  filter = new Filter();
 router.get("/getConnectionInfo/:userId", (req, res) => {
   console.log("testtestest")
   const userId = req.params.userId;
@@ -108,13 +110,18 @@ const setupSockets = (expressSocketIOServer) => {
       socket.join(channelId);
 
       io.to(channelId).emit("channel-message", {
-        content: message.content,
+        content: filter.clean(message.content),
         username: message.username,
         timestamp: message.timestamp,
         image: message.image,
         channelId: channelId,
         profilePic: message.profilePic,
       });
+    });
+
+    socket.on("typing", ({ channelId, username }) => {
+      console.log("testing that this user is typing:", username);
+      io.to(channelId).emit("serverEmitTyping", { channelId, message: `${username} is typing...` });
     });
 
     socket.on("disconnect", () => {

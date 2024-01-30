@@ -268,15 +268,30 @@
                     </div>
 
                     <div class="chat-input mb-3">
+                      <div
+                        class="typing-notification"
+                        [class.show]="typingStatus[channel._id]"
+                      >
+                        {{ typingStatus[channel._id] || "" }}
+                      </div>
+
                       <div *ngIf="selectedImages.has(channel._id)">
                         <img
                           [src]="selectedImages.get(channel._id)"
-                          style="max-width: 100px; max-height: 100px"
+                          style="
+                            max-width: 100px;
+                            max-height: 100px;
+                            margin: 5px;
+                          "
                         />
                       </div>
-                      <div *ngIf="errorMessage" class="alert alert-danger mt-2">
-                        {{ errorMessage }}
+                      <div
+                        *ngIf="chatErrorMessage"
+                        class="alert alert-danger mt-2"
+                      >
+                        {{ chatErrorMessage }}
                       </div>
+
                       <div class="input-group">
                         <textarea
                           [value]="channelMessages.get(channel._id) || ''"
