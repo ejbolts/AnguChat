@@ -95,9 +95,6 @@ export interface User {
     role: string;               // Defines the user's privileges in the system. Roles can be 'user', 'groupAdmin', or 'superAdmin'.
     profilePic?: string | null; // The s3 URL for the users profile picture
     groups: string[];           // List of group IDs the user is a part of
-    reported?: boolean;         // Flag to check if user has been reported
-    bannedChannels?: string[];  // Channels from which the user is banned
-    pendingGroups?: string[];   // Groups they have requested to join but not approved yet
 }
 ```
 ---
@@ -125,7 +122,6 @@ export interface Channel {
     _id: string;            // A unique identifier for the channel.
     name: string;           // The name of the channel.
     users?: string[];       // User IDs of members in the channel.
-    bannedUsers?: string[]; // User IDs of members banned from the channel.
     history: ChatMessage[]; // An array of ChatMessages objects that are loaded in for DB upon login.
 }
 ```
