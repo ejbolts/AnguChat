@@ -41,7 +41,6 @@ const setupSockets = (expressSocketIOServer) => {
         peerId: peerId,
       };
       socket.broadcast.emit('login', userId)
-      console.log("bordcast login")
       console.log("userConnections:", userConnections);
     });
 

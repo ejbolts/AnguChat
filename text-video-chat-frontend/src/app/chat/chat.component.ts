@@ -132,12 +132,31 @@ export class ChatComponent implements OnInit {
       path: '/',
     });
 
-    this.peer.on('open', (peerId) => {
-      this.chatService.peerId = peerId;
-      const currentUserId =
-        JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
-      this.chatService.userId = currentUserId;
-      this.chatService.sendConnectionIDs(currentUserId, peerId);
+    this.peer.on('open', async (peerId) => {
+      try {
+        this.chatService.peerId = peerId;
+        const currentUserId =
+          JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
+        this.chatService.userId = currentUserId;
+        this.chatService.sendConnectionIDs(currentUserId, peerId);
+
+        for (const group of this.allGroups) {
+          // Await the resolution of fetchChannelsPerGroup
+          await this.fetchChannelsPerGroup(group._id);
+
+          for (const channel of this.groupChannels[group._id]) {
+            if (currentUserId && channel.users?.includes(currentUserId)) {
+              this.chatService.joinChannel(
+                channel._id,
+                group._id,
+                this.currentUser!.username
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error occurred:', error);
+      }
     });
     this.peer.on('call', (call) => {
       this.isCallActive = true;
