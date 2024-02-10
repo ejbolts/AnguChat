@@ -22,7 +22,7 @@
         Logout
       </button>
       <button
-        *ngIf="currentUser?._id !== guestUserID"
+        [disabled]="currentUser?._id === guestUserID"
         (click)="deleteAccount(currentUser!)"
         class="btn btn-outline-danger mx-2"
       >
@@ -105,7 +105,7 @@
           <button
             (click)="removeUserFromGroup(group._id)"
             class="btn btn-outline-danger"
-            *ngIf="currentUser?._id !== guestUserID"
+            [disabled]="currentUser?._id === guestUserID"
           >
             Leave Group
           </button>
@@ -200,6 +200,7 @@
                     "
                     class="btn btn-outline-danger"
                     style="max-width: 150px"
+                    [disabled]="currentUser?._id === guestUserID"
                   >
                     Leave Channel
                   </button>

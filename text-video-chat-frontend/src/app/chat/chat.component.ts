@@ -56,7 +56,7 @@ export class ChatComponent implements OnInit {
   allGroups: Group[] = [];
   currentUser: User | null = null;
   groupUsers: { [groupId: string]: User[] } = {}; // need to use this
-  guestUserID = '65796d84170bc85f6fbb4c30';
+  guestUserID = '65bcc4ecfd6567b3a70f5746';
   // Image management
   selectedImage: string | null = null; // Base64 encoded image string
   selectedImageChannelId: string | null = null;
