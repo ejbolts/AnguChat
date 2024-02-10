@@ -28,7 +28,7 @@ export class UserService {
   }
 
   registerUser(user: User): Observable<{ message: string; _id: string }> {
-    console.log('user: ', user);
+    // console.log('user: ', user);
     return this.http.post<{ message: string; _id: string }>(
       `${this.apiUrl}/api/authentication`,
       user,
@@ -99,6 +99,7 @@ export class UserService {
   }
 
   fetchAllGroups(): Observable<Group[]> {
+    //console.log('fetching groups');
     return this.http.get<Group[]>(`${this.apiUrl}/api/group`);
   }
 
@@ -139,6 +140,10 @@ export class UserService {
 
   getUsers(): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/api/channel/getAllUsers`);
+  }
+
+  getGroupUsers(groupId: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/api/group/${groupId}/Users`);
   }
 
   addUserToGroup(

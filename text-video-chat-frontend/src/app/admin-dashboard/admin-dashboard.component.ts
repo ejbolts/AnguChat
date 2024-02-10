@@ -23,55 +23,67 @@ export class AdminDashboardComponent implements OnInit {
   };
   constructor(private router: Router, private userService: UserService) {} // Inject UserService
 
-  ngOnInit(): void {
-    this.fetchUsers();
-    this.fetchGroups();
+  async ngOnInit(): Promise<void> {
+    await this.fetchUsers();
+    await this.fetchGroups();
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       this.currentUser = JSON.parse(storedUser);
     }
   }
 
-  fetchUsers(): void {
-    this.userService.getAllUsers().subscribe(
-      (data: User[]) => {
-        this.users = data;
-      },
-      (error) => {
-        console.error('Error fetching users:', error);
-      }
-    );
+  fetchUsers(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.getUsers().subscribe(
+        (users: User[]) => {
+          this.users = users;
+          resolve();
+        },
+        (error) => {
+          console.error('Error fetching users:', error);
+          reject(error);
+        }
+      );
+    });
   }
 
-  fetchGroups(): void {
-    this.userService.fetchAllGroups().subscribe(
-      (data: Group[]) => {
-        this.groups = data;
+  async fetchGroups(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.fetchAllGroups().subscribe(
+        async (data: Group[]) => {
+          this.groups = data;
 
-        // For each group fetched, fetch its channels
-        this.groups.forEach((group) => {
-          this.fetchChannelsPerGroup(group._id);
-        });
-      },
-      (error: Error) => {
-        console.error('Error fetching groups:', error);
-      }
-    );
+          try {
+            for (const group of this.groups) {
+              await this.fetchChannelsPerGroup(group._id);
+            }
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        },
+        (error: Error) => {
+          console.error('Error fetching groups:', error);
+          reject(error);
+        }
+      );
+    });
   }
 
-  fetchChannelsPerGroup(groupId: string): void {
-    //console.log(`Fetching channels for group ${groupId}`); //Fetching channels for group 6525c1e721a00f6bd9e5d901
-
-    this.userService.getChannelsByGroupId(groupId).subscribe(
-      (channels: Channel[]) => {
-        this.groupChannels[groupId] = channels;
-      },
-      (error) => {
-        console.error('Error fetching channels:', error); // up still getting this error
-      }
-    );
+  async fetchChannelsPerGroup(groupId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.userService.getChannelsByGroupId(groupId).subscribe(
+        (channels: Channel[]) => {
+          this.groupChannels[groupId] = channels;
+          resolve();
+        },
+        (error) => {
+          console.error('Error fetching channels:', error); // up still getting this error
+          reject(error);
+        }
+      );
+    });
   }
-
   removeUser(user: User): void {
     this.userService.deleteUser(user._id!).subscribe(
       (response) => {

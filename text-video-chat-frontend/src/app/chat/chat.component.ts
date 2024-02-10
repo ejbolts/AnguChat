@@ -17,14 +17,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export class ChatComponent implements OnInit {
   apiUrl = environment.apiUrl;
-  isModalOpen: boolean = true;
+  isModalOpen: { [groupId: string]: boolean } = {};
+
   isOnline: boolean = false;
 
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
   typingStatus: { [channelId: string]: string } = {};
 
-  toggleModal() {
-    this.isModalOpen = !this.isModalOpen;
+  toggleModal(groupId: string) {
+    if (this.isModalOpen[groupId] === undefined) {
+      this.isModalOpen[groupId] = false;
+    }
+    this.isModalOpen[groupId] = !this.isModalOpen[groupId];
   }
   // Listen for window resize events
   @HostListener('window:resize', ['$event'])
@@ -32,12 +36,15 @@ export class ChatComponent implements OnInit {
     this.checkScreenSize();
   }
 
+  isModalOpenForGroup(groupId: string): boolean {
+    return !!this.isModalOpen[groupId];
+  }
+
   checkScreenSize() {
-    if (window.innerWidth <= 720) {
-      this.isModalOpen = false;
-    } else {
-      this.isModalOpen = true;
-    }
+    const isOpen = window.innerWidth > 720;
+    this.allGroups.forEach((group) => {
+      this.isModalOpen[group._id] = isOpen;
+    });
   }
   // Channel information
   channels: Channel[] = [];
@@ -48,7 +55,7 @@ export class ChatComponent implements OnInit {
   groupChannels: { [groupId: string]: Channel[] } = {};
   allGroups: Group[] = [];
   currentUser: User | null = null;
-  users: User[] = [];
+  groupUsers: { [groupId: string]: User[] } = {}; // need to use this
   guestUserID = '65796d84170bc85f6fbb4c30';
   // Image management
   selectedImage: string | null = null; // Base64 encoded image string
@@ -102,10 +109,11 @@ export class ChatComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.checkScreenSize();
     this.isLoading = true;
     await this.fetchGroups();
-    await this.fetchUsers();
+    this.checkScreenSize();
+
+    // await this.fetchUsers();
     this.isLoading = false;
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
@@ -167,16 +175,25 @@ export class ChatComponent implements OnInit {
     });
 
     this.chatService.getLoginUpdates().subscribe((userId: string) => {
-      const userIndex = this.users.findIndex((user) => user._id === userId);
-      if (userIndex !== -1) {
-        this.users[userIndex].isOnline = true;
-      }
+      // Iterate over each group in groupUsers
+      Object.keys(this.groupUsers).forEach((groupId) => {
+        const usersInGroup = this.groupUsers[groupId];
+        const userIndex = usersInGroup.findIndex((user) => user._id === userId);
+        if (userIndex !== -1) {
+          // Found the user in this group, update their online status
+          this.groupUsers[groupId][userIndex].isOnline = true;
+        }
+      });
     });
+
     this.chatService.getlogoutUser().subscribe((userId: string) => {
-      const userIndex = this.users.findIndex((user) => user._id === userId);
-      if (userIndex !== -1) {
-        this.users[userIndex].isOnline = false;
-      }
+      Object.keys(this.groupUsers).forEach((groupId) => {
+        const usersInGroup = this.groupUsers[groupId];
+        const userIndex = usersInGroup.findIndex((user) => user._id === userId);
+        if (userIndex !== -1) {
+          this.groupUsers[groupId][userIndex].isOnline = false;
+        }
+      });
     });
   }
 
@@ -189,6 +206,7 @@ export class ChatComponent implements OnInit {
           try {
             for (const group of this.allGroups) {
               await this.fetchChannelsPerGroup(group._id);
+              await this.fetchUsersPerGroup(group._id);
             }
             resolve();
           } catch (error) {
@@ -203,15 +221,16 @@ export class ChatComponent implements OnInit {
     });
   }
 
-  fetchUsers(): Promise<void> {
+  async fetchUsersPerGroup(groupId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.userService.getUsers().subscribe(
+      this.userService.getGroupUsers(groupId).subscribe(
         (users: User[]) => {
-          this.users = users;
+          this.groupUsers[groupId] = users;
+          // console.log('groupUsers', this.groupUsers);
           resolve();
         },
-        (error) => {
-          console.error('Error fetching users:', error);
+        (error: Error) => {
+          console.error('Error fetching channels:', error);
           reject(error);
         }
       );

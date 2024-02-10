@@ -4,7 +4,7 @@
       <div style="display: flex; align-items: center; justify-content: center">
         <img
           class="Profile-picture"
-          style="height: 60px; width: 60px; margin-right: 20px"
+          style="height: 80px; width: 80px; margin-right: 20px"
           src="{{
             currentUser?.profilePic ||
               'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
@@ -37,7 +37,60 @@
       </button>
     </div>
   </div>
+  <div id="test">
+    <div *ngIf="incomingCallDetails">
+      <div class="incoming-call-notification" style="color: white">
+        <p>
+          Incoming call from: <b>{{ incomingCallDetails.username }}</b>
+        </p>
+        <button class="btn btn-outline-success mx-2" (click)="acceptCall()">
+          Accept
+        </button>
+        <button class="btn btn-outline-danger" (click)="declineCall()">
+          Decline
+        </button>
+      </div>
+    </div>
+    <div
+      class="video-chat-container my-2"
+      style="
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        color: white;
+      "
+      *ngIf="isCallActive"
+    >
+      <!-- Local video preview -->
+      <h5>Local Video</h5>
+      <video
+        id="localVideo"
+        autoplay
+        muted
+        class="border rounded mb-2"
+        style="width: 75%"
+      ></video>
 
+      <!-- Remote video display -->
+      <h5>Remote Video</h5>
+      <video
+        id="remoteVideo"
+        autoplay
+        class="border rounded mb-2"
+        style="width: 75%"
+      ></video>
+      <button
+        [disabled]="!isCallActive"
+        (click)="stopCall()"
+        class="btn btn-outline-danger"
+      >
+        Stop Call
+      </button>
+      <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+        {{ errorMessage }}
+      </div>
+    </div>
+  </div>
   <div class="list-group">
     <div
       *ngFor="let group of allGroups"
@@ -49,68 +102,14 @@
         <ng-container
           *ngIf="isMemberOfGroup(group._id); else notMemberTemplate"
         >
-          <!-- <button
+          <button
             (click)="removeUserFromGroup(group._id)"
-            class="btn btn-danger"
+            class="btn btn-outline-danger"
+            *ngIf="currentUser?._id !== guestUserID"
           >
             Leave Group
-          </button> -->
+          </button>
 
-          <div *ngIf="incomingCallDetails">
-            <div class="incoming-call-notification" style="color: white">
-              <p>
-                Incoming call from: <b>{{ incomingCallDetails.username }}</b>
-              </p>
-              <button
-                class="btn btn-outline-success mx-2"
-                (click)="acceptCall()"
-              >
-                Accept
-              </button>
-              <button class="btn btn-outline-danger" (click)="declineCall()">
-                Decline
-              </button>
-            </div>
-          </div>
-          <div
-            class="video-chat-container my-2"
-            style="
-              align-items: center;
-              display: flex;
-              flex-direction: column;
-              color: white;
-            "
-            *ngIf="isCallActive"
-          >
-            <!-- Local video preview -->
-            <h5>Local Video</h5>
-            <video
-              id="localVideo"
-              autoplay
-              muted
-              class="border rounded mb-2"
-              style="width: 75%"
-            ></video>
-
-            <!-- Remote video display -->
-            <h5>Remote Video</h5>
-            <video
-              id="remoteVideo"
-              autoplay
-              class="border rounded mb-2"
-              style="width: 75%"
-            ></video>
-            <button
-              [disabled]="!isCallActive"
-              (click)="stopCall()"
-              class="btn btn-outline-danger"
-            >
-              Stop Call
-            </button>
-            <div *ngIf="errorMessage" class="alert alert-danger mt-2">
-              {{ errorMessage }}
-            </div>
-          </div>
           <div
             class="responsive-flex-container"
             style="display: flex; justify-content: center"
@@ -118,23 +117,23 @@
             <button
               class="btn btn-outline-success"
               id="showModal"
-              (click)="toggleModal()"
+              (click)="toggleModal(group._id)"
             >
-              {{ isModalOpen ? "Hide" : "Call User" }}
+              {{ isModalOpenForGroup(group._id) ? "Hide" : "Call User" }}
             </button>
 
             <div
-              *ngIf="isModalOpen"
+              *ngIf="isModalOpenForGroup(group._id)"
               id="UsersGroupDiv"
               style="flex-direction: column; color: white"
             >
-              <div *ngFor="let user of users">
+              <div *ngFor="let user of groupUsers[group._id]">
                 <div
                   *ngIf="currentUser?._id !== user._id"
                   style="
                     list-style-type: none;
                     display: flex;
-                    justify-content: space-between;
+                    justify-content: flex-start;
                     padding-bottom: 20px;
                     border-bottom: 2px;
                     border-color: rgb(255, 255, 255);
@@ -151,12 +150,14 @@
                     class="Profile-picture"
                     [ngClass]="{ 'online-border': user.isOnline }"
                   />
-                  <strong style="padding-top: 5px">{{ user.username }}</strong>
+                  <strong style="padding-top: 10px; margin-right: 10px">{{
+                    user.username
+                  }}</strong>
                   <button
                     [disabled]="isCallActive || !user.isOnline"
                     (click)="startCall(user._id, currentUser?.username!)"
                     class="btn"
-                    style="margin-left: 10px"
+                    style="margin-left: auto"
                     [ngClass]="{
                       'btn-outline-error': isCallActive,
                       'btn-outline-success': user.isOnline,
@@ -361,45 +362,40 @@
         </ng-container>
 
         <ng-template #notMemberTemplate>
-          <ng-template #joinButtonTemplate>
-            <div *ngIf="isLoading; else showButton" class="spinner-container">
-              <svg
-                class="loading-spinner"
-                version="1.1"
-                id="L9"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                x="0px"
-                y="0px"
-                viewBox="0 0 250 250"
-                enable-background="new 0 0 0 0"
-                xml:space="preserve"
+          <div *ngIf="isLoading; else showButton" class="spinner-container">
+            <svg
+              class="loading-spinner"
+              version="1.1"
+              id="L9"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              x="0px"
+              y="0px"
+              viewBox="0 0 250 250"
+              enable-background="new 0 0 0 0"
+              xml:space="preserve"
+            >
+              <path
+                fill="#fff"
+                d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50"
               >
-                <path
-                  fill="#fff"
-                  d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50"
-                >
-                  <animateTransform
-                    attributeName="transform"
-                    attributeType="XML"
-                    type="rotate"
-                    dur="1s"
-                    from="0 50 50"
-                    to="360 50 50"
-                    repeatCount="indefinite"
-                  />
-                </path>
-              </svg>
-            </div>
+                <animateTransform
+                  attributeName="transform"
+                  attributeType="XML"
+                  type="rotate"
+                  dur="1s"
+                  from="0 50 50"
+                  to="360 50 50"
+                  repeatCount="indefinite"
+                />
+              </path>
+            </svg>
+          </div>
 
-            <ng-template #showButton>
-              <button
-                (click)="joinGroup(group)"
-                class="btn btn-outline-primary"
-              >
-                Join Group
-              </button>
-            </ng-template>
+          <ng-template #showButton>
+            <button (click)="joinGroup(group)" class="btn btn-outline-primary">
+              Join Group
+            </button>
           </ng-template>
         </ng-template>
       </div>

@@ -20,7 +20,7 @@ export class RegisterComponent implements OnInit {
     password: '',
     role: 'user',
     profilePic: null,
-    groups: [],
+    groups: ['655715aadb0c367c28840915'],
     isOnline: false,
   };
 

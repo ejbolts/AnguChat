@@ -164,7 +164,7 @@ router.post("/:groupId/join", async (req, res) => {
   await connect();
 
   const groupId = new ObjectId(req.params.groupId);
-  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
+  const userId = req.body.userId;
 
   try {
     const group = await db().collection("groups").findOne({ _id: groupId });
@@ -233,6 +233,27 @@ router.post("/:groupId/approveUser", async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   } finally {
     close();
+  }
+
+});
+router.get("/:groupId/Users", async (req, res) => {
+  const groupId = req.params.groupId;
+  await connect();
+  try {
+    const group = await db().collection("groups").findOne({ _id: new ObjectId(groupId) });
+
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    const users = await db().collection("users").find({
+      _id: { $in: group.users.map(userId => new ObjectId(userId)) }
+    }).toArray();
+
+    res.json(users);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

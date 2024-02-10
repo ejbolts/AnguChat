@@ -53,6 +53,7 @@
   #UsersGroupDiv {
     padding: 25px 25px 0 25px;
     display: block;
+    width: 550px;
   }
   #showModal {
     display: none;
@@ -71,8 +72,8 @@
 }
 
 .Profile-picture {
-  height: 30px;
-  width: 30px;
+  height: 40px;
+  width: 40px;
   margin-right: 10px;
   border-radius: 50%;
   border: 3px solid white;

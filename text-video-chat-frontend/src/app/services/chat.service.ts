@@ -51,7 +51,7 @@ export class ChatService {
         this.socket.on(
           'serverEmitTyping',
           (data: { channelId: string; message: string }) => {
-            console.log(data);
+            // console.log(data);
             observer.next(data);
           }
         );
@@ -159,7 +159,7 @@ export class ChatService {
     username: string,
     userId: string
   ): Observable<{ message: string }> {
-    console.log('userId logging out:', userId);
+    //console.log('userId logging out:', userId);
     this.socket.emit('UserLogout', userId, { withCredentials: true });
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/api/authentication/logout`,

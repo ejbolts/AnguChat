@@ -48,7 +48,7 @@ export class LoginComponent {
 
   loginGuest(): void {
     this.userService
-      .loginUser({ username: 'Guest1', password: 'Guest1' })
+      .loginUser({ username: 'Guest', password: 'Guest' })
       .subscribe(
         (response) => {
           if (response.user) {
