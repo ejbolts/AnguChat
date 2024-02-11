@@ -176,4 +176,30 @@ router.post("/:channelId/updateMessage", async (req, res) => {
   }
 });
 
+router.post("/:channelId/deleteMessage", async (req, res) => {
+  try {
+    console.log("CSRF token received in headers:", req.headers["csrf-token"]);
+    await connect();
+    console.log("req.body in deleteMessage:", req.body);
+
+    // Use the $pull operator to remove the message from the history array
+    const result = await db().collection("channels").updateOne(
+      { _id: new ObjectId(req.params.channelId) }, // Ensure correct matching of channelId
+      { $pull: { history: { id: req.body.messageId } } } // Remove the specific message
+    );
+
+    if (result.modifiedCount === 0) {
+      console.log("No message found with given ID in the specified channel.");
+      return res.status(404).json({ message: "Message not found." });
+    }
+
+    res.json({ message: "Message deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting message from channel history:", error);
+    res.status(500).json({ error: "An error occurred while deleting the message." });
+  } finally {
+    close();
+  }
+});
+
 module.exports = router;

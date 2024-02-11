@@ -44,13 +44,14 @@ const setupSockets = (expressSocketIOServer) => {
     });
 
     socket.on("UserLogout", (userId) => {
-      console.log("user logging out: ", userId)
       delete userConnections[userId]
       console.log("userConnections:", userConnections);
       socket.broadcast.emit('logout', userId)
-      console.log("emitted logout")
     });
 
+    socket.on("deleteMessage", (messageId, channelId) => {
+      io.to(channelId).emit('messageDeleted', { messageId, channelId });
+    });
     socket.on("updateMessage", (messageId, messageContent, channelId) => {
       socket.broadcast.emit("editedMessage", { messageId, messageContent, channelId })
     });

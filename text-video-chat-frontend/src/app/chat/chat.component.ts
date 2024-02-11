@@ -121,6 +121,32 @@ export class ChatComponent implements OnInit {
     }
   }
 
+  deleteMessage(messageId: string, channelId: string): void {
+    const isConfirmed = window.confirm(
+      'Are you sure you want to delete this message?'
+    );
+
+    if (isConfirmed) {
+      this.chatService.deleteMessage(messageId, channelId).subscribe(
+        (response) => {
+          const deletedMessageId = messageId;
+
+          // Find the channel and remove the message from its history
+          const allChannels = Object.values(this.groupChannels).flat();
+          let channel = allChannels.find((c) => c._id === channelId);
+          if (channel) {
+            channel.history = channel.history.filter(
+              (msg) => msg.id !== deletedMessageId
+            );
+          }
+        },
+        (error) => {
+          console.error('Error deleting message:', error);
+        }
+      );
+    }
+  }
+
   constructor(
     private router: Router,
     private userService: UserService,
@@ -157,7 +183,6 @@ export class ChatComponent implements OnInit {
     await this.fetchGroups();
     this.checkScreenSize();
 
-    // await this.fetchUsers();
     this.isLoading = false;
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
@@ -165,19 +190,29 @@ export class ChatComponent implements OnInit {
     }
 
     this.chatService.getMessages().subscribe((msg: ChatMessage) => {
-      //console.log("Received message for channel", msg);
-
-      // Iterate through each group
       Object.values(this.groupChannels).forEach((channels) => {
         // Find the channel within the group channels
         let channel = channels.find((c) => c._id === msg.channelId);
         if (channel) {
-          //console.log('msg', msg);
           channel.history.push(msg);
-          //console.log("Channel history:", channel.history);
         }
       });
     });
+
+    this.chatService
+      .getDeleteMessage()
+      .subscribe((data: { messageId: string; channelId: string }) => {
+        const { messageId, channelId } = data;
+
+        // Update UI to reflect the deleted message
+        const allChannels = Object.values(this.groupChannels).flat();
+        let channel = allChannels.find((c) => c._id === channelId);
+        if (channel) {
+          channel.history = channel.history.filter(
+            (msg) => msg.id !== messageId
+          );
+        }
+      });
 
     this.chatService
       .getUpdateMessage()

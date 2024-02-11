@@ -177,6 +177,29 @@ export class ChatService {
     });
   }
 
+  deleteMessage(messageId: string, channelId: string) {
+    this.socket.emit('deleteMessage', messageId, channelId, {
+      withCredentials: true,
+    });
+    return this.http.post(
+      `${this.apiUrl}/api/channel/${channelId}/deleteMessage`,
+      { messageId },
+      { withCredentials: true }
+    );
+  }
+  getDeleteMessage(): Observable<{ messageId: string; channelId: string }> {
+    return new Observable<{ messageId: string; channelId: string }>(
+      (observer) => {
+        this.socket.on(
+          'messageDeleted',
+          (data: { messageId: string; channelId: string }) => {
+            observer.next(data);
+          }
+        );
+      }
+    );
+  }
+
   calldeclined(callerId: string) {
     this.socket.emit('call-declined', { callerId });
   }
