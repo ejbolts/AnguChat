@@ -20,6 +20,8 @@ export class ChatComponent implements OnInit {
   isModalOpen: { [groupId: string]: boolean } = {};
 
   isOnline: boolean = false;
+  editingMessageId: string | null = null;
+  editingMessageOriginalContent: string | null = null;
 
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
   typingStatus: { [channelId: string]: string } = {};
@@ -46,6 +48,26 @@ export class ChatComponent implements OnInit {
       this.isModalOpen[group._id] = isOpen;
     });
   }
+
+  startEditing(messageId: string, originalContent: string): void {
+    this.editingMessageId = messageId;
+    this.editingMessageOriginalContent = originalContent;
+    //console.log('Editing message:', messageId, originalContent);
+  }
+
+  saveChanges(messageId: string, newContent: string, channelId: string): void {
+    this.chatService.updateMessage(messageId, newContent, channelId).subscribe(
+      (response) => {
+        // console.log('Message updated:', response);
+      },
+      (error) => {
+        console.error('Error updating message:', error);
+      }
+    );
+
+    this.editingMessageId = null;
+  }
+
   // Channel information
   channels: Channel[] = [];
   channelMessages = new Map<string, string>();
@@ -76,6 +98,28 @@ export class ChatComponent implements OnInit {
   errorMessage?: string;
   chatErrorMessage?: string;
   isLoading: boolean = false;
+
+  cancelEditing(channelId: string): void {
+    if (this.editingMessageId) {
+      //Flatten all channels across all groups to find the specific channel
+      const allChannels = Object.values(this.groupChannels).flat();
+      let channel = allChannels.find((c) => c._id === channelId);
+
+      if (channel) {
+        //Find the message within this channel's history to reset its content
+        let messageIndex = channel.history.findIndex(
+          (msg) => msg.id === this.editingMessageId
+        );
+        if (messageIndex !== -1) {
+          channel.history[messageIndex].content =
+            this.editingMessageOriginalContent ?? '';
+        }
+      }
+
+      this.editingMessageId = null;
+      this.editingMessageOriginalContent = null;
+    }
+  }
 
   constructor(
     private router: Router,
@@ -128,11 +172,41 @@ export class ChatComponent implements OnInit {
         // Find the channel within the group channels
         let channel = channels.find((c) => c._id === msg.channelId);
         if (channel) {
+          //console.log('msg', msg);
           channel.history.push(msg);
           //console.log("Channel history:", channel.history);
         }
       });
     });
+
+    this.chatService
+      .getUpdateMessage()
+      .subscribe(
+        (editedMessage: {
+          messageId: string;
+          messageContent: string;
+          channelId: string;
+        }) => {
+          // Iterate through each group to find the relevant channel
+          Object.values(this.groupChannels).forEach((channels) => {
+            // Find the channel that contains the edited message
+            let channel = channels.find(
+              (c) => c._id === editedMessage.channelId
+            );
+            if (channel) {
+              // Find the message within the channel's history and update it
+              const messageIndex = channel.history.findIndex(
+                (msg) => msg.id === editedMessage.messageId
+              );
+              if (messageIndex !== -1) {
+                channel.history[messageIndex].content =
+                  editedMessage.messageContent;
+                channel.history[messageIndex].isEdited = true; // Mark the message as edited
+              }
+            }
+          });
+        }
+      );
 
     this.peer = new Peer({
       host: 'localhost',
@@ -560,15 +634,17 @@ export class ChatComponent implements OnInit {
   handleSendMessages(channelId: string): void {
     const messageToSend = this.channelMessages.get(channelId) || '';
     const imageToSend = this.selectedImages.get(channelId);
-
+    let uuid = self.crypto.randomUUID();
     if (this.currentUser && (messageToSend.trim() !== '' || imageToSend)) {
       const chatMessage: ChatMessage = {
+        id: uuid,
         username: this.currentUser.username,
         content: messageToSend,
         timestamp: new Date(),
         image: imageToSend ? imageToSend.toString() : null,
         channelId: channelId,
         profilePic: this.currentUser.profilePic,
+        isEdited: false,
       };
 
       // Call the service method with the channel ID and the chat message

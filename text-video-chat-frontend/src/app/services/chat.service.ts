@@ -127,6 +127,40 @@ export class ChatService {
     );
   }
 
+  updateMessage(messageId: string, messageContent: string, channelId: string) {
+    this.socket.emit('updateMessage', messageId, messageContent, channelId, {
+      withCredentials: true,
+    });
+    return this.http.post(
+      `${this.apiUrl}/api/channel/${channelId}/updateMessage`,
+      { messageId, messageContent },
+      { withCredentials: true }
+    );
+  }
+
+  getUpdateMessage(): Observable<{
+    messageId: string;
+    messageContent: string;
+    channelId: string;
+  }> {
+    return new Observable<{
+      messageId: string;
+      messageContent: string;
+      channelId: string;
+    }>((observer) => {
+      this.socket.on(
+        'editedMessage',
+        (editedMessage: {
+          messageId: string;
+          messageContent: string;
+          channelId: string;
+        }) => {
+          observer.next(editedMessage);
+        }
+      );
+    });
+  }
+
   getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
       this.socket.on('system-message', (message: ChatMessage) => {

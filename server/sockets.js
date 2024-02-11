@@ -6,7 +6,6 @@ const Filter = require('bad-words'),
 
   filter = new Filter();
 router.get("/getConnectionInfo/:userId", (req, res) => {
-  console.log("testtestest")
   const userId = req.params.userId;
   const connectionInfo = userConnections[userId];
 
@@ -25,7 +24,7 @@ router.get("/getConnectionInfo/:userId", (req, res) => {
 const setupSockets = (expressSocketIOServer) => {
   const io = socketIo(expressSocketIOServer, {
     cors: {
-      origin: "http://localhost:4200",
+      origin: ["http://localhost:4200"],
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });
@@ -52,7 +51,9 @@ const setupSockets = (expressSocketIOServer) => {
       console.log("emitted logout")
     });
 
-
+    socket.on("updateMessage", (messageId, messageContent, channelId) => {
+      socket.broadcast.emit("editedMessage", { messageId, messageContent, channelId })
+    });
 
     // When a user joins a channel
     socket.on("joinChannel", ({ channelId, groupId, username }) => {
@@ -67,9 +68,6 @@ const setupSockets = (expressSocketIOServer) => {
         channelId: channelId,
       });
 
-      io.in(channelId)
-        .allSockets()
-        .then((sockets) => { });
     });
 
     // Listen for 'callUser' event and relay it to the specified user
@@ -109,12 +107,14 @@ const setupSockets = (expressSocketIOServer) => {
       socket.join(channelId);
 
       io.to(channelId).emit("channel-message", {
+        id: message.id,
         content: filter.clean(message.content),
         username: message.username,
         timestamp: message.timestamp,
         image: message.image,
         channelId: channelId,
         profilePic: message.profilePic,
+        isEdited: message.isEdited,
       });
     });
 

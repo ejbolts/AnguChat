@@ -10,7 +10,7 @@ router.delete("/:id", async (req, res) => {
 
     await db().collection("users").deleteOne({ _id: userId });
 
-    // Remove the user from any group's and channel's users array
+    // Remove the user from any group's users array
     await db()
       .collection("groups")
       .updateMany(

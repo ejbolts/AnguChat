@@ -151,4 +151,29 @@ router.post("/:channelId/addMessage", async (req, res) => {
   }
 });
 
+router.post("/:channelId/updateMessage", async (req, res) => {
+  try {
+    console.log("CSRF token received in headers:", req.headers["csrf-token"]);
+    await connect();
+    let messageContent = req.body.messageContent;
+    messageContent = filter.clean(messageContent)
+
+    await db()
+      .collection("channels")
+      .updateOne(
+        { "history.id": req.body.messageId },
+        { $set: { "history.$.content": messageContent, "history.$.isEdited": true } }
+      )
+
+    res.json({ message: "Message updated to channel", isEdited: true });
+  } catch (error) {
+    console.error("Error updating message to channel history:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while adding the message." });
+  } finally {
+    close();
+  }
+});
+
 module.exports = router;

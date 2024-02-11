@@ -164,7 +164,7 @@ router.post("/:groupId/join", async (req, res) => {
   await connect();
 
   const groupId = new ObjectId(req.params.groupId);
-  const userId = req.body.userId;
+  const userId = req.body.userId; // Assuming the user's ID is sent in the request body
 
   try {
     const group = await db().collection("groups").findOne({ _id: groupId });
@@ -237,15 +237,18 @@ router.post("/:groupId/approveUser", async (req, res) => {
 
 });
 router.get("/:groupId/Users", async (req, res) => {
-  const groupId = req.params.groupId;
+  const groupId = req.params.groupId; // Assuming you're getting groupId from the URL
   await connect();
+
   try {
+    // Assuming group documents contain an array of userIds under the field `users`
     const group = await db().collection("groups").findOne({ _id: new ObjectId(groupId) });
 
     if (!group) {
       return res.status(404).json({ message: "Group not found" });
     }
 
+    // Now, fetch users based on the array of userIds in the group document
     const users = await db().collection("users").find({
       _id: { $in: group.users.map(userId => new ObjectId(userId)) }
     }).toArray();
@@ -256,5 +259,8 @@ router.get("/:groupId/Users", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
+
 
 module.exports = router;
