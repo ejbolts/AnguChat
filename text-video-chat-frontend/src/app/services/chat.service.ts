@@ -164,7 +164,7 @@ export class ChatService {
   getSystemMessages(): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
       this.socket.on('system-message', (message: ChatMessage) => {
-        // console.log("System message received:", message);
+        // console.log('System message received:', message);
         observer.next(message);
       });
     });

@@ -71,6 +71,20 @@ const setupSockets = (expressSocketIOServer) => {
 
     });
 
+    // When a user leaves a channel
+    socket.on("leaveChannel", ({ channelId, groupId, username }) => {
+      socket.leave(channelId);
+      console.log(`${username} left channel ${channelId}`);
+
+      // Notify users in the channel
+      io.to(channelId).emit("system-message", {
+        content: `User ${username} has left the channel`,
+        timestamp: new Date(),
+        isSystemMessage: true,
+        channelId: channelId,
+      });
+    });
+
     // Listen for 'callUser' event and relay it to the specified user
     socket.on("callUser", ({ anotherUserSockID, from, socketID, username }) => {
       // should needs to be the socket id of the user being called
@@ -89,19 +103,6 @@ const setupSockets = (expressSocketIOServer) => {
       io.to(data.callerId).emit("call-declined", { message: "Call declined" });
     });
 
-    // When a user leaves a channel
-    socket.on("leaveChannel", ({ channelId, groupId, username }) => {
-      socket.leave(channelId);
-      console.log(`${username} left channel ${channelId}`);
-
-      // Notify users in the channel
-      io.to(channelId).emit("system-message", {
-        content: `User ${username} has left the channel`,
-        timestamp: new Date(),
-        isSystemMessage: true,
-        channelId: channelId,
-      });
-    });
 
     socket.on("sendMessage", ({ channelId, message }) => {
       // Ensure the server socket joins the specified channel

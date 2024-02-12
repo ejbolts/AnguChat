@@ -304,6 +304,22 @@ export class ChatComponent implements OnInit {
         }
       });
     });
+
+    this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
+      console.log('Received message for channel', msg);
+
+      // Iterate through each group
+      Object.values(this.groupChannels).forEach((channels) => {
+        // Find the channel within the group channels
+        let channel = channels.find((c) => c._id === msg.channelId);
+        //console.log("channel", channel)
+
+        if (channel) {
+          channel.history.push(msg);
+          //console.log("Channel history:", channel.history);
+        }
+      });
+    });
   }
 
   async fetchGroups(): Promise<void> {
@@ -732,21 +748,6 @@ export class ChatComponent implements OnInit {
         console.error('Error adding user to channel:', error);
       }
     );
-    this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-      //console.log("Received message for channel", msg);
-
-      // Iterate through each group
-      Object.values(this.groupChannels).forEach((channels) => {
-        // Find the channel within the group channels
-        let channel = channels.find((c) => c._id === msg.channelId);
-        //console.log("channel", channel)
-
-        if (channel) {
-          channel.history.push(msg);
-          //console.log("Channel history:", channel.history);
-        }
-      });
-    });
   }
   handleLeaveChannel(
     channelId: string,
