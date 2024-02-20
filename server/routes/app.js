@@ -2,7 +2,7 @@
 let db = "TextVideoDB";
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const dotenv = require("dotenv");
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI
 dotenv.config();
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version

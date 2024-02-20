@@ -16,14 +16,11 @@ describe("Update Route Tests", () => {
       password: "testpassword123",
       role: "groupAdmin",
       groups: [],
-      reported: false,
-      bannedChannels: [],
-      pendingGroups: [],
     };
 
     chai
       .request(app)
-      .post("/register")
+      .post("/api/authentication")
       .send(testUser)
       .end((err, res) => {
         expect(err).to.be.null;
@@ -36,7 +33,7 @@ describe("Update Route Tests", () => {
   it("should update the role of an existing user", (done) => {
     chai
       .request(app)
-      .put(`/update/${testUserId}/role`)
+      .put(`/api/update/${testUserId}/role`)
       .send({ role: "newRole" })
       .end((err, res) => {
         expect(res).to.have.status(200);
@@ -50,7 +47,7 @@ describe("Update Route Tests", () => {
   it("should return error when role is not provided in request", (done) => {
     chai
       .request(app)
-      .put(`/update/${testUserId}/role`)
+      .put(`/api/update/${testUserId}/role`)
       .send({})
       .end((err, res) => {
         expect(res).to.have.status(400);
@@ -61,8 +58,9 @@ describe("Update Route Tests", () => {
   after((done) => {
     chai
       .request(app)
-      .delete(`/remove/${testUserId}`)
+      .delete(`/api/remove/${testUserId}`)
       .end((err, res) => {
+        console.log(res.status, res.body);
         expect(res).to.have.status(200);
         done();
       });

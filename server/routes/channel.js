@@ -13,6 +13,7 @@ router.post("/", async (req, res) => {
     _id: new ObjectId(),
     name: name,
     history: [],
+    users: [userId],
   };
 
   // Insert the new channel into the 'channels' collection
@@ -26,7 +27,7 @@ router.post("/", async (req, res) => {
       { $push: { channels: newChannel._id.toString() } }
     );
 
-  res.json({ message: "Channel created!" });
+  res.json({ message: "Channel created!", _id: newChannel._id });
   close();
 });
 
@@ -69,18 +70,39 @@ router.post("/:channelId/addUser", async (req, res) => {
 });
 
 router.delete("/:channelId/removeUser", async (req, res) => {
-  await connect();
-  const channelId = new ObjectId(req.params.channelId);
-  const { userId } = req.body;
+  let channelId;
+  try {
+    channelId = new ObjectId(req.params.channelId);
+  } catch (error) {
+    // This catches cases where ObjectId conversion fails (invalid format)
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
 
-  // Remove the user from the channel's users array
-  await db()
-    .collection("channels")
-    .updateOne({ _id: channelId }, { $pull: { users: userId } });
+  try {
+    await connect();
 
-  res.json({ message: "User removed from channel!" });
-  close();
+    // Check if the channel exists
+    const channelExists = await db().collection("channels").findOne({ _id: channelId });
+    if (!channelExists) {
+      return res.status(404).json({ message: "Channel not found." });
+    }
+
+    const { userId } = req.body;
+
+    // Remove the user from the channel's users array
+    await db()
+      .collection("channels")
+      .updateOne({ _id: channelId }, { $pull: { users: userId } });
+
+    res.json({ message: "User removed from channel!" });
+  } catch (error) {
+    console.error("Error removing user from channel:", error);
+    res.status(500).json({ message: "Internal server error." });
+  } finally {
+    close();
+  }
 });
+
 
 router.get("/", async (req, res) => {
   await connect();
@@ -109,23 +131,37 @@ router.get("/getAllUsers", async (req, res) => {
 });
 
 router.delete("/:channelId", async (req, res) => {
-  await connect();
-  const channelId = new ObjectId(req.params.channelId);
+  try {
+    await connect();
+    console.log("Database connection established");
+    console.log("req.params.channelId", req.params.channelId)
 
-  // Remove the channel from the 'channels' collection
-  await db().collection("channels").deleteOne({ _id: channelId });
+    const channelId = new ObjectId(req.params.channelId);
+    console.log(`Attempting to delete channel with ID: ${channelId}`);
 
-  // Pull the channel's ID from all groups' channels arrays
-  await db()
-    .collection("groups")
-    .updateMany(
-      { channels: channelId.toString() },
-      { $pull: { channels: channelId.toString() } }
-    );
+    // Remove the channel from the 'channels' collection
+    const deleteResult = await db().collection("channels").deleteOne({ _id: channelId });
+    console.log(`Channel delete result: ${JSON.stringify(deleteResult)}`);
 
-  res.json({ message: "Channel deleted!" });
-  close();
+    // Pull the channel's ID from all groups' channels arrays
+    const updateResult = await db()
+      .collection("groups")
+      .updateMany(
+        { channels: channelId.toString() },
+        { $pull: { channels: channelId.toString() } }
+      );
+    console.log(`Groups update result: ${JSON.stringify(updateResult)}`);
+
+    res.json({ message: "Channel deleted!" });
+  } catch (err) {
+    console.error("Error processing channel deletion:", err);
+    res.status(500).json({ message: "Error deleting channel." });
+  } finally {
+    close();
+    console.log("Database connection closed");
+  }
 });
+
 router.post("/:channelId/addMessage", async (req, res) => {
   try {
     console.log("CSRF token received in headers:", req.headers["csrf-token"]);

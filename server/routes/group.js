@@ -114,8 +114,8 @@ router.post("/:groupId/channel", async (req, res) => {
     const channel = {
       _id: new ObjectId(),
       name: req.body.name,
+      history: [],
       users: [],
-      bannedUsers: [],
     };
 
     // Add to channels collection
@@ -175,6 +175,7 @@ router.post("/:groupId/join", async (req, res) => {
 
     // Check if user is already a member or has already requested to join
     if (group.users?.includes(userId) || group.pendingUsers?.includes(userId)) {
+      console.log("User is already a member or has already requested to join.");
       return res.status(400).json({
         message: "User is already a member or has already requested to join.",
       });

@@ -25,7 +25,7 @@ router.delete("/:id", async (req, res) => {
         { $pull: { users: userId.toString() } }
       );
 
-    res.json({ message: "User and their group memberships removed!" });
+    res.json({ message: "User and their group and channel memberships removed!" });
   } catch (err) {
     console.error("Error deleting user:", err);
     return res.status(400).json({ message: "Invalid ID format" });
