@@ -1,5 +1,5 @@
 <div class="container register-container">
-  <form (submit)="goToLogin()" class="register-form">
+  <form class="register-form" (submit)="register()">
     <div class="form-group">
       <h2 class="register-title">Register</h2>
 
@@ -65,7 +65,7 @@
     </div>
 
     <div class="center-button">
-      <button type="button" (click)="register()" class="btn-primary-custom">
+      <button type="submit" class="btn-primary-custom">
         <span class="text">Register</span>
       </button>
     </div>
