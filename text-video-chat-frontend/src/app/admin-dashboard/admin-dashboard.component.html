@@ -4,7 +4,9 @@
     Logged in as: <strong>{{ currentUser?.username }}</strong>
   </div>
 
-  <button (click)="logout()" class="btn btn-outline-warning">Logout</button>
+  <button (click)="logout()" id="logoutButton" class="btn btn-outline-warning">
+    Logout
+  </button>
   <button (click)="navigateToChat()" class="btn btn-outline-info mx-2">
     Chat
   </button>
@@ -53,7 +55,7 @@
   <!-- Create Group -->
   <div class="input-group mb-3">
     <div class="input-group-append">
-      <form (submit)="createGroup()">
+      <form (submit)="createGroup($event)">
         <div class="form-group">
           <label for="groupName">Group Name:</label>
           <input

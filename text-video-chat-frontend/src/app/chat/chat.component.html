@@ -29,6 +29,7 @@
         Delete Account
       </button>
       <button
+        id="adminDashboard"
         *ngIf="isAdmin"
         (click)="navigateToDashboard()"
         class="btn btn-outline-info"
@@ -218,6 +219,7 @@
                           style="padding-top: 15px"
                         >
                           <span
+                            id="systemMessage"
                             style="color: rgb(255, 255, 255, 0.5)"
                             *ngIf="msg.isSystemMessage; else userMessage"
                           >
@@ -241,8 +243,11 @@
                                 border: 2px solid white;
                               "
                             />
-                            <strong>{{ msg.username }}</strong>
+                            <strong id="messageUsername">{{
+                              msg.username
+                            }}</strong>
                             <small
+                              id="messageTimestamp"
                               class="ml-2"
                               style="color: rgba(255, 255, 255, 0.5)"
                             >
@@ -262,6 +267,7 @@
                             <div style="padding-left: 40px">
                               <!-- Check if the message is being edited -->
                               <div
+                                id="messageContent"
                                 *ngIf="
                                   editingMessageId !== msg.id;
                                   else editMessage
@@ -431,6 +437,7 @@
                           [id]="'fileInput' + channel._id"
                         />
                         <label
+                          id="attachImageButton"
                           class="btn btn-outline-secondary"
                           [for]="'fileInput' + channel._id"
                           style="display: flex; align-items: center"

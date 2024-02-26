@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { User } from '../models/user.model';
-import { Observable } from 'rxjs';
+import { Observable, catchError, retry } from 'rxjs';
 import { Group } from '../models/group.model';
 import { Channel } from '../models/channel.model';
 import { HttpClient } from '@angular/common/http';
@@ -91,11 +91,18 @@ export class UserService {
     name: string,
     userId: string
   ): Observable<{ message: string; groupId: string }> {
-    return this.http.post<{ message: string; groupId: string }>(
-      `${this.apiUrl}/api/group/create`,
-      { name: name, userId: userId },
-      { withCredentials: true }
-    );
+    return this.http
+      .post<{ message: string; groupId: string }>(
+        `${this.apiUrl}/api/group/create`,
+        { name: name, userId: userId },
+        { withCredentials: true }
+      )
+      .pipe(
+        retry(3),
+        catchError((error) => {
+          throw new Error('Error creating group');
+        })
+      );
   }
 
   fetchAllGroups(): Observable<Group[]> {

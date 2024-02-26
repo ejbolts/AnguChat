@@ -35,3 +35,43 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('loginAsSuperAdmin', () => {
+  const superAdmin = {
+    _id: 'superAdminId',
+    username: 'Admin',
+    role: 'superAdmin',
+    profilePic: null,
+    groups: [],
+    isOnline: true,
+  };
+
+  cy.window().then((win) => {
+    win.sessionStorage.setItem('currentUser', JSON.stringify(superAdmin));
+  });
+});
+
+Cypress.Commands.add('loginAsGuestUser', () => {
+  const guestUser = {
+    _id: '65bcc4ecfd6567b3a70f5746',
+    username: 'Guest',
+    role: 'user',
+    profilePic: null,
+    groups: [],
+    isOnline: false,
+  };
+
+  cy.window().then((win) => {
+    win.sessionStorage.setItem('currentUser', JSON.stringify(guestUser));
+  });
+
+  cy.visit('http://localhost:4200/chat');
+});
+
+declare namespace Cypress {
+  interface Chainable {
+    loginAsSuperAdmin(): Chainable<void>;
+
+    loginAsGuestUser(): Chainable<void>;
+  }
+}

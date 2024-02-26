@@ -119,7 +119,8 @@ export class AdminDashboardComponent implements OnInit {
     this.router.navigate(['/login']); // Redirect to the login page
   }
 
-  createGroup(): void {
+  createGroup(event: any): void {
+    event.preventDefault();
     const currentUserId =
       JSON.parse(sessionStorage.getItem('currentUser')!)?._id ?? '';
     this.userService.createGroup(this.group.name, currentUserId).subscribe(
