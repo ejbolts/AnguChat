@@ -169,7 +169,10 @@ router.post("/:channelId/addMessage", async (req, res) => {
     await connect();
     const channelId = new ObjectId(req.body.channelId);
     const { message } = req.body;
-    message.content = filter.clean(message.content)
+    if (message.content !== "") {
+      message.content = filter.clean(message.content)
+    }
+
     console.log("channelID and message.content:", channelId, message);
 
     await db()

@@ -641,27 +641,32 @@ export class ChatComponent implements OnInit {
     );
   }
 
-  logout(): void {
-    const currentUser = JSON.parse(sessionStorage.getItem('currentUser')!);
-    if (currentUser) {
-      const currentUsername = currentUser.username;
-      const currentUserId = currentUser._id;
+  logout(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const currentUser = JSON.parse(sessionStorage.getItem('currentUser')!);
+      if (currentUser) {
+        const currentUsername = currentUser.username;
+        const currentUserId = currentUser._id;
 
-      this.chatService.logoutUser(currentUsername, currentUserId).subscribe({
-        next: (response) => {
-          //console.log(response.message);
-        },
-        error: (error) => {
-          console.error('Logout error:', error);
-        },
-        complete: () => {
-          sessionStorage.removeItem('currentUser');
-          this.router.navigate(['/login']);
-        },
-      });
-    } else {
-      console.error('No current user found in sessionStorage');
-    }
+        this.chatService.logoutUser(currentUsername, currentUserId).subscribe({
+          next: (response) => {
+            // Logout successful
+          },
+          error: (error) => {
+            console.error('Logout error:', error);
+            reject(error); // Reject the promise if logout fails
+          },
+          complete: () => {
+            sessionStorage.removeItem('currentUser');
+            this.router.navigate(['/login']);
+            resolve(); // Resolve the promise upon successful completion
+          },
+        });
+      } else {
+        console.error('No current user found in sessionStorage');
+        reject('No current user found'); // Reject the promise if no user is found
+      }
+    });
   }
 
   isMemberOfGroup(groupId: string): boolean {
@@ -781,15 +786,21 @@ export class ChatComponent implements OnInit {
       'Are you sure you want to delete your account? This action cannot be undone.'
     );
     if (!confirmDelete) return;
-    this.userService.deleteUser(user._id!).subscribe(
-      (response) => {
-        //console.log("User removed successfully:", response);
-      },
-      (error) => {
-        console.error('Error removing user:', error);
-      }
-    );
-    this.logout();
+    this.logout()
+      .then(() => {
+        // Proceed with deletion after logout completes
+        this.userService.deleteUser(user._id!).subscribe(
+          (response) => {
+            // User removed successfully
+          },
+          (error) => {
+            console.error('Error removing user:', error);
+          }
+        );
+      })
+      .catch((error) => {
+        console.error('Logout failed:', error);
+      });
   }
 
   isChannelMember(channelId: string, groupId: string): boolean {

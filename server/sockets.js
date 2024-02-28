@@ -108,16 +108,31 @@ const setupSockets = (expressSocketIOServer) => {
       // Ensure the server socket joins the specified channel
       socket.join(channelId);
 
-      io.to(channelId).emit("channel-message", {
-        id: message.id,
-        content: filter.clean(message.content),
-        username: message.username,
-        timestamp: message.timestamp,
-        image: message.image,
-        channelId: channelId,
-        profilePic: message.profilePic,
-        isEdited: message.isEdited,
-      });
+      if (message.content === "") {
+        console.log("Message is empty");
+        io.to(channelId).emit("channel-message", {
+          id: message.id,
+          content: message.content,
+          username: message.username,
+          timestamp: message.timestamp,
+          image: message.image,
+          channelId: channelId,
+          profilePic: message.profilePic,
+          isEdited: message.isEdited,
+        });
+      } else {
+        console.log("Message is not empty");
+        io.to(channelId).emit("channel-message", {
+          id: message.id,
+          content: filter.clean(message.content),
+          username: message.username,
+          timestamp: message.timestamp,
+          image: message.image,
+          channelId: channelId,
+          profilePic: message.profilePic,
+          isEdited: message.isEdited,
+        });
+      }
     });
 
     socket.on("typing", ({ channelId, username }) => {
