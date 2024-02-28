@@ -141,7 +141,7 @@ export class ChatComponent implements OnInit {
           }
         },
         (error) => {
-          console.error('Error deleting message:', error);
+          console.error('Error deleting message:', error, messageId, channelId);
         }
       );
     }
@@ -222,6 +222,7 @@ export class ChatComponent implements OnInit {
           messageContent: string;
           channelId: string;
         }) => {
+          console.log('editedMessage', editedMessage);
           // Iterate through each group to find the relevant channel
           Object.values(this.groupChannels).forEach((channels) => {
             // Find the channel that contains the edited message
@@ -229,11 +230,17 @@ export class ChatComponent implements OnInit {
               (c) => c._id === editedMessage.channelId
             );
             if (channel) {
+              console.log('editedMessage', editedMessage);
               // Find the message within the channel's history and update it
               const messageIndex = channel.history.findIndex(
                 (msg) => msg.id === editedMessage.messageId
               );
               if (messageIndex !== -1) {
+                console.log(
+                  'Message found and being edited:',
+                  channel.history[messageIndex]
+                );
+
                 channel.history[messageIndex].content =
                   editedMessage.messageContent;
                 channel.history[messageIndex].isEdited = true; // Mark the message as edited
@@ -306,7 +313,7 @@ export class ChatComponent implements OnInit {
     });
 
     this.chatService.getSystemMessages().subscribe((msg: ChatMessage) => {
-      console.log('Received message for channel', msg);
+      //console.log('Received message for channel', msg);
 
       // Iterate through each group
       Object.values(this.groupChannels).forEach((channels) => {

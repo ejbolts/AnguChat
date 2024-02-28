@@ -13,7 +13,6 @@ export class UserService {
   private csrfToken: string = '';
   constructor(private http: HttpClient) {}
   public fetchCsrfToken(): void {
-    console.log(this.apiUrl);
     this.http
       .get<{ csrfToken: string }>(`${this.apiUrl}/api/get-csrf-token`, {
         withCredentials: true,

@@ -53,7 +53,7 @@ const setupSockets = (expressSocketIOServer) => {
       io.to(channelId).emit('messageDeleted', { messageId, channelId });
     });
     socket.on("updateMessage", (messageId, messageContent, channelId) => {
-      socket.broadcast.emit("editedMessage", { messageId, messageContent, channelId })
+      io.emit("editedMessage", { messageId, messageContent, channelId })
     });
 
     // When a user joins a channel
