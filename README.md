@@ -1,10 +1,10 @@
 
-# AnguChat
+<p align="center">
+  <img src="https://github.com/ejbolts/Text-video-chat-app/assets/86194451/c91e065e-e91b-4331-a22f-101a56546d05" alt="AnguChat" />
+</p>
+<h1 align="center">AnguChat</h1>
 
-![294302427-36ac81db-9fc5-41f2-b09f-62e11c245342](https://github.com/ejbolts/Text-video-chat-app/assets/86194451/c91e065e-e91b-4331-a22f-101a56546d05)
-
-https://www.anguchat.com
-### Table of Contents
+<b>Table of Context</b>
 
 - [Overview](#Overview)
 - [Architecture](#Architecture)
@@ -15,7 +15,7 @@ https://www.anguchat.com
 <a name="Overview"></a>
 ## Overview
 
-**AnguChat** is a text and video streaming chat app. It's designed to provide seamless chat experiences, where users can participate in different groups and channels. The application comes with administrative functionalities, allowing management of users, groups, and channels.
+[**AnguChat**](https://www.anguchat.com) is a text and video streaming chat app. It's designed to provide seamless chat experiences, where users can participate in different groups and channels. The application comes with administrative functionalities, allowing management of users, groups, and channels.
 
 <a name="Architecture"></a>
 ## Architecture
