@@ -3,7 +3,7 @@
 
 ![294302427-36ac81db-9fc5-41f2-b09f-62e11c245342](https://github.com/ejbolts/Text-video-chat-app/assets/86194451/c91e065e-e91b-4331-a22f-101a56546d05)
 
-
+https://www.anguchat.com
 ### Table of Contents
 
 - [Overview](#Overview)
@@ -25,6 +25,8 @@
 ## Responsibilities Division between Client and Server
 
 The chat application, while appearing seamless to end-users, is underpinned by a clear division of responsibilities between the client and server. The server provides a RESTful API, which returns JSON data. The client, on the other hand, communicates with this API to achieve desired functionalities.
+
+In this Git repository, all routes are prefixed with `/api`. This design choice is made to closely mimic the behavior of our production environment. In the production setup, the `/api` prefix is not explicitly included in the URLs. Instead, a reverse proxy configured on the Apache server automatically appends `/api` to each request as it forwards them from the client to the server. This ensures seamless integration and consistency between our development practices and the production environment.
 <a name="Responsibilities"></a>
 ### Client-Side Responsibilities:
 
