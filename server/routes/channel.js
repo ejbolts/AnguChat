@@ -119,7 +119,6 @@ router.get("/", async (req, res) => {
 
 router.get("/getAllUsers", async (req, res) => {
   await connect();
-
   try {
     const users = await db().collection("users").find({}).toArray();
     res.json(users);
@@ -150,8 +149,6 @@ router.delete("/:channelId", async (req, res) => {
         { channels: channelId.toString() },
         { $pull: { channels: channelId.toString() } }
       );
-    console.log(`Groups update result: ${JSON.stringify(updateResult)}`);
-
     res.json({ message: "Channel deleted!" });
   } catch (err) {
     console.error("Error processing channel deletion:", err);
@@ -173,8 +170,6 @@ router.post("/:channelId/addMessage", async (req, res) => {
       message.content = filter.clean(message.content)
     }
 
-    console.log("channelID and message.content:", channelId, message);
-
     await db()
       .collection("channels")
       .updateOne({ _id: channelId }, { $addToSet: { history: message } });
@@ -192,7 +187,6 @@ router.post("/:channelId/addMessage", async (req, res) => {
 
 router.post("/:channelId/updateMessage", async (req, res) => {
   try {
-    console.log("CSRF token received in headers:", req.headers["csrf-token"]);
     await connect();
     let messageContent = req.body.messageContent;
     messageContent = filter.clean(messageContent)
@@ -217,7 +211,6 @@ router.post("/:channelId/updateMessage", async (req, res) => {
 
 router.post("/:channelId/deleteMessage", async (req, res) => {
   try {
-    console.log("CSRF token received in headers:", req.headers["csrf-token"]);
     await connect();
     console.log("req.body in deleteMessage:", req.body);
 

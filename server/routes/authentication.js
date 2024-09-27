@@ -11,7 +11,6 @@ router.get("/", async (req, res) => {
   console.log("Fetching all users...");
   await connect();
   const users = await db().collection("users").find({}).toArray();
-  console.log("Users fetched:", users);
   res.json(users);
   close();
 });

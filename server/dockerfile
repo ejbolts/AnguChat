@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # add uri
-ENV MONGODB_URI=" "
+ENV MONGODB_URI=""
 
 # Step 6: Expose the required ports (3000 for Express and Socket.io, 3001 for PeerJS)
 EXPOSE 3000

@@ -29,9 +29,18 @@ const setupSockets = (expressSocketIOServer) => {
     },
   });
 
+  io.on('error', (error) => {
+    console.error('Socket.IO server error:', error);
+  });
+
   io.on("connection", (socket) => {
     console.log("New user connected:", socket.id);
     socket.emit("connection", socket.id);
+
+    // Handle WebSocket errors
+    socket.on('error', (error) => {
+      console.error('Socket connection error:', error);
+    });
 
     // Listen for an event where the client sends their user ID and PeerJS ID
     socket.on("connectUserIDs", ({ userId, peerId }) => {

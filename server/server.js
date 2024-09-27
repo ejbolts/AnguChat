@@ -26,14 +26,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Middleware
-const csrfProtection = csrf({ cookie: { httpOnly: true, sameSite: "Strict" } });
+const csrfProtection = csrf({ cookie: { httpOnly: true, sameSite: "strict" } });
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = ['http://localhost:4200'];
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('CORS not allowed from this origin'));
+      callback(new Error('CORS not allowed from this origin: ' + origin));
     }
   },
   credentials: true
