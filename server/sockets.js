@@ -52,10 +52,17 @@ const setupSockets = (expressSocketIOServer) => {
       console.log("userConnections:", userConnections);
     });
 
-    socket.on("UserLogout", (userId) => {
-      delete userConnections[userId]
+    socket.on("UserLogout", (userId, username) => {
+
       console.log("userConnections:", userConnections);
       socket.broadcast.emit('logout', userId)
+      // Notify users in the channel
+      io.emit("system-message", {
+        content: `User ${username} has left the channel`,
+        timestamp: new Date(),
+        isSystemMessage: true,
+      });
+      delete userConnections[userId]
     });
 
     socket.on("deleteMessage", (messageId, channelId) => {
@@ -81,7 +88,7 @@ const setupSockets = (expressSocketIOServer) => {
     });
 
     // When a user leaves a channel
-    socket.on("leaveChannel", ({ channelId, groupId, username }) => {
+    socket.on("leaveChannel", ({ channelId, username }) => {
       socket.leave(channelId);
       console.log(`${username} left channel ${channelId}`);
 
@@ -151,25 +158,16 @@ const setupSockets = (expressSocketIOServer) => {
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
+      console.log("userConnections", userConnections)
       for (const userId in userConnections) {
         if (userConnections[userId].socketId === socket.id) {
           delete userConnections[userId];
           console.log(`Removed mapping for user ${userId}`);
+          socket.broadcast.emit('logout', userId)
           break;
         }
       }
 
-      // Send a disconnection message to all rooms the user was in
-      socket.rooms.forEach((roomId) => {
-        if (roomId !== socket.id) {
-          // Avoid sending to the individual socket room
-          io.to(roomId).emit("system-message", {
-            content: `User ${socket.id} has left the chat`,
-            timestamp: new Date(),
-            isSystemMessage: true,
-          });
-        }
-      });
     });
   });
   return io;

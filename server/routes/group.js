@@ -132,7 +132,6 @@ router.post("/:groupId/channel", async (req, res) => {
 });
 
 router.get("/:groupId/channels", async (req, res) => {
-  console.log("Attempting to fetch channels for group ID:", req.params.groupId); // Log the incoming groupId
 
   await connect();
   const groupId = new ObjectId(req.params.groupId);
@@ -141,8 +140,6 @@ router.get("/:groupId/channels", async (req, res) => {
   if (!group) {
     console.log("No group found for ID:", req.params.groupId); // Log if no group found
     return res.status(404).json({ message: "Group not found" });
-  } else {
-    console.log("Found group:", group); // Log the found group
   }
 
   const channels = await db()
@@ -152,8 +149,6 @@ router.get("/:groupId/channels", async (req, res) => {
 
   if (channels.length === 0) {
     console.log("No channels found for group ID:", req.params.groupId); // Log if no channels found
-  } else {
-    console.log("Channels found for group:", channels); // Log the found channels
   }
 
   res.json(channels);

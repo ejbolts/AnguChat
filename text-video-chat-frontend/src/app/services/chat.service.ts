@@ -216,8 +216,8 @@ export class ChatService {
     username: string,
     userId: string
   ): Observable<{ message: string }> {
-    //console.log('userId logging out:', userId);
-    this.socket.emit('UserLogout', userId, { withCredentials: true });
+    console.log('userId logging out:', userId);
+    this.socket.emit('UserLogout', userId, username, { withCredentials: true });
     return this.http.post<{ message: string }>(
       `${this.apiUrl}/api/authentication/logout`,
       { username: username },

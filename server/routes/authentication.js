@@ -66,7 +66,7 @@ router.post("/login", async (req, res) => {
 
 
 router.post("/logout", async (req, res) => {
-  console.log(`Attempting to login user with username: ${req.body.username}`);
+  console.log(`Attempting to logout user with username: ${req.body.username}`);
   console.log("CSRF token received in headers:", req.headers["csrf-token"]);
   console.log("Cookies received:", req.cookies);
 
