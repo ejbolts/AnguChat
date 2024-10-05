@@ -18,16 +18,15 @@
 
 <a name="Architecture"></a>
 ## Architecture
-![Anguchat Architecture](https://github.com/user-attachments/assets/9fd8797c-f4b0-4f45-9779-fe6694e25749)
-
+![Anguchat Architecture](https://github.com/user-attachments/assets/fff385d3-32cd-4ae5-a014-cfffd4143e27)
 
 ## Peerjs/WebRTC Connection Lifecycle:
 1. Peer A and Peer B use the PeerJS server (signalling server) to exchange connection information (called ICE candidates).
-2. Both peers connect to a STUN server to discover their public IP addresses and NAT details while simultaneously exchanging with peerjs server.
+2. Both peers connect to Google's STUN server to discover their public IP addresses and NAT details while simultaneously exchanging with peerjs server.
 3. The peers attempt to establish a direct P2P connection using the ICE candidates.
 4. If the direct connection fails (due to NAT or firewall restrictions), the peers fall back to using a TURN server to relay the data between them.
 
-![Anguchat Peerjs](https://github.com/user-attachments/assets/202f9b2e-5663-481a-a53e-dea42b3c1149)
+![Anguchat Peerjs](https://github.com/user-attachments/assets/320a05a3-767a-4650-b040-2bae094a502b)
 
 ## Socketio Connection Lifecycle:
 1. Connection Initiation: The client sends an HTTP request to establish an initial handshake with the Socket.IO server.
