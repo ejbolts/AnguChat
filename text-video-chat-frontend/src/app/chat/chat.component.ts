@@ -251,9 +251,15 @@ export class ChatComponent implements OnInit {
       );
 
     this.peer = new Peer({
-      host: 'localhost',
-      port: 3001,
-      path: '/',
+      host: environment.peerHost,
+      port: environment.peerPort,
+      path: environment.peerPath,
+      secure: environment.peerSecure,
+      config: {
+        iceServers: environment.peerIceServers,
+        iceTransportPolicy: environment.iceTransportPolicy,
+        iceCandidatePoolSize: environment.iceCandidatePoolSize,
+      },
     });
 
     this.peer.on('open', async (peerId) => {
