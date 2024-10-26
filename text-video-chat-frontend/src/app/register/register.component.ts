@@ -4,7 +4,6 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
 import { User } from '../models/user.model';
-
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -59,8 +58,19 @@ export class RegisterComponent implements OnInit {
         formData.append('username', username);
 
         this.userService.uploadFileToServer(formData).subscribe(
-          () => {
-            // console.log('File uploaded successfully to server');
+          (response) => {
+            if (response.deletedIMG !== false) {
+              console.log('File deleted successfully from server');
+              const warningMessage =
+                'Account created, but your image was removed due to inappropriate content.';
+
+              this.router.navigate(['/login'], {
+                queryParams: { warningMessage },
+              });
+            } else {
+              //console.log('File uploaded successfully to server');
+              this.router.navigate(['/login']);
+            }
           },
           (error) => {
             console.error('Error uploading file:', error);
@@ -125,7 +135,6 @@ export class RegisterComponent implements OnInit {
     };
     reader.readAsDataURL(file);
   }
-
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
@@ -135,7 +144,6 @@ export class RegisterComponent implements OnInit {
     this.userService.registerUser(this.user).subscribe(
       () => {
         this.uploadImage(this.user.username);
-        this.goToLogin();
       },
       (error) => {
         // This block runs only if there is an error in registerUser

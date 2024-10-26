@@ -17,14 +17,22 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+
+const rekognition = new AWS.Rekognition({
+  region: process.env.AWS_REGION,
+});
+
+
+
+
 router.post("/upload", upload.single("file"), (req, res) => {
   const file = req.file; // File is available in req.file
   const uniqueFileName = `${Date.now()}_${file.originalname}`;
   console.log("uniqueFileName:", uniqueFileName);
 
   const params = {
-    Bucket: "text-video-app-images-872342",
-    Key: uniqueFileName, // Use the unique filename here
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: uniqueFileName,
     Body: fs.createReadStream(file.path),
   };
 
@@ -32,9 +40,37 @@ router.post("/upload", upload.single("file"), (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else {
-      res.send({ message: "File uploaded successfully", data });
       const imageUrl = data.Location;
       console.log("imageUrl:", imageUrl);
+
+
+
+      const moderationParams = {
+        Image: {
+          S3Object: {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Name: uniqueFileName,
+          },
+        },
+        MinConfidence: 70,
+      };
+
+      // Call Rekognition for moderation labels
+      const moderationResult = await rekognition.detectModerationLabels(moderationParams).promise();
+      console.log('Moderation Labels:', moderationResult.ModerationLabels);
+
+      // Check if any moderation labels are found
+      if (moderationResult.ModerationLabels.length > 0) {
+        console.log('Inappropriate content detected. Deleting image from S3...');
+
+        // Delete the image from S3
+        await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: uniqueFileName }).promise();
+        console.log('Image deleted due to inappropriate content.');
+        res.json({ deletedIMG: true });
+        return { deleted: true, labels: moderationResult.ModerationLabels };
+      }
+      res.json({ message: "File uploaded successfully", data, deletedIMG: false });
+
 
       const username = req.body.username;
       console.log("username:", username);
@@ -51,10 +87,12 @@ router.post("/upload", upload.single("file"), (req, res) => {
 
         close();
       } catch (updateError) {
-        res.status(500).send(updateError);
+        console.error("Error updating user profile picture:", updateError);
       }
+      // If no moderation labels found, return the moderation result
     }
   });
 });
 
 module.exports = router;
+

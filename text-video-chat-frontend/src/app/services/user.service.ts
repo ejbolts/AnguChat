@@ -215,9 +215,11 @@ export class UserService {
     );
   }
 
-  uploadFileToServer(fileData: FormData): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.apiUrl}/api/bucket/upload`,
+  uploadFileToServer(
+    fileData: FormData
+  ): Observable<{ message: string; deletedIMG: boolean }> {
+    return this.http.post<{ message: string; deletedIMG: boolean }>(
+      `${this.apiUrl}/api/uploadProfileImage/upload`,
       fileData,
       {
         withCredentials: true,

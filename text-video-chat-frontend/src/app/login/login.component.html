@@ -14,6 +14,13 @@
     </div>
   </div>
 
+  <div *ngIf="errorMessage" class="alert alert-danger mt-2">
+    {{ errorMessage }}
+  </div>
+  <div *ngIf="" class="alert alert-warning mt-2">
+    {{ warningMessage }}
+  </div>
+
   <form class="login-form" (submit)="login()">
     <div class="form-group">
       <label for="username">Username:</label>
@@ -47,9 +54,6 @@
       </button>
     </div>
 
-    <div *ngIf="errorMessage" class="alert alert-danger mt-2">
-      {{ errorMessage }}
-    </div>
     <div
       class="d-flex align-items-center justify-content-center"
       style="margin-top: 10px"

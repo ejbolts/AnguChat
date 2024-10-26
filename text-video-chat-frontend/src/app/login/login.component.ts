@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { UserService } from '../services/user.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { User } from '../models/user.model';
 
 @Component({
@@ -17,8 +17,18 @@ export class LoginComponent {
     isOnline: true,
   };
   errorMessage?: string;
-
-  constructor(private userService: UserService, private router: Router) {}
+  warningMessage: string | null = null;
+  constructor(
+    private userService: UserService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+  ngOnInit() {
+    // Retrieve the warning message from the query parameter
+    this.route.queryParams.subscribe((params) => {
+      this.warningMessage = params['warningMessage'] || null;
+    });
+  }
   login(): void {
     if (this.user.password) {
       this.userService

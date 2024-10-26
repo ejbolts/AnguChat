@@ -2,9 +2,21 @@ const express = require("express");
 const router = express.Router();
 const { connect, db, close } = require("./app");
 const ObjectId = require("mongodb").ObjectId;
-const Filter = require('bad-words'),
+const Filter = require('bad-words');
+const e = require("express");
+const AWS = require("aws-sdk");
+const s3 = new AWS.S3(
+  {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+  }
+);
+const rekognition = new AWS.Rekognition({
+  region: process.env.AWS_REGION,
+});
 
-  filter = new Filter();
+filter = new Filter();
 router.post("/", async (req, res) => {
   await connect();
   const { groupId, name, userId } = req.body;
@@ -159,6 +171,77 @@ router.delete("/:channelId", async (req, res) => {
   }
 });
 
+
+
+
+// Function to upload to S3 and then check with Rekognition
+async function uploadAndModerateImage(base64String, bucketName = process.env.AWS_BUCKET_NAME,) {
+  console.log('Uploading image to S3 and checking moderation labels...');
+
+  // Generate date and unique filename
+  const date = new Date().toISOString().split('T')[0];
+  const uniqueId = Date.now();
+
+
+  const key = `${date}_image_${uniqueId}.jpg`;
+  if (base64String !== "") {
+
+    // Remove the data URL prefix if it exists
+    const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+    // Decode the base64 image
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    // Upload to S3
+    const uploadParams = {
+      Bucket: bucketName,
+      Key: key,
+      Body: buffer,
+      ContentEncoding: 'base64',
+      ContentType: 'image/jpeg'
+    };
+
+    try {
+      await s3.upload(uploadParams).promise();
+      console.log(`Image uploaded to S3 at ${bucketName}/${key}`);
+
+      // Set up Rekognition parameters with the S3 object location
+      const moderationParams = {
+        Image: {
+          S3Object: {
+            Bucket: bucketName,
+            Name: key,
+          },
+        },
+        MinConfidence: 80,
+      };
+
+      // Call Rekognition for moderation labels
+      const moderationResult = await rekognition.detectModerationLabels(moderationParams).promise();
+      console.log('Moderation Labels:', moderationResult.ModerationLabels);
+
+      // Check if any moderation labels are found
+      if (moderationResult.ModerationLabels.length > 0) {
+        console.log('Inappropriate content detected. Deleting image from S3...');
+
+        // Delete the image from S3
+        await s3.deleteObject({ Bucket: bucketName, Key: key }).promise();
+        console.log('Image deleted due to inappropriate content.');
+
+        return { deleted: true, labels: moderationResult.ModerationLabels };
+      }
+
+      // If no moderation labels found, return the moderation result
+      return { deleted: false, moderationResult };
+    } catch (error) {
+      console.error('Error during upload or moderation check:', error);
+      throw error;
+    }
+  } else {
+    console.log('No image data provided.');
+  }
+}
+
+
 router.post("/:channelId/addMessage", async (req, res) => {
   try {
     console.log("CSRF token received in headers:", req.headers["csrf-token"]);
@@ -169,6 +252,19 @@ router.post("/:channelId/addMessage", async (req, res) => {
     if (message.content !== "") {
       message.content = filter.clean(message.content)
     }
+
+    if (message.image) {
+
+      console.log('Moderating image...');
+      const moderationResult = await uploadAndModerateImage(message.image);
+      console.log('Moderation Result:', moderationResult);
+      if (moderationResult.deleted) {
+        console.log('Image was deleted due to moderation check.');
+        message.image = null;
+      }
+    }
+
+    console.log('passed moderation check');
 
     await db()
       .collection("channels")

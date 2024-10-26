@@ -9,7 +9,7 @@ const updateRoute = require("./routes/update");
 const removeRoute = require("./routes/remove");
 const groupRoute = require("./routes/group");
 const channelRoute = require("./routes/channel");
-const bucketRoute = require("./routes/bucket");
+const AWSRoute = require("./routes/uploadProfileImage");
 const socketsRoute = require("./sockets");
 const expressPeerServer = require("peer").ExpressPeerServer;
 
@@ -60,7 +60,7 @@ app.use("/api/update", updateRoute);
 app.use("/api/remove", removeRoute);
 app.use("/api/group", groupRoute);
 app.use("/api/channel", channelRoute);
-app.use("/api/bucket", bucketRoute);
+app.use("/api/uploadProfileImage", AWSRoute);
 app.use("/api/sockets", socketsRoute);
 
 // Start the server
