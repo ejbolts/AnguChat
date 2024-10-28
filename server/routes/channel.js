@@ -261,7 +261,7 @@ router.post("/:channelId/addMessage", async (req, res) => {
       console.log('Moderation Result:', moderationResult);
       if (moderationResult.deleted) {
         console.log('Image was deleted due to moderation check.');
-        message.image = null;
+        message.image = 'inappropriate';
       } else {
         // update the message with the s3Url to store in db instead of the base64 string
         message.image = moderationResult.s3Url;
@@ -276,7 +276,7 @@ router.post("/:channelId/addMessage", async (req, res) => {
       .collection("channels")
       .updateOne({ _id: channelId }, { $addToSet: { history: message } });
 
-    res.json({ message: "Message added to channel!" });
+    res.json({ message: message });
   } catch (error) {
     console.error("Error adding message to channel:", error);
     res
@@ -328,8 +328,7 @@ router.post("/:channelId/deleteMessage", async (req, res) => {
     }
 
     const message = channel.history[0];
-    const imageUrl = message.image; // Extract the image URL
-    const imageKey = imageUrl.split('/').pop(); // Extract the image key
+
 
     // Use the $pull operator to remove the message from the history array
     const result = await db().collection("channels").updateOne(
@@ -341,7 +340,13 @@ router.post("/:channelId/deleteMessage", async (req, res) => {
       console.log("No message found with given ID in the specified channel.");
       return res.status(404).json({ message: "Message not found." });
     }
-    await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: imageKey }).promise();
+    let imageKey = '';
+    const imageUrl = message.image; // Extract the image URL
+    if (imageUrl) {
+      imageKey = imageUrl.split('/').pop(); // Extract the image key
+      await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: imageKey }).promise();
+
+    }
 
     res.json({ message: "Message deleted successfully." });
   } catch (error) {

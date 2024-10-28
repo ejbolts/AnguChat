@@ -718,21 +718,27 @@ export class ChatComponent implements OnInit {
 
       // Call the service method with the channel ID and the chat message
       this.chatService.addMessageToChannel(channelId, chatMessage).subscribe(
-        (response) => {
-          //console.log('Message added', response);
+        (response: any) => {
+          chatMessage.image = response.message.image;
+          if (chatMessage.image === 'inappropriate') {
+            chatMessage.image = null;
+            this.chatService.sendMessage(channelId, chatMessage);
+            alert('removed inappropriate image!');
+          } else {
+            this.chatService.sendMessage(channelId, chatMessage);
+          }
         },
         (error) => {
           this.chatErrorMessage = error.message;
           console.error('Error adding message', error);
         }
       );
-      this.chatService.sendMessage(channelId, chatMessage);
 
       this.channelMessages.set(channelId, '');
       this.chatErrorMessage = '';
       this.selectedImages.delete(channelId);
     } else {
-      this.chatErrorMessage = 'Message must not be empty';
+      this.chatErrorMessage = 'message error';
     }
   }
 
