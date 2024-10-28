@@ -316,6 +316,21 @@ router.post("/:channelId/deleteMessage", async (req, res) => {
     await connect();
     console.log("req.body in deleteMessage:", req.body);
 
+    // Find the message object with the image URL
+    const channel = await db().collection("channels").findOne(
+      { _id: new ObjectId(req.params.channelId) },
+      { projection: { history: { $elemMatch: { id: req.body.messageId } } } }
+    );
+
+    if (!channel || !channel.history || channel.history.length === 0) {
+      console.log("No message found with given ID in the specified channel.");
+      return res.status(404).json({ message: "Message not found." });
+    }
+
+    const message = channel.history[0];
+    const imageUrl = message.image; // Extract the image URL
+    const imageKey = imageUrl.split('/').pop(); // Extract the image key
+
     // Use the $pull operator to remove the message from the history array
     const result = await db().collection("channels").updateOne(
       { _id: new ObjectId(req.params.channelId) }, // Ensure correct matching of channelId
@@ -326,6 +341,7 @@ router.post("/:channelId/deleteMessage", async (req, res) => {
       console.log("No message found with given ID in the specified channel.");
       return res.status(404).json({ message: "Message not found." });
     }
+    await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: imageKey }).promise();
 
     res.json({ message: "Message deleted successfully." });
   } catch (error) {
