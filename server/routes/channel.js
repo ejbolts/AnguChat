@@ -202,7 +202,8 @@ async function uploadAndModerateImage(base64String, bucketName = process.env.AWS
 
     try {
       await s3.upload(uploadParams).promise();
-      console.log(`Image uploaded to S3 at ${bucketName}/${key}`);
+      console.log(`Image uploaded to S3 at https://${bucketName}.s3.ap-southeast-2.amazonaws.com/${key}`);
+      const s3Url = `https://${bucketName}.s3.ap-southeast-2.amazonaws.com/${key}`
 
       // Set up Rekognition parameters with the S3 object location
       const moderationParams = {
@@ -231,7 +232,7 @@ async function uploadAndModerateImage(base64String, bucketName = process.env.AWS
       }
 
       // If no moderation labels found, return the moderation result
-      return { deleted: false, moderationResult };
+      return { deleted: false, s3Url: s3Url };
     } catch (error) {
       console.error('Error during upload or moderation check:', error);
       throw error;
@@ -261,8 +262,13 @@ router.post("/:channelId/addMessage", async (req, res) => {
       if (moderationResult.deleted) {
         console.log('Image was deleted due to moderation check.');
         message.image = null;
+      } else {
+        // update the message with the s3Url to store in db instead of the base64 string
+        message.image = moderationResult.s3Url;
       }
+
     }
+
 
     console.log('passed moderation check');
 
