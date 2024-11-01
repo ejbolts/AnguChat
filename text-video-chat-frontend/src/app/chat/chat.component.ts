@@ -18,7 +18,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class ChatComponent implements OnInit {
   apiUrl = environment.apiUrl;
   isModalOpen: { [groupId: string]: boolean } = {};
-
+  dropdownOpen = false;
   isOnline: boolean = false;
   editingMessageId: string | null = null;
   editingMessageOriginalContent: string | null = null;
@@ -66,6 +66,31 @@ export class ChatComponent implements OnInit {
     );
 
     this.editingMessageId = null;
+  }
+
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  updateImage() {
+    // Handle option 1 action
+    this.dropdownOpen = false;
+  }
+
+  updateUsername() {
+    // Handle option 2 action
+    this.dropdownOpen = false;
+  }
+
+  updatePassword() {
+    // Handle option 3 action
+    this.dropdownOpen = false;
+  }
+
+  closeDropdown(event: Event) {
+    if (!(event.target as HTMLElement).classList.contains('dropdown-toggle')) {
+      this.dropdownOpen = false;
+    }
   }
 
   // Channel information
