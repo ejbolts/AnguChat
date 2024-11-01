@@ -1,4 +1,10 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  OnInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { Group } from '../models/group.model';
 import { User } from '../models/user.model';
 import { Router } from '@angular/router';
@@ -19,6 +25,7 @@ export class ChatComponent implements OnInit {
   apiUrl = environment.apiUrl;
   isModalOpen: { [groupId: string]: boolean } = {};
   dropdownOpen = false;
+  @ViewChild('fileInput') fileInput: ElementRef<HTMLInputElement> | undefined;
   isOnline: boolean = false;
   editingMessageId: string | null = null;
   editingMessageOriginalContent: string | null = null;
@@ -72,18 +79,37 @@ export class ChatComponent implements OnInit {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  updateImage() {
-    // Handle option 1 action
-    this.dropdownOpen = false;
+  triggerFileUpload() {
+    this.fileInput?.nativeElement.click();
+  }
+
+  updateProfileImage(userId: string | undefined, updatedImage: File): void {
+    if (userId && updatedImage) {
+      console.error('User ID is required to update profile image');
+      this.userService.uploadFileToServer(updatedImage).subscribe(
+        (response) => {
+          console.log('Profile image updated:', response);
+        },
+        (error) => {
+          console.error('Error updating profile image:', error);
+        }
+      );
+    }
+  }
+  handleFileInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      // Call your updateProfileImage method with the file data
+      this.updateProfileImage(this.currentUser!._id, file);
+    }
   }
 
   updateUsername() {
-    // Handle option 2 action
     this.dropdownOpen = false;
   }
 
   updatePassword() {
-    // Handle option 3 action
     this.dropdownOpen = false;
   }
 

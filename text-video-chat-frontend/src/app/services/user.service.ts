@@ -215,15 +215,52 @@ export class UserService {
     );
   }
 
-  uploadFileToServer(
-    fileData: FormData
-  ): Observable<{ message: string; deletedIMG: boolean }> {
-    return this.http.post<{ message: string; deletedIMG: boolean }>(
-      `${this.apiUrl}/api/uploadProfileImage/upload`,
-      fileData,
-      {
-        withCredentials: true,
-      }
+  updateProfileImage(userId: string, updatedImage: File): Observable<User> {
+    return this.http.put<User>(
+      `${this.apiUrl}/api/update/${userId}/profileImage`,
+      { profileImage: updatedImage },
+      { withCredentials: true }
     );
+  }
+
+  updateUsername(userId: string, username: string): Observable<User> {
+    return this.http.put<User>(
+      `${this.apiUrl}/api/update/${userId}/username`,
+      { username: username },
+      { withCredentials: true }
+    );
+  }
+  updatePassword(userId: string, password: string): Observable<User> {
+    return this.http.put<User>(
+      `${this.apiUrl}/api/update/${userId}/password`,
+      { password: password },
+      { withCredentials: true }
+    );
+  }
+
+  uploadFileToServer(
+    fileData: FormData | File
+  ): Observable<{ deletedIMG: boolean }> {
+    const formData = new FormData();
+    if (fileData instanceof File) {
+      formData.append('file', fileData);
+      console.log('fileData: ', fileData);
+
+      return this.http.post<{ deletedIMG: boolean }>(
+        `${this.apiUrl}/api/uploadProfileImage/upload`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+    } else {
+      return this.http.post<{ deletedIMG: boolean }>(
+        `${this.apiUrl}/api/uploadProfileImage/upload`,
+        fileData,
+        {
+          withCredentials: true,
+        }
+      );
+    }
   }
 }

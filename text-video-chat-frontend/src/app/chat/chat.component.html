@@ -17,16 +17,9 @@
       </div>
     </div>
 
-    <div class="my-4">
+    <div class="my-5 d-flex">
       <button (click)="logout()" class="btn btn-outline-warning mx-2">
         Logout
-      </button>
-      <button
-        [disabled]="currentUser?._id === guestUserID"
-        (click)="deleteAccount(currentUser!)"
-        class="btn btn-outline-danger mx-2"
-      >
-        Delete Account
       </button>
 
       <div class="dropdown" (click)="$event.stopPropagation()">
@@ -46,13 +39,27 @@
           [class.show]="dropdownOpen"
           aria-labelledby="dropdownMenuButton"
         >
-          <a class="dropdown-item" (click)="updateImage()">Update Image</a>
+          <a class="dropdown-item" (click)="triggerFileUpload()">Update Image</a
+          ><!-- Hidden file input for image upload -->
+          <input
+            type="file"
+            #fileInput
+            style="display: none"
+            (change)="handleFileInput($event)"
+          />
           <a class="dropdown-item" (click)="updateUsername()"
             >Change Username</a
           >
           <a class="dropdown-item" (click)="updatePassword()"
             >Change password</a
           >
+          <button
+            [disabled]="currentUser?._id === guestUserID"
+            (click)="deleteAccount(currentUser!)"
+            class="btn btn-outline-danger mx-2"
+          >
+            Delete Account
+          </button>
         </div>
       </div>
 

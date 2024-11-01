@@ -26,6 +26,8 @@ const rekognition = new AWS.Rekognition({
 
 
 router.post("/upload", upload.single("file"), (req, res) => {
+
+  console.log("req::", req);
   const file = req.file; // File is available in req.file
   const uniqueFileName = `${Date.now()}_${file.originalname}`;
   console.log("uniqueFileName:", uniqueFileName);
@@ -67,10 +69,11 @@ router.post("/upload", upload.single("file"), (req, res) => {
         await s3.deleteObject({ Bucket: process.env.AWS_BUCKET_NAME, Key: uniqueFileName }).promise();
         console.log('Image deleted due to inappropriate content.');
         res.json({ deletedIMG: true });
-        return { deleted: true, labels: moderationResult.ModerationLabels };
+        return { deleted: true, labels: moderationResult.ModerationLabels, imageUrl: imageUrl };
       }
-      res.json({ message: "File uploaded successfully", data, deletedIMG: false });
+      res.json({ message: "File uploaded successfully", data, deletedIMG: false, imageUrl: imageUrl });
 
+      fs.unlinkSync(file.path);
 
       const username = req.body.username;
       console.log("username:", username);
