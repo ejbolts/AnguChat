@@ -240,14 +240,14 @@ export class UserService {
 
   uploadFileToServer(username: string,
     fileData: FormData | File
-  ): Observable<{ deletedIMG: boolean }> {
+  ): Observable<{ deletedIMG: boolean, imageUrl: string }> {
     const formData = new FormData();
     if (fileData instanceof File) {
       formData.append('file', fileData);
       formData.append('username', username)
       console.log('fileData: ', fileData);
 
-      return this.http.post<{ deletedIMG: boolean }>(
+      return this.http.post<{ deletedIMG: boolean , imageUrl: string}>(
         `${this.apiUrl}/api/uploadProfileImage/upload`,
         formData, 
         {
@@ -255,7 +255,7 @@ export class UserService {
         }
       );
     } else {
-      return this.http.post<{ deletedIMG: boolean }>(
+      return this.http.post<{ deletedIMG: boolean, imageUrl: string }>(
         `${this.apiUrl}/api/uploadProfileImage/upload`,
         fileData,
         {
