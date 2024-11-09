@@ -86,7 +86,7 @@ export class ChatComponent implements OnInit {
   updateProfileImage(userId: string | undefined, updatedImage: File): void {
     if (userId && updatedImage) {
       console.error('User ID is required to update profile image');
-      this.userService.uploadFileToServer(updatedImage).subscribe(
+      this.userService.uploadFileToServer(this.currentUser!.username ,updatedImage).subscribe(
         (response) => {
           console.log('Profile image updated:', response);
         },

@@ -57,7 +57,7 @@ export class RegisterComponent implements OnInit {
         formData.append('file', compressedFile);
         formData.append('username', username);
 
-        this.userService.uploadFileToServer(formData).subscribe(
+        this.userService.uploadFileToServer(username, formData).subscribe(
           (response) => {
             if (response.deletedIMG !== false) {
               console.log('File deleted successfully from server');

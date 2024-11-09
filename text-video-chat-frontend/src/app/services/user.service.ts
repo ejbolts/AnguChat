@@ -238,17 +238,18 @@ export class UserService {
     );
   }
 
-  uploadFileToServer(
+  uploadFileToServer(username: string,
     fileData: FormData | File
   ): Observable<{ deletedIMG: boolean }> {
     const formData = new FormData();
     if (fileData instanceof File) {
       formData.append('file', fileData);
+      formData.append('username', username)
       console.log('fileData: ', fileData);
 
       return this.http.post<{ deletedIMG: boolean }>(
         `${this.apiUrl}/api/uploadProfileImage/upload`,
-        formData,
+        formData, 
         {
           withCredentials: true,
         }
