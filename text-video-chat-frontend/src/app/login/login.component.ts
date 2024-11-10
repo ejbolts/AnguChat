@@ -25,9 +25,7 @@ export class LoginComponent {
   ) {}
   ngOnInit() {
     // Retrieve the warning message from the query parameter
-    console.log(this.warningMessage)
     this.route.queryParams.subscribe((params) => {
-      console.log(this.warningMessage)
       if (params['warningMessage']){
         this.warningMessage = 'Account created, but your image was removed due to inappropriate content.' 
       }

@@ -172,6 +172,7 @@ export class ChatComponent implements OnInit {
             
             sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
             console.log('Password updated:', response);
+            alert("Your password was updated successfully.")
           },
           (error) => {
             console.error('Error updating password:', error);
