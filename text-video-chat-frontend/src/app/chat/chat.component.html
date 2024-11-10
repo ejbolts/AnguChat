@@ -39,7 +39,8 @@
           [class.show]="dropdownOpen"
           aria-labelledby="dropdownMenuButton"
         >
-          <a class="dropdown-item" (click)="triggerFileUpload()">Update Image</a
+          <button class="dropdown-item" (click)="triggerFileUpload()">
+            Update Image</button
           ><!-- Hidden file input for image upload -->
           <input
             type="file"
@@ -47,12 +48,12 @@
             style="display: none"
             (change)="handleFileInput($event)"
           />
-          <a class="dropdown-item" (click)="updateUsername()"
-            >Change Username</a
-          >
-          <a class="dropdown-item" (click)="updatePassword()"
-            >Change password</a
-          >
+          <button class="dropdown-item" (click)="updateUsername()">
+            Change Username
+          </button>
+          <button class="dropdown-item" (click)="updatePassword()">
+            Change password
+          </button>
           <button
             [disabled]="currentUser?._id === guestUserID"
             (click)="deleteAccount(currentUser!)"

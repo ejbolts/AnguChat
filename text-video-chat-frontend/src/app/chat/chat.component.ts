@@ -164,6 +164,22 @@ export class ChatComponent implements OnInit {
   }
 
   updatePassword() {
+    let newUserPassword = prompt("Enter new password: ")
+      if (this.currentUser?._id && newUserPassword) {
+        this.userService.updatePassword(this.currentUser._id, newUserPassword).subscribe(
+          (response) => {
+            this.currentUser!.password = response.password;
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+            console.log('Password updated:', response);
+          },
+          (error) => {
+            console.error('Error updating password:', error);
+          }
+        );
+      } else {
+        console.error('Current user ID is undefined');
+      }
     this.dropdownOpen = false;
   }
 

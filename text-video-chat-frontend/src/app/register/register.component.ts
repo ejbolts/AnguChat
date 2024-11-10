@@ -59,17 +59,16 @@ export class RegisterComponent implements OnInit {
 
         this.userService.uploadFileToServer(username, formData).subscribe(
           (response) => {
-            if (response.deletedIMG !== false) {
+            if (response.deletedIMG === true) {
               console.log('File deleted successfully from server');
-              const warningMessage =
-                'Account created, but your image was removed due to inappropriate content.';
+              const warningMessage = true
 
               this.router.navigate(['/login'], {
                 queryParams: { warningMessage },
               });
             } else {
               //console.log('File uploaded successfully to server');
-              this.router.navigate(['/login']);
+              this.goToLogin()
             }
           },
           (error) => {
@@ -78,6 +77,8 @@ export class RegisterComponent implements OnInit {
         );
       });
     } else {
+      this.goToLogin()
+
       // console.log('No file selected');
     }
   }
@@ -151,6 +152,7 @@ export class RegisterComponent implements OnInit {
         // console.log('Error during user registration:', error.error.message);
       }
     );
+
   }
 
   ngOnInit(): void {}
