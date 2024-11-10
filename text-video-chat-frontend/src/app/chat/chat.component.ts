@@ -33,6 +33,38 @@ export class ChatComponent implements OnInit {
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
   typingStatus: { [channelId: string]: string } = {};
 
+
+    // Channel information
+    channels: Channel[] = [];
+    channelMessages = new Map<string, string>();
+    channelId!: string;
+  
+    // Group and user information
+    groupChannels: { [groupId: string]: Channel[] } = {};
+    allGroups: Group[] = [];
+    currentUser: User | null = null;
+    groupUsers: { [groupId: string]: User[] } = {}; // need to use this
+    guestUserID = '65bcc4ecfd6567b3a70f5746';
+    // Image management
+    selectedImage: string | null = null; // Base64 encoded image string
+    selectedImageChannelId: string | null = null;
+    selectedImages = new Map<string, string | ArrayBuffer>();
+  
+    // Call management
+    private peer!: Peer;
+    private localStream?: MediaStream;
+    incomingCallFrom: string | null = null;
+    private incomingCall: MediaConnection | null = null;
+    incomingCallDetails: IncomingCallDetails | null = null;
+    private activeCall: MediaConnection | null = null;
+    isCallActive: boolean = false;
+    private anotherUserSocketID: string | null = null;
+  
+    // Error handling
+    errorMessage?: string;
+    chatErrorMessage?: string;
+    isLoading: boolean = false;
+
   toggleModal(groupId: string) {
     if (this.isModalOpen[groupId] === undefined) {
       this.isModalOpen[groupId] = false;
@@ -83,12 +115,12 @@ export class ChatComponent implements OnInit {
     this.fileInput?.nativeElement.click();
   }
 
-  updateProfileImage(userId: string | undefined, updatedImage: File): void {
-    if (userId && updatedImage) {
-      console.error('User ID is required to update profile image');
+  updateProfileImage(updatedImage: File): void {
+    if (updatedImage) {
       this.userService.uploadFileToServer(this.currentUser!.username ,updatedImage).subscribe(
         (response) => {
           this.currentUser!.profilePic = response.imageUrl
+          sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
           console.log('Profile image updated:', response);
         },
         (error) => {
@@ -96,18 +128,39 @@ export class ChatComponent implements OnInit {
         }
       );
     }
+    this.dropdownOpen = false;
   }
   handleFileInput(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       // Call your updateProfileImage method with the file data
-      this.updateProfileImage(this.currentUser!._id, file);
+      this.updateProfileImage(file);
     }
   }
-
+  openFileInput() {
+    this.fileInput!.nativeElement.click();
+  }
   updateUsername() {
+    let newUserName = prompt("Enter new username: ")
+      if (this.currentUser?._id && newUserName) {
+        this.userService.updateUsername(this.currentUser._id, newUserName).subscribe(
+          (response) => {
+            this.currentUser!.username = response.username;
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+            console.log('Username updated:', response);
+          },
+          (error) => {
+            console.error('Error updating username:', error);
+          }
+        );
+      } else {
+        console.error('Current user ID is undefined');
+      }
+    
     this.dropdownOpen = false;
+
   }
 
   updatePassword() {
@@ -120,36 +173,7 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  // Channel information
-  channels: Channel[] = [];
-  channelMessages = new Map<string, string>();
-  channelId!: string;
 
-  // Group and user information
-  groupChannels: { [groupId: string]: Channel[] } = {};
-  allGroups: Group[] = [];
-  currentUser: User | null = null;
-  groupUsers: { [groupId: string]: User[] } = {}; // need to use this
-  guestUserID = '65bcc4ecfd6567b3a70f5746';
-  // Image management
-  selectedImage: string | null = null; // Base64 encoded image string
-  selectedImageChannelId: string | null = null;
-  selectedImages = new Map<string, string | ArrayBuffer>();
-
-  // Call management
-  private peer!: Peer;
-  private localStream?: MediaStream;
-  incomingCallFrom: string | null = null;
-  private incomingCall: MediaConnection | null = null;
-  incomingCallDetails: IncomingCallDetails | null = null;
-  private activeCall: MediaConnection | null = null;
-  isCallActive: boolean = false;
-  private anotherUserSocketID: string | null = null;
-
-  // Error handling
-  errorMessage?: string;
-  chatErrorMessage?: string;
-  isLoading: boolean = false;
 
   cancelEditing(channelId: string): void {
     if (this.editingMessageId) {
