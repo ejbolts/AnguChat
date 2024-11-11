@@ -343,7 +343,16 @@ export class ChatComponent implements OnInit {
         }
       );
 
-    this.peer = new Peer({
+      /*
+      for testing purposes, the peer server is running on localhost
+      this.peer = new Peer({
+        host: 'localhost',
+        port: 3001,
+        path: '/',
+      });
+
+
+      this.peer = new Peer({
       host: environment.peerHost,
       port: environment.peerPort,
       path: environment.peerPath,
@@ -354,6 +363,12 @@ export class ChatComponent implements OnInit {
         iceCandidatePoolSize: environment.iceCandidatePoolSize,
       },
     });
+      */
+      this.peer = new Peer({
+        host: 'localhost',
+        port: 3001,
+        path: '/',
+      });
 
     this.peer.on('open', async (peerId) => {
       try {
@@ -536,6 +551,7 @@ export class ChatComponent implements OnInit {
       reader.readAsDataURL(file);
     }
   }
+  
 
   removeImage(channelId: string): void {
     // Remove the image for the specific channel ID
@@ -672,6 +688,72 @@ export class ChatComponent implements OnInit {
     ) as HTMLVideoElement;
     remoteVideo.srcObject = null;
   }
+
+  isScreenSharing: boolean = false;
+
+  startScreenSharing(): void {
+    this.isScreenSharing = true;
+    
+    // Capture screen stream
+    navigator.mediaDevices.getDisplayMedia({ video: true })
+      .then((screenStream) => {
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Replace the video track in the existing stream with the screen track
+        if (this.localStream) {
+          const videoSender = this.activeCall?.peerConnection.getSenders().find(
+            (sender) => sender.track?.kind === 'video'
+          );
+          
+          if (videoSender) {
+            videoSender.replaceTrack(screenTrack);
+          }
+        }
+  
+        // Display the screen share in the local video element
+        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        localVideo.srcObject = screenStream;
+  
+        // Revert to the original camera stream when screen sharing stops
+        screenTrack.onended = () => {
+          this.stopScreenSharing();
+        };
+      })
+      .catch((error) => {
+        console.error('Error starting screen sharing:', error);
+      });
+  }
+  
+  stopScreenSharing(): void {
+    this.isScreenSharing = false;
+  
+    // Revert back to the webcam video stream
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then((webcamStream) => {
+        const videoTrack = webcamStream.getVideoTracks()[0];
+        
+        if (this.localStream) {
+          const videoSender = this.activeCall?.peerConnection.getSenders().find(
+            (sender) => sender.track?.kind === 'video'
+          );
+  
+          if (videoSender) {
+            videoSender.replaceTrack(videoTrack);
+          }
+        }
+  
+        // Update the local video element to show the webcam feed again
+        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        localVideo.srcObject = webcamStream;
+  
+        // Store the new local stream
+        this.localStream = webcamStream;
+      })
+      .catch((error) => {
+        console.error('Error accessing webcam after screen sharing:', error);
+      });
+  }
+  
 
   stopCall(): void {
     // Stop the local stream tracks

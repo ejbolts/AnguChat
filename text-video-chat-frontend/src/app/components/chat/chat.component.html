@@ -125,6 +125,23 @@
       >
         Stop Call
       </button>
+      <button
+        *ngIf="isScreenSharing"
+        [disabled]="!isCallActive"
+        (click)="stopScreenSharing()"
+        class="btn btn-outline-primary"
+      >
+        Stop Share Screen
+      </button>
+
+      <button
+        [disabled]="!isCallActive"
+        *ngIf="!isScreenSharing"
+        (click)="startScreenSharing()"
+        class="btn btn-outline-primary"
+      >
+        Share Screen
+      </button>
       <div *ngIf="errorMessage" class="alert alert-danger mt-2">
         {{ errorMessage }}
       </div>
