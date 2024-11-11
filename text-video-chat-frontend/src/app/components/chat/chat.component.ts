@@ -5,15 +5,15 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import { Group } from '../models/group.model';
-import { User } from '../models/user.model';
+import { Group } from '../../models/group.model';
+import { User } from '../../models/user.model';
 import { Router } from '@angular/router';
-import { Channel } from '../models/channel.model';
-import { UserService } from '../services/user.service';
-import { ChatService } from '../services/chat.service';
-import { ChatMessage } from '../models/chatmessage.model';
+import { Channel } from '../../models/channel.model';
+import { UserService } from '../../services/user.service';
+import { ChatService } from '../../services/chat.service';
+import { ChatMessage } from '../../models/chatmessage.model';
 import Peer, { MediaConnection } from 'peerjs';
-import { IncomingCallDetails } from '../models/callDetails.model';
+import { IncomingCallDetails } from '../../models/callDetails.model';
 import { environment } from 'src/environments/environment';
 import { HttpErrorResponse } from '@angular/common/http';
 @Component({
