@@ -56,7 +56,7 @@ export class ChatComponent implements OnInit {
     incomingCallFrom: string | null = null;
     private incomingCall: MediaConnection | null = null;
     incomingCallDetails: IncomingCallDetails | null = null;
-    private activeCall: MediaConnection | null = null;
+    activeCall: MediaConnection | null = null;
     isCallActive: boolean = false;
     private anotherUserSocketID: string | null = null;
   
@@ -557,7 +557,7 @@ export class ChatComponent implements OnInit {
     // Remove the image for the specific channel ID
     this.selectedImages.delete(channelId);
   }
-  startCall(userId: string | undefined, username: string): void {
+  startCall(userId: string | undefined, username: string, profilePic: string): void {
     // Check for undefined userId
     if (!userId) {
       console.error('User ID is undefined');
@@ -585,7 +585,7 @@ export class ChatComponent implements OnInit {
               localVideo.srcObject = stream;
 
               if (peerIdToCall && this.anotherUserSocketID) {
-                this.chatService.startCall(this.anotherUserSocketID, username);
+                this.chatService.startCall(this.anotherUserSocketID, username, profilePic);
                 const outgoingCall = this.peer.call(
                   peerIdToCall,
                   this.localStream

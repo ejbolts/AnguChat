@@ -75,17 +75,29 @@
     </div>
   </div>
   <div id="test">
-    <div *ngIf="incomingCallDetails">
+    <div *ngIf="incomingCallDetails && !activeCall">
       <div class="incoming-call-notification" style="color: white">
         <p>
           Incoming call from: <b>{{ incomingCallDetails.username }}</b>
         </p>
-        <button class="btn btn-outline-success mx-2" (click)="acceptCall()">
-          Accept
-        </button>
-        <button class="btn btn-outline-danger" (click)="declineCall()">
-          Decline
-        </button>
+        <p>
+          <img
+            [src]="
+              incomingCallDetails.profilePic
+                ? incomingCallDetails.profilePic
+                : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+            "
+            alt="Profile Picture"
+            style="margin-top: 3px"
+            class="Profile-picture"
+          />
+          <button class="btn btn-outline-success mx-2" (click)="acceptCall()">
+            Accept
+          </button>
+          <button class="btn btn-outline-danger" (click)="declineCall()">
+            Decline
+          </button>
+        </p>
       </div>
     </div>
     <div
@@ -211,7 +223,13 @@
                   }}</strong>
                   <button
                     [disabled]="isCallActive || !user.isOnline"
-                    (click)="startCall(user._id, currentUser?.username!)"
+                    (click)="
+                      startCall(
+                        user._id,
+                        currentUser?.username!,
+                        currentUser?.profilePic!
+                      )
+                    "
                     class="btn"
                     style="margin-left: auto"
                     [ngClass]="{

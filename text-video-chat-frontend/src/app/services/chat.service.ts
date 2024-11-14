@@ -80,7 +80,7 @@ export class ChatService {
     );
   }
 
-  startCall(anotherUserSockID: string, username: string) {
+  startCall(anotherUserSockID: string, username: string, profilePic: string) {
     this.socket.emit(
       'callUser',
       {
@@ -88,6 +88,7 @@ export class ChatService {
         from: this.peerId,
         socketID: this.socketId,
         username,
+        profilePic
       },
       { withCredentials: true }
     );
