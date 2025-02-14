@@ -1,0 +1,38 @@
+<div class="container mt-5">
+  <h2 class="admin-title" style="color: white">Admin Dashboard</h2>
+  <div class="current-user">
+    Logged in as: <strong>{{ currentUser?.username }}</strong>
+  </div>
+
+  <button (click)="logout()" id="logoutButton" class="btn btn-outline-warning">
+    Logout
+  </button>
+  <button (click)="navigateToChat()" class="btn btn-outline-info mx-2">
+    Chat
+  </button>
+
+  <app-user-table [users]="users"> </app-user-table>
+
+  <!-- Create Group -->
+  <div class="input-group mb-3">
+    <div class="input-group-append w-100">
+      <form (submit)="createGroup($event)">
+        <div class="form-group">
+          <label for="groupName">Group Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="groupName"
+            [(ngModel)]="group.name"
+            name="name"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-outline-primary">
+          Create Group
+        </button>
+      </form>
+      <app-group-list [users]="users"> </app-group-list>
+    </div>
+  </div>
+</div>

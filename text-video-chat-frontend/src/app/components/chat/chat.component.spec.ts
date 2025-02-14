@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChatComponent } from './chat.component';
-import { UserService } from '../services/user.service';
-import { ChatService } from '../services/chat.service';
+import { UserService } from '../../services/user.service';
+import { ChatService } from '../../services/chat.service';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { ChatMessage } from '../models/chatmessage.model';
+import { ChatMessage } from '../../models/chatmessage.model';
 
 describe('ChatComponent', () => {
   let component: ChatComponent;

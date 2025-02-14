@@ -1,0 +1,28 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>{{ user.username }}</td>
+      <td>
+        <select [(ngModel)]="user.role">
+          <option value="user">User</option>
+          <option value="superAdmin">Admin</option>
+        </select>
+      </td>
+      <td>
+        <button (click)="handlePromoteUser(user)" class="btn btn-primary">
+          Promote
+        </button>
+        <button (click)="removeUser.emit(user)" class="btn btn-danger">
+          Remove
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>

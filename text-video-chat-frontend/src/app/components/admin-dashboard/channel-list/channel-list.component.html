@@ -1,0 +1,46 @@
+<div
+  *ngFor="let channel of channels"
+  style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px"
+>
+  <h4>{{ channel.name }}</h4>
+
+  <h5>list of users in channel</h5>
+  <!-- Display list of users in the channel (need delete btn)-->
+  <div *ngFor="let userId of channel.users">
+    {{ getUsernameFromId(userId) }}
+    <button
+      class="btn btn-outline-danger btn-outline-sm ml-2"
+      (click)="removeUserFromChannel(channel._id, userId, group._id)"
+    >
+      Remove
+    </button>
+  </div>
+
+  <button
+    (click)="removeChannel(channel._id)"
+    class="btn btn-outline-danger btn-outline-sm"
+  >
+    Remove Channel
+  </button>
+  <!-- Add User to channel only if in group already -->
+
+  <div class="input-group mt-3 mb-3">
+    <select #userSelect class="form-control">
+      <!-- Filter the list of users based on group's users array -->
+      <ng-container *ngFor="let user of users">
+        <option
+          *ngIf="group && group.users && group.users.includes(user._id || '')"
+          [value]="user._id || undefined"
+        >
+          {{ user.username }}
+        </option>
+      </ng-container>
+    </select>
+    <button
+      (click)="addUserToChannel(channel._id, group._id, userSelect.value)"
+      class="btn btn-outline-primary"
+    >
+      Add User to Channel
+    </button>
+  </div>
+</div>

@@ -67,7 +67,8 @@
           [class.show]="dropdownOpen"
           aria-labelledby="dropdownMenuButton"
         >
-          <a class="dropdown-item" (click)="triggerFileUpload()">Update Image</a
+          <button class="dropdown-item" (click)="triggerFileUpload()">
+            Update Image</button
           ><!-- Hidden file input for image upload -->
           <input
             type="file"
@@ -75,12 +76,21 @@
             style="display: none"
             (change)="handleFileInput($event)"
           />
+<<<<<<< HEAD:text-video-chat-frontend/src/app/chat/chat.component.html
           <a class="dropdown-item" (click)="openUsernameDialog()"
             >Change Username</a
           >
           <a class="dropdown-item" (click)="updatePassword()"
             >Change password</a
           >
+=======
+          <button class="dropdown-item" (click)="updateUsername()">
+            Change Username
+          </button>
+          <button class="dropdown-item" (click)="updatePassword()">
+            Change password
+          </button>
+>>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178:text-video-chat-frontend/src/app/components/chat/chat.component.html
           <button
             [disabled]="currentUser?._id === guestUserID"
             (click)="deleteAccount(currentUser!)"
@@ -102,17 +112,29 @@
     </div>
   </div>
   <div id="test">
-    <div *ngIf="incomingCallDetails">
+    <div *ngIf="incomingCallDetails && !activeCall">
       <div class="incoming-call-notification" style="color: white">
         <p>
           Incoming call from: <b>{{ incomingCallDetails.username }}</b>
         </p>
-        <button class="btn btn-outline-success mx-2" (click)="acceptCall()">
-          Accept
-        </button>
-        <button class="btn btn-outline-danger" (click)="declineCall()">
-          Decline
-        </button>
+        <p>
+          <img
+            [src]="
+              incomingCallDetails.profilePic
+                ? incomingCallDetails.profilePic
+                : 'https://text-video-app-images-872342.s3.ap-southeast-2.amazonaws.com/1701956272028_default-profile-pic.png'
+            "
+            alt="Profile Picture"
+            style="margin-top: 3px"
+            class="Profile-picture"
+          />
+          <button class="btn btn-outline-success mx-2" (click)="acceptCall()">
+            Accept
+          </button>
+          <button class="btn btn-outline-danger" (click)="declineCall()">
+            Decline
+          </button>
+        </p>
       </div>
     </div>
     <div
@@ -151,6 +173,23 @@
         class="btn btn-outline-danger"
       >
         Stop Call
+      </button>
+      <button
+        *ngIf="isScreenSharing"
+        [disabled]="!isCallActive"
+        (click)="stopScreenSharing()"
+        class="btn btn-outline-primary"
+      >
+        Stop Share Screen
+      </button>
+
+      <button
+        [disabled]="!isCallActive"
+        *ngIf="!isScreenSharing"
+        (click)="startScreenSharing()"
+        class="btn btn-outline-primary"
+      >
+        Share Screen
       </button>
       <div *ngIf="errorMessage" class="alert alert-danger mt-2">
         {{ errorMessage }}
@@ -221,7 +260,13 @@
                   }}</strong>
                   <button
                     [disabled]="isCallActive || !user.isOnline"
-                    (click)="startCall(user._id, currentUser?.username!)"
+                    (click)="
+                      startCall(
+                        user._id,
+                        currentUser?.username!,
+                        currentUser?.profilePic!
+                      )
+                    "
                     class="btn"
                     style="margin-left: auto"
                     [ngClass]="{

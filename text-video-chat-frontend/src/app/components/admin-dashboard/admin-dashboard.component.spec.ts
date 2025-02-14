@@ -1,10 +1,10 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
-import { UserService } from '../services/user.service';
+import { UserService } from '../../services/user.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';  // RxJS method to mock successful observables
 import { throwError } from 'rxjs';  // RxJS method to mock error observables
-import { User } from '../models/user.model';
+import { User } from '../../models/user.model';
 import { HttpErrorResponse } from '@angular/common/http';
 
 describe('AdminDashboardComponent', () => {

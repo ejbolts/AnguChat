@@ -1,9 +1,9 @@
 // register.component.ts
 
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../services/user.service';
+import { UserService } from '../../services/user.service';
 import { Router } from '@angular/router';
-import { User } from '../models/user.model';
+import { User } from '../../models/user.model';
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -57,19 +57,18 @@ export class RegisterComponent implements OnInit {
         formData.append('file', compressedFile);
         formData.append('username', username);
 
-        this.userService.uploadFileToServer(formData).subscribe(
+        this.userService.uploadFileToServer(username, formData).subscribe(
           (response) => {
-            if (response.deletedIMG !== false) {
+            if (response.deletedIMG === true) {
               console.log('File deleted successfully from server');
-              const warningMessage =
-                'Account created, but your image was removed due to inappropriate content.';
+              const warningMessage = true
 
               this.router.navigate(['/login'], {
                 queryParams: { warningMessage },
               });
             } else {
               //console.log('File uploaded successfully to server');
-              this.router.navigate(['/login']);
+              this.goToLogin()
             }
           },
           (error) => {
@@ -78,6 +77,8 @@ export class RegisterComponent implements OnInit {
         );
       });
     } else {
+      this.goToLogin()
+
       // console.log('No file selected');
     }
   }
@@ -151,6 +152,7 @@ export class RegisterComponent implements OnInit {
         // console.log('Error during user registration:', error.error.message);
       }
     );
+
   }
 
   ngOnInit(): void {}

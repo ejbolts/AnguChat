@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { UserService } from '../services/user.service';
+import { UserService } from '../../services/user.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { User } from '../models/user.model';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -26,7 +26,9 @@ export class LoginComponent {
   ngOnInit() {
     // Retrieve the warning message from the query parameter
     this.route.queryParams.subscribe((params) => {
-      this.warningMessage = params['warningMessage'] || null;
+      if (params['warningMessage']){
+        this.warningMessage = 'Account created, but your image was removed due to inappropriate content.' 
+      }
     });
   }
   login(): void {

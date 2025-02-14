@@ -18,7 +18,8 @@
 
 <a name="Architecture"></a>
 ## Architecture
-![Anguchat Architecture](https://github.com/user-attachments/assets/fff385d3-32cd-4ae5-a014-cfffd4143e27)
+![Anguchat-Architecture](https://github.com/user-attachments/assets/925a45ae-0e47-4597-8ec4-f09c0529384b)
+
 
 ## Peerjs/WebRTC Connection Lifecycle:
 1. Peer A and Peer B use the PeerJS server (signalling server) to exchange connection information (called ICE candidates).
