@@ -8,6 +8,7 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const fs = require("fs");
 const { connect, db, close } = require("./app");
+const { ObjectId } = require("mongodb");
 
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -27,7 +28,7 @@ const rekognition = new AWS.Rekognition({
 
 router.post("/upload", upload.single("file"), (req, res) => {
 
-  console.log("req::", req);
+  // console.log("req::", req);
   const file = req.file; // File is available in req.file
   const uniqueFileName = `${Date.now()}_${file.originalname}`;
   console.log("uniqueFileName:", uniqueFileName);
@@ -44,9 +45,6 @@ router.post("/upload", upload.single("file"), (req, res) => {
     } else {
       const imageUrl = data.Location;
       console.log("imageUrl:", imageUrl);
-
-
-
       const moderationParams = {
         Image: {
           S3Object: {
@@ -74,20 +72,15 @@ router.post("/upload", upload.single("file"), (req, res) => {
       res.json({ message: "File uploaded successfully", data, deletedIMG: false, imageUrl: imageUrl });
 
       fs.unlinkSync(file.path);
-
-      const username = req.body.username;
-      console.log("username:", username);
+      let userId = req.body.userId;
+      userId = new ObjectId(userId);
+      console.log("username:", userId);
       try {
         await connect();
         // Update the user's profile picture URL in the database
-        const updatedUser = await db()
+        await db()
           .collection("users")
-          .findOneAndUpdate(
-            { username: username },
-            { $set: { profilePic: imageUrl } },
-            { returnDocument: "after" }
-          );
-
+          .updateOne({ _id: userId }, { $set: { profilePic: imageUrl } });
         close();
       } catch (updateError) {
         console.error("Error updating user profile picture:", updateError);

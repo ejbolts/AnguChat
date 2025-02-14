@@ -34,6 +34,34 @@
         >
           Settings
         </button>
+
+        <div class="username-dialog" *ngIf="showUsernameDialog">
+          <div class="dialog-content">
+            <h3>Update Username</h3>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newUsername"
+              placeholder="Enter new username"
+            />
+            <div class="dialog-buttons">
+              <button
+                class="btn btn-outline-success"
+                (click)="updateUsername(currentUser?._id)"
+                [disabled]="!newUsername.trim()"
+              >
+                Update
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                (click)="closeUsernameDialog()"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div
           class="dropdown-menu"
           [class.show]="dropdownOpen"
@@ -47,7 +75,7 @@
             style="display: none"
             (change)="handleFileInput($event)"
           />
-          <a class="dropdown-item" (click)="updateUsername()"
+          <a class="dropdown-item" (click)="openUsernameDialog()"
             >Change Username</a
           >
           <a class="dropdown-item" (click)="updatePassword()"

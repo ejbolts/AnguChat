@@ -237,24 +237,28 @@ export class UserService {
       { withCredentials: true }
     );
   }
-
+  // FormData is for uploading images when user is registering
+  // File type is when user is their profile image
   uploadFileToServer(
-    fileData: FormData | File
-  ): Observable<{ deletedIMG: boolean }> {
+    fileData: FormData | File,
+    userId?: String
+  ): Observable<{ deletedIMG: boolean; imageUrl: string }> {
     const formData = new FormData();
+    // if the file data is a File object its being updated from chat component
     if (fileData instanceof File) {
       formData.append('file', fileData);
-      console.log('fileData: ', fileData);
+      formData.append('userId', userId as string);
 
-      return this.http.post<{ deletedIMG: boolean }>(
+      return this.http.post<{ deletedIMG: boolean; imageUrl: string }>(
         `${this.apiUrl}/api/uploadProfileImage/upload`,
         formData,
         {
           withCredentials: true,
         }
       );
+      // else the file data is a FormData object from registration form
     } else {
-      return this.http.post<{ deletedIMG: boolean }>(
+      return this.http.post<{ deletedIMG: boolean; imageUrl: string }>(
         `${this.apiUrl}/api/uploadProfileImage/upload`,
         fileData,
         {

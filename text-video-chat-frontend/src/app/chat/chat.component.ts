@@ -22,6 +22,8 @@ import { HttpErrorResponse } from '@angular/common/http';
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent implements OnInit {
+  showUsernameDialog: boolean = false;
+  newUsername: string = '';
   apiUrl = environment.apiUrl;
   isModalOpen: { [groupId: string]: boolean } = {};
   dropdownOpen = false;
@@ -86,8 +88,23 @@ export class ChatComponent implements OnInit {
   updateProfileImage(userId: string | undefined, updatedImage: File): void {
     if (userId && updatedImage) {
       console.error('User ID is required to update profile image');
-      this.userService.uploadFileToServer(updatedImage).subscribe(
+      this.userService.uploadFileToServer(updatedImage, userId).subscribe(
         (response) => {
+          // Update both currentUser object and session storage
+          if (this.currentUser) {
+            // Get the current user from session storage
+            const currentUser = JSON.parse(
+              sessionStorage.getItem('currentUser') || '{}'
+            );
+
+            // Update profile picture URL in both places
+            const profilePicUrl = response.imageUrl;
+            this.currentUser.profilePic = profilePicUrl;
+            currentUser.profilePic = profilePicUrl;
+
+            // Save back to session storage
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+          }
           console.log('Profile image updated:', response);
         },
         (error) => {
@@ -105,8 +122,36 @@ export class ChatComponent implements OnInit {
     }
   }
 
-  updateUsername() {
-    this.dropdownOpen = false;
+  updateUsername(userId: string | undefined): void {
+    if (userId && this.newUsername.trim()) {
+      this.userService.updateUsername(userId, this.newUsername).subscribe(
+        (response) => {
+          console.log('Username updated:', response);
+          this.showUsernameDialog = false;
+
+          // Update the current user in session storage
+          const currentUser = JSON.parse(
+            sessionStorage.getItem('currentUser') || '{}'
+          );
+          sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+          if (this.currentUser) {
+            this.currentUser.username = this.newUsername;
+          }
+          this.newUsername = '';
+        },
+        (error) => {
+          console.error('Error updating username:', error);
+        }
+      );
+    }
+  }
+  openUsernameDialog(): void {
+    this.showUsernameDialog = true;
+  }
+
+  closeUsernameDialog(): void {
+    this.showUsernameDialog = false;
+    this.newUsername = '';
   }
 
   updatePassword() {
