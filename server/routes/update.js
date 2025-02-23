@@ -26,33 +26,21 @@ router.put("/:id/role", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // create a endpoint to update the username
-=======
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178
 router.put("/:id/username", async (req, res) => {
   await connect();
   const userId = new ObjectId(req.params.id);
   const { username } = req.body;
 
   if (!username) {
-<<<<<<< HEAD
     return res.status(400).json({ message: "Username is required." });
-=======
-    return res.status(400).json({ message: "username is required." });
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178
   }
 
   try {
     await db()
       .collection("users")
-<<<<<<< HEAD
       .updateOne({ _id: userId }, { $set: { username: username } });
     res.json({ message: "Username updated successfully!" });
-=======
-      .findOneAndUpdate({ _id: userId }, { $set: { username: username } });
-    res.json({ message: "Username updated!", username: username });
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178
   } catch (err) {
     console.error("Error updating username:", err);
     res.status(500).json({ message: "Error updating username." });
@@ -61,7 +49,6 @@ router.put("/:id/username", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 //takes in userid string and imgURL string
 router.put("/:id/profileImage", async (req, res) => {
   await connect();
@@ -87,7 +74,6 @@ router.put("/:id/profileImage", async (req, res) => {
   }
 })
 
-=======
 router.put("/:id/password", async (req, res) => {
   await connect();
   const userId = new ObjectId(req.params.id);
@@ -113,6 +99,5 @@ router.put("/:id/password", async (req, res) => {
     close();
   }
 });
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178
 
 module.exports = router;

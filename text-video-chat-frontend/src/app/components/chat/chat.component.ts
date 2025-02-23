@@ -35,37 +35,36 @@ export class ChatComponent implements OnInit {
   private typingTimer: ReturnType<typeof setTimeout> | null = null;
   typingStatus: { [channelId: string]: string } = {};
 
+  // Channel information
+  channels: Channel[] = [];
+  channelMessages = new Map<string, string>();
+  channelId!: string;
 
-    // Channel information
-    channels: Channel[] = [];
-    channelMessages = new Map<string, string>();
-    channelId!: string;
-  
-    // Group and user information
-    groupChannels: { [groupId: string]: Channel[] } = {};
-    allGroups: Group[] = [];
-    currentUser: User | null = null;
-    groupUsers: { [groupId: string]: User[] } = {}; // need to use this
-    guestUserID = '65bcc4ecfd6567b3a70f5746';
-    // Image management
-    selectedImage: string | null = null; // Base64 encoded image string
-    selectedImageChannelId: string | null = null;
-    selectedImages = new Map<string, string | ArrayBuffer>();
-  
-    // Call management
-    private peer!: Peer;
-    private localStream?: MediaStream;
-    incomingCallFrom: string | null = null;
-    private incomingCall: MediaConnection | null = null;
-    incomingCallDetails: IncomingCallDetails | null = null;
-    activeCall: MediaConnection | null = null;
-    isCallActive: boolean = false;
-    private anotherUserSocketID: string | null = null;
-  
-    // Error handling
-    errorMessage?: string;
-    chatErrorMessage?: string;
-    isLoading: boolean = false;
+  // Group and user information
+  groupChannels: { [groupId: string]: Channel[] } = {};
+  allGroups: Group[] = [];
+  currentUser: User | null = null;
+  groupUsers: { [groupId: string]: User[] } = {}; // need to use this
+  guestUserID = '65bcc4ecfd6567b3a70f5746';
+  // Image management
+  selectedImage: string | null = null; // Base64 encoded image string
+  selectedImageChannelId: string | null = null;
+  selectedImages = new Map<string, string | ArrayBuffer>();
+
+  // Call management
+  private peer!: Peer;
+  private localStream?: MediaStream;
+  incomingCallFrom: string | null = null;
+  private incomingCall: MediaConnection | null = null;
+  incomingCallDetails: IncomingCallDetails | null = null;
+  activeCall: MediaConnection | null = null;
+  isCallActive: boolean = false;
+  private anotherUserSocketID: string | null = null;
+
+  // Error handling
+  errorMessage?: string;
+  chatErrorMessage?: string;
+  isLoading: boolean = false;
 
   toggleModal(groupId: string) {
     if (this.isModalOpen[groupId] === undefined) {
@@ -117,10 +116,8 @@ export class ChatComponent implements OnInit {
     this.fileInput?.nativeElement.click();
   }
 
-<<<<<<< HEAD:text-video-chat-frontend/src/app/chat/chat.component.ts
   updateProfileImage(userId: string | undefined, updatedImage: File): void {
     if (userId && updatedImage) {
-      console.error('User ID is required to update profile image');
       this.userService.uploadFileToServer(updatedImage, userId).subscribe(
         (response) => {
           // Update both currentUser object and session storage
@@ -138,14 +135,6 @@ export class ChatComponent implements OnInit {
             // Save back to session storage
             sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
           }
-=======
-  updateProfileImage(updatedImage: File): void {
-    if (updatedImage) {
-      this.userService.uploadFileToServer(this.currentUser!.username ,updatedImage).subscribe(
-        (response) => {
-          this.currentUser!.profilePic = response.imageUrl
-          sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178:text-video-chat-frontend/src/app/components/chat/chat.component.ts
           console.log('Profile image updated:', response);
         },
         (error) => {
@@ -155,15 +144,14 @@ export class ChatComponent implements OnInit {
     }
     this.dropdownOpen = false;
   }
-  handleFileInput(event: Event) {
+  handleFileInput(userId: string, event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       // Call your updateProfileImage method with the file data
-      this.updateProfileImage(file);
+      this.updateProfileImage(userId, file);
     }
   }
-<<<<<<< HEAD:text-video-chat-frontend/src/app/chat/chat.component.ts
 
   updateUsername(userId: string | undefined): void {
     if (userId && this.newUsername.trim()) {
@@ -195,51 +183,31 @@ export class ChatComponent implements OnInit {
   closeUsernameDialog(): void {
     this.showUsernameDialog = false;
     this.newUsername = '';
-=======
-  openFileInput() {
-    this.fileInput!.nativeElement.click();
-  }
-  updateUsername() {
-    let newUserName = prompt("Enter new username: ")
-      if (this.currentUser?._id && newUserName) {
-        this.userService.updateUsername(this.currentUser._id, newUserName).subscribe(
-          (response) => {
-            this.currentUser!.username = response.username;
-            
-            sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-            console.log('Username updated:', response);
-          },
-          (error) => {
-            console.error('Error updating username:', error);
-          }
-        );
-      } else {
-        console.error('Current user ID is undefined');
-      }
-    
-    this.dropdownOpen = false;
-
->>>>>>> dbbe7c0dbec9db37549e27a41324875b608d6178:text-video-chat-frontend/src/app/components/chat/chat.component.ts
   }
 
   updatePassword() {
-    let newUserPassword = prompt("Enter new password: ")
-      if (this.currentUser?._id && newUserPassword) {
-        this.userService.updatePassword(this.currentUser._id, newUserPassword).subscribe(
+    let newUserPassword = prompt('Enter new password: ');
+    if (this.currentUser?._id && newUserPassword) {
+      this.userService
+        .updatePassword(this.currentUser._id, newUserPassword)
+        .subscribe(
           (response) => {
             this.currentUser!.password = response.password;
-            
-            sessionStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+
+            sessionStorage.setItem(
+              'currentUser',
+              JSON.stringify(this.currentUser)
+            );
             console.log('Password updated:', response);
-            alert("Your password was updated successfully.")
+            alert('Your password was updated successfully.');
           },
           (error) => {
             console.error('Error updating password:', error);
           }
         );
-      } else {
-        console.error('Current user ID is undefined');
-      }
+    } else {
+      console.error('Current user ID is undefined');
+    }
     this.dropdownOpen = false;
   }
 
@@ -248,8 +216,6 @@ export class ChatComponent implements OnInit {
       this.dropdownOpen = false;
     }
   }
-
-
 
   cancelEditing(channelId: string): void {
     if (this.editingMessageId) {
@@ -402,7 +368,7 @@ export class ChatComponent implements OnInit {
         }
       );
 
-      /*
+    /*
       for testing purposes, the peer server is running on localhost
       this.peer = new Peer({
         host: 'localhost',
@@ -423,11 +389,11 @@ export class ChatComponent implements OnInit {
       },
     });
       */
-      this.peer = new Peer({
-        host: 'localhost',
-        port: 3001,
-        path: '/',
-      });
+    this.peer = new Peer({
+      host: 'localhost',
+      port: 3001,
+      path: '/',
+    });
 
     this.peer.on('open', async (peerId) => {
       try {
@@ -610,13 +576,16 @@ export class ChatComponent implements OnInit {
       reader.readAsDataURL(file);
     }
   }
-  
 
   removeImage(channelId: string): void {
     // Remove the image for the specific channel ID
     this.selectedImages.delete(channelId);
   }
-  startCall(userId: string | undefined, username: string, profilePic: string): void {
+  startCall(
+    userId: string | undefined,
+    username: string,
+    profilePic: string
+  ): void {
     // Check for undefined userId
     if (!userId) {
       console.error('User ID is undefined');
@@ -644,7 +613,11 @@ export class ChatComponent implements OnInit {
               localVideo.srcObject = stream;
 
               if (peerIdToCall && this.anotherUserSocketID) {
-                this.chatService.startCall(this.anotherUserSocketID, username, profilePic);
+                this.chatService.startCall(
+                  this.anotherUserSocketID,
+                  username,
+                  profilePic
+                );
                 const outgoingCall = this.peer.call(
                   peerIdToCall,
                   this.localStream
@@ -752,27 +725,30 @@ export class ChatComponent implements OnInit {
 
   startScreenSharing(): void {
     this.isScreenSharing = true;
-    
+
     // Capture screen stream
-    navigator.mediaDevices.getDisplayMedia({ video: true })
+    navigator.mediaDevices
+      .getDisplayMedia({ video: true })
       .then((screenStream) => {
         const screenTrack = screenStream.getVideoTracks()[0];
-        
+
         // Replace the video track in the existing stream with the screen track
         if (this.localStream) {
-          const videoSender = this.activeCall?.peerConnection.getSenders().find(
-            (sender) => sender.track?.kind === 'video'
-          );
-          
+          const videoSender = this.activeCall?.peerConnection
+            .getSenders()
+            .find((sender) => sender.track?.kind === 'video');
+
           if (videoSender) {
             videoSender.replaceTrack(screenTrack);
           }
         }
-  
+
         // Display the screen share in the local video element
-        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        const localVideo = document.getElementById(
+          'localVideo'
+        ) as HTMLVideoElement;
         localVideo.srcObject = screenStream;
-  
+
         // Revert to the original camera stream when screen sharing stops
         screenTrack.onended = () => {
           this.stopScreenSharing();
@@ -782,29 +758,32 @@ export class ChatComponent implements OnInit {
         console.error('Error starting screen sharing:', error);
       });
   }
-  
+
   stopScreenSharing(): void {
     this.isScreenSharing = false;
-  
+
     // Revert back to the webcam video stream
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
       .then((webcamStream) => {
         const videoTrack = webcamStream.getVideoTracks()[0];
-        
+
         if (this.localStream) {
-          const videoSender = this.activeCall?.peerConnection.getSenders().find(
-            (sender) => sender.track?.kind === 'video'
-          );
-  
+          const videoSender = this.activeCall?.peerConnection
+            .getSenders()
+            .find((sender) => sender.track?.kind === 'video');
+
           if (videoSender) {
             videoSender.replaceTrack(videoTrack);
           }
         }
-  
+
         // Update the local video element to show the webcam feed again
-        const localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+        const localVideo = document.getElementById(
+          'localVideo'
+        ) as HTMLVideoElement;
         localVideo.srcObject = webcamStream;
-  
+
         // Store the new local stream
         this.localStream = webcamStream;
       })
@@ -812,7 +791,6 @@ export class ChatComponent implements OnInit {
         console.error('Error accessing webcam after screen sharing:', error);
       });
   }
-  
 
   stopCall(): void {
     // Stop the local stream tracks

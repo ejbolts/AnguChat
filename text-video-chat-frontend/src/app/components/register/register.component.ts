@@ -57,18 +57,18 @@ export class RegisterComponent implements OnInit {
         formData.append('file', compressedFile);
         formData.append('username', username);
 
-        this.userService.uploadFileToServer(username, formData).subscribe(
+        this.userService.uploadFileToServer(formData, username).subscribe(
           (response) => {
             if (response.deletedIMG === true) {
               console.log('File deleted successfully from server');
-              const warningMessage = true
+              const warningMessage = true;
 
               this.router.navigate(['/login'], {
                 queryParams: { warningMessage },
               });
             } else {
               //console.log('File uploaded successfully to server');
-              this.goToLogin()
+              this.goToLogin();
             }
           },
           (error) => {
@@ -77,7 +77,7 @@ export class RegisterComponent implements OnInit {
         );
       });
     } else {
-      this.goToLogin()
+      this.goToLogin();
 
       // console.log('No file selected');
     }
@@ -152,7 +152,6 @@ export class RegisterComponent implements OnInit {
         // console.log('Error during user registration:', error.error.message);
       }
     );
-
   }
 
   ngOnInit(): void {}
