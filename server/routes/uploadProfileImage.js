@@ -73,18 +73,36 @@ router.post("/upload", upload.single("file"), (req, res) => {
 
       fs.unlinkSync(file.path);
       let userId = req.body.userId;
-      userId = new ObjectId(userId);
-      console.log("username:", userId);
-      try {
-        await connect();
-        // Update the user's profile picture URL in the database
-        await db()
-          .collection("users")
-          .updateOne({ _id: userId }, { $set: { profilePic: imageUrl } });
-        close();
-      } catch (updateError) {
-        console.error("Error updating user profile picture:", updateError);
+      let username = req.body.username;
+      if (userId) {
+        userId = new ObjectId(userId);
+        try {
+          await connect();
+          // Update the user's profile picture URL in the database
+          await db()
+            .collection("users")
+            .updateOne({ _id: userId }, { $set: { profilePic: imageUrl } });
+          close();
+        } catch (updateError) {
+          console.error("Error updating user profile picture:", updateError);
+        }
+      } else {
+        // use username to find user for register component
+        try {
+          await connect();
+          // Update the user's profile picture URL in the database
+          await db()
+            .collection("users")
+            .updateOne({ username: username }, { $set: { profilePic: imageUrl } });
+          close();
+
+        } catch (updateError) {
+          console.error("Error updating user profile picture:", updateError);
+        }
       }
+
+
+
       // If no moderation labels found, return the moderation result
     }
   });

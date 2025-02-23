@@ -57,18 +57,19 @@ export class RegisterComponent implements OnInit {
         formData.append('file', compressedFile);
         formData.append('username', username);
 
-        this.userService.uploadFileToServer(formData, username).subscribe(
+        this.userService.uploadFileToServer(formData).subscribe(
           (response) => {
-            if (response.deletedIMG === true) {
+            if (response.deletedIMG !== false) {
               console.log('File deleted successfully from server');
-              const warningMessage = true;
+              const warningMessage =
+                'Account created, but your image was removed due to inappropriate content.';
 
               this.router.navigate(['/login'], {
                 queryParams: { warningMessage },
               });
             } else {
               //console.log('File uploaded successfully to server');
-              this.goToLogin();
+              this.router.navigate(['/login']);
             }
           },
           (error) => {
