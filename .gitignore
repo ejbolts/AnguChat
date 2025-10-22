@@ -42,3 +42,10 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# infastructure files
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars
+crash.log
