@@ -29,12 +29,12 @@ resource "aws_instance" "anguchat-ec2" {
 }
 
 resource "aws_ssm_parameter" "db_connection_param" {
-  name  = "anguchat/db_connection"
+  name  = "/anguchat/db_connection"
   type  = "SecureString"
   value = var.db_connection
 }
 resource "aws_ssm_parameter" "bucket_config_param" {
-  name  = "anguchat/bucket_config_param"
+  name  = "/anguchat/bucket_config_param"
   type  = "SecureString"
   value = var.s3_bucket_name
 }
