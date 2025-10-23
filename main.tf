@@ -8,10 +8,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-2"
+  region = var.region
 }
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
 
-   
 
 resource "aws_s3_bucket" "anguchat-bucket" {
   bucket = var.s3_bucket_name
@@ -19,16 +20,24 @@ resource "aws_s3_bucket" "anguchat-bucket" {
 }
 
 resource "aws_instance" "anguchat-ec2" {
-  instance_type = "t2.micro"
-  ami           = "ami-0df4b2961410d4cff"
+  instance_type        = "t2.micro"
+  ami                  = "ami-0df4b2961410d4cff"
   iam_instance_profile = aws_iam_instance_profile.anguchat_instance_profile.name
   tags = {
     "Name" = "Project server"
   }
 }
 
-
-
+resource "aws_ssm_parameter" "db_connection_param" {
+  name  = "anguchat/db_connection"
+  type  = "SecureString"
+  value = var.db_connection
+}
+resource "aws_ssm_parameter" "bucket_config_param" {
+  name  = "anguchat/bucket_config_param"
+  type  = "SecureString"
+  value = var.s3_bucket_name
+}
 
 
 resource "aws_iam_role" "anguchat_ec2_access_role" {
@@ -50,58 +59,6 @@ resource "aws_iam_role" "anguchat_ec2_access_role" {
       }
     ]
   })
-}
-
-
-resource "aws_iam_role_policy_attachment" "attach_anguchat_s3_policy" {
-  role       = aws_iam_role.anguchat_ec2_access_role.name
-  policy_arn = aws_iam_policy.anguchat_s3_policy.arn
-}
-
-
-resource "aws_iam_role_policy_attachment" "attach_rek_policy" {
-  role       = aws_iam_role.anguchat_ec2_access_role.name
-  policy_arn = aws_iam_policy.anguchat_image_rekonition_policy.arn
-}
-
-resource "aws_iam_policy" "anguchat_s3_policy" {
-  name = "Anguchat-s3-access-policy"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        "Resource" : [
-          "${aws_s3_bucket.anguchat-bucket.arn}",
-          "${aws_s3_bucket.anguchat-bucket.arn}/*"
-        ]
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "anguchat_image_rekonition_policy" {
-  name = "Anguchat-image-rekognition-policy"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "rekognition:DetectLabels",
-          "rekognition:DetectModerationLabels",
-          "rekognition:DetectFaces"
-        ],
-        "Resource" : "*"
-      }
-    ]
-  })
-  
 }
 
 
